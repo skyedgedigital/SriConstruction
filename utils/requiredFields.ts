@@ -1,0 +1,33 @@
+const requiredFields = {
+    EmpCode:'code',
+    Work_Man_No:'workManNo',
+    Empname: "name",
+    DptNam:'department',
+    SitNam:'site',
+    DsgNam:'designation',
+    PfStat:'pfApplicable',
+    PfNum:'pfNo',
+    UAN:'UAN',
+    EsiStat:'ESICApplicable',
+    EsiNum:'ESICNo',
+    EsiDis:'ESILocation',
+    adhaarNumber:'adhaarNumber',
+    Sex:'sex',
+    MarSta:'martialStatus',
+    Dob:'dob',
+    attendanceAllowance:'attendanceAllowance',
+    FatherName:'fathersName',
+    Add1:'address',
+    Phone:'landlineNumber',
+    Mobile:'mobileNumber',
+    WorkSta:'workingStatus',
+    ResgDat:'resignDate',
+    AssignDate:'appointmentDate',
+    Safety_Pass_No:'safetyPassNumber',
+    SP_Valid_Till:'SpValidity',
+    PV_Valid_Till:'policeVerificationValidityDate',
+    GP_No:'gatePassNumber',
+    GP_Valid_Till:'gatePassValidTill'
+};
+
+export default requiredFields
