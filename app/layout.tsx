@@ -11,7 +11,7 @@ import NextTopLoader from 'nextjs-toploader';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SHEKHAR ENTERPRISES",
+  title: "SRI CONSTRUCTIONS",
   icons: '/assets/logo-bg.png'
 };
 

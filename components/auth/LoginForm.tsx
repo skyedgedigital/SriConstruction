@@ -123,7 +123,7 @@ const LoginForm: React.FC<{}> = () => {
             alt='sign image'
           />{' '}
           <h1 className=' text-3xl font-bold leading-tight tracking-tight text-blue-500 md:text-2xl font-mono'>
-            Shekhar Enterprises
+            Sri Constructions
           </h1>
         </div>
         <Form {...form}>
