@@ -17,7 +17,8 @@ const Page = () => {
       const resp = await vehicleAction.FETCH.fetchAllVehicles();
       console.warn(resp);
       if (resp.data) {
-        setVehicles(resp.data);
+        const vehicles = JSON.parse(resp.data);
+        setVehicles(vehicles);
       }
     };
     fn();

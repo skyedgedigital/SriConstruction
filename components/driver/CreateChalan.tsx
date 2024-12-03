@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler } from 'react-hook-form';
@@ -113,7 +113,6 @@ const CreateChalan = () => {
 
   const [loading, setLoading] = useState(false);
   const [allDepartments, setAllDepartments] = useState<string[]>([]);
-  const [file, setFile] = useState();
   const [department, setDepartment] = useState('');
   const [workOrder, setWorkOrder] = useState('');
 
@@ -127,6 +126,9 @@ const CreateChalan = () => {
   const [units, setUnits] = useState([]);
 
   const router = useRouter();
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const form = useForm<FormFields>({
     defaultValues: {
@@ -182,7 +184,7 @@ const CreateChalan = () => {
 
       console.log(formData);
 
-      if (res.success) {
+      if (res.success) {  
         toast.success(res.message);
         form.reset({
           workOrder: '', // Allow optional workOrder
@@ -198,13 +200,17 @@ const CreateChalan = () => {
           commentByDriver: '',
           // commentByFleetManager: '',
         });
+        setSelectedFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       } else {
         console.error(res);
         toast.error(res.message);
       }
     } catch (error) {
       console.error(error);
-      toast.error('Something went wrong');
+      toast.error(error.message || JSON.stringify(error) || 'something went wrong');
     }
   };
 
@@ -559,69 +565,30 @@ const CreateChalan = () => {
           <FormField
             control={form.control}
             name='file'
-            render={({ field: { value, onChange, ...fieldProps } }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Chalan Photo</FormLabel>
-                <FormControl>
-                  <Input
-                    type='file'
-                    {...fieldProps}
-                    className=' bg-white '
-                    onChange={(event) => {
-                      console.log(event.target.files);
-                      return onChange(event.target.files);
-                    }}
-                  />
-                </FormControl>
-
+            render={({ field: { value, onChange } }) => (
+              <div className='flex-col flex gap-1 flex-1'>
+                <label className='font-semibold'>Chalan Photo</label>
+                <input
+                  type='file'
+                  ref={fileInputRef}
+                  className='bg-white border border-gray-300 rounded-md p-2'
+                  onChange={(event) => {
+                    const files = event.target.files;
+                    if (files && files.length > 0) {
+                      setSelectedFile(files[0]);
+                      onChange(files);
+                    } else {
+                      setSelectedFile(null);
+                      onChange(undefined);
+                    }
+                  }}
+                />
+                {selectedFile && <p>{selectedFile.name}</p>}
                 <FormMessage />
-              </FormItem>
+              </div>
             )}
           />
 
-          {/* <FormField
-    control={form.control}
-    name="file"
-    render={({ field : { value, onChange, ...fieldProps }}) => (
-      <FormItem >
-        <FormLabel>Location</FormLabel>
-        <FormControl>
-        <Input
-          {...fieldProps}
-          type="file"
-          accept="image/*"
-           onChange={(event) =>
-            onChange(event.target.files && event.target.files[0])
-          }
-        
-        />        </FormControl>
-  
-        <FormMessage />
-      </FormItem>
-    )}
-  /> */}
-
-          {/* <FormField
-                    control={form.control}
-                    name="file"
-                    render={({ field: { value, onChange, ...fieldProps } }) =>(
-                          <FormItem className=' flex-col flex gap-1 flex-1'>
-                            <FormLabel>images</FormLabel>
-                            <FormControl>
-                            <Input
-          {...fieldProps}
-          placeholder="Picture"
-          type="file"
-          accept="image/*, application/pdf"
-          onChange={(event) =>
-            onChange(event.target.files && event.target.files[0])
-          }
-        />                            </FormControl>
-                         
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                /> */}
           <FormField
             control={form.control}
             name='status'
@@ -665,21 +632,6 @@ const CreateChalan = () => {
               </FormItem>
             )}
           />
-
-          {/* <FormField
-    control={form.control}
-    name="commentByFleetManager"
-    render={({ field }) => (
-      <FormItem>
-        <FormLabel>Comment By Fleet Manager</FormLabel>
-        <FormControl>
-          <Textarea {...field} className=' bg-white '/>
-        </FormControl>
-    
-        <FormMessage />
-      </FormItem>
-    )}
-  /> */}
         </div>
         <h2 className='text-blue-800 font-bold px-4'>Fill Items</h2>
         {form.formState.errors.items && (

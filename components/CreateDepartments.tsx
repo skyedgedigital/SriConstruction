@@ -53,7 +53,7 @@ const CreateDepartments = () => {
         });
         console.log('Department created successfully:', response.data);
       } else {
-        toast.error(response.message || 'Unable to create department!');
+        toast.error(response.message || 'Unable to create department');
         console.error('Error creating department:', response.message);
       }
     } catch (error) {

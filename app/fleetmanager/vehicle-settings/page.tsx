@@ -14,7 +14,8 @@ const Chalans: React.FC<{}> = () => {
   useEffect(() => {
     const fetchVehicles = async () => {
       const res = await vehicleAction.FETCH.fetchAllVehicles();
-      setVehicles(await JSON.parse(JSON.stringify(res.data)));
+      const vehicles = JSON.parse(res.data);
+      setVehicles(vehicles);
     };
     fetchVehicles();
   }, []);

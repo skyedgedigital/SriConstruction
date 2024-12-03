@@ -61,7 +61,57 @@ export const connectToDB = async (): Promise<ApiResponse<any>> => {
         success: false,
         status: 500,
         message:
-          'Database connection timed out. Please check your network connection and database server.',
+          'Database connection timed out. Please check your Network connection and database server.',
+        error: error.message,
+      };
+    } else if (error.code === 'ECONNRESET') {
+      console.error('Connection reset error:', error.message);
+      return {
+        data: null,
+        success: false,
+        status: 500,
+        message:
+          'Connection was reset. Please check your Database server or Network Connection.',
+        error: error.message,
+      };
+    } else if (error.code === 'ENOTFOUND') {
+      console.error('DNS resolution error:', error.message);
+      return {
+        data: null,
+        success: false,
+        status: 500,
+        message:
+          'DNS resolution failed. Please check the hostname and your Network Connection.',
+        error: error.message,
+      };
+    } else if (error.code === 'ECONNREFUSED') {
+      console.error('Connection refused error:', error.message);
+      return {
+        data: null,
+        success: false,
+        status: 500,
+        message:
+          'Connection was refused. Please ensure your database server is running and have Network Connection.',
+        error: error.message,
+      };
+    } else if (error.name === 'MongoTimeoutError') {
+      console.error('MongoDB timeout error:', error.message);
+      return {
+        data: null,
+        success: false,
+        status: 500,
+        message:
+          'MongoDB connection timed out. Please check your database server or Network Connection.',
+        error: error.message,
+      };
+    } else if (error.name === 'MongoServerSelectionError') {
+      console.error('MongoDB server selection error:', error.message);
+      return {
+        data: null,
+        success: false,
+        status: 500,
+        message:
+          'Unable to select a MongoDB server. Please check your database configuration.',
         error: error.message,
       };
     }

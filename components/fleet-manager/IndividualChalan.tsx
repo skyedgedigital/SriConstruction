@@ -91,7 +91,7 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
         setFetchedEngineerNames(engineers);
       }
       if (!res.success) {
-        return toast.error(res.message);
+        return;
       }
     };
     if (chalan.department?.departmentName != '') fetchEngineersData();
@@ -318,49 +318,6 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
     <div className='relative shadow-md flex flex-col bg-gr border-[1px] border-black text-xs rounded-lg overflow-hidden w-full'>
       <div className='w-full flex items-stretch justify-between '>
         <h2 className='text-white font-semibold p-2 text-sm text-center w-full bg-blue-400'>{`Chalan Number: ${chalan.chalanNumber}`}</h2>
-
-        {/* <div className="flex gap-[1px] items-center">
-            <Link
-              href={presignedUrl}
-              target="_blank"
-              className=" z-10 bg-blue-500 h-full  text-xs flex items-center justify-center text-white px-2  "
-            >
-              view Physical Chalan
-            </Link>
-            {/* {canApprove && !chalanState?.verified && ( */}
-        {/* <button
-                // onClick={() => approveHandler(chalanState?._id)}
-                className=" flex items-center gap-1 shadow bg-green-600 text-white py-1 px-2"
-              >
-                {approving ? (
-                  <AiOutlineLoading3Quarters className="animate-spin" />
-                ) : (
-                  <RiVerifiedBadgeFill />
-                )}
-                <p className="capitalize">mark as verified</p>
-              </button> */}
-        {/* )} */}
-        {/* {canApprove && !chalanState?.signed && ( */}
-        {/* <button
-                // onClick={() => signHandler(chalanState?._id)}
-                className=" flex items-center gap-1 shadow bg-green-600 text-white py-1 px-2"
-              >
-                {signing ? (
-                  <AiOutlineLoading3Quarters className="animate-spin" />
-                ) : (
-                  <FaSignature />
-                )}
-                <p className="capitalize">mark as signed</p>
-              </button> */}
-        {/* )} */}
-        {/* {chalanState?.verified && chalanState?.signed ? ( */}
-        {/* "" */}
-        {/* ) : ( */}
-        {/* <p className="bg-red-600  text-center capitalize text-white px-2 py-1">
-                pending
-              </p> */}
-        {/* )} */}
-        {/* </div> */}
       </div>
       <div>
         {' '}
@@ -377,10 +334,15 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
                 <p className='font-bold capitalize text-primary-color items-start '>
                   Work Order no:
                 </p>
-                <p>
-                  {/* {chalanState?.workOrderNumber} */}
-                  {chalan.workOrder?.workOrderNumber}
-                </p>
+                {chalan.workOrder ? (
+                  <p className=' text-gray-500 '>
+                    {chalan.workOrder?.workOrderNumber}
+                  </p>
+                ) : (
+                  <p className='text-red-500'>
+                    {JSON.stringify(chalan.workOrder)}
+                  </p>
+                )}
               </span>
               <span className=' flex gap-5 pt-1'>
                 <p
@@ -389,7 +351,14 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
                 >
                   location:
                 </p>
-                <p className=' text-gray-500 '>{chalan.location}</p>
+                {chalan?.location ? (
+                  <p className=' text-gray-500 '>{chalan.location}</p>
+                ) : (
+                  <p className='text-red-500'>
+                    {JSON.stringify(chalan?.location) ||
+                      'No Location found for this chalan'}
+                  </p>
+                )}
               </span>
               <span className=' flex gap-5 pt-1 '>
                 <p
@@ -398,7 +367,11 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
                 >
                   Work Description:
                 </p>
-                <p className=' text-gray-500 '>{chalan?.workDescription} </p>
+                {chalan?.workDescription ? (
+                  <p className=' text-gray-500 '>{chalan?.workDescription}</p>
+                ) : (
+                  <p className='text-red-500'>No work description</p>
+                )}
               </span>
               <span className=' flex gap-5 pt-1'>
                 <p
@@ -407,9 +380,15 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
                 >
                   department:
                 </p>
-                <p className=' text-gray-500 '>
-                  {chalan.department?.departmentName}
-                </p>
+                {chalan?.department ? (
+                  <p className=' text-gray-500 '>
+                    {chalan.department?.departmentName}
+                  </p>
+                ) : (
+                  <p className='text-red-500'>
+                    {JSON.stringify(chalan?.department)}
+                  </p>
+                )}
               </span>
             </div>
             <div className='flex flex-col items-center w-fit justify-center gap-4'>
@@ -425,61 +404,67 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
                   <>Click here to make engineer not editable</>
                 )}
               </Button>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className='w-full rounded-md'
-                >
-                  <div className='flex flex-col gap-2'>
-                    <FormField
-                      disabled={!edit}
-                      control={form.control}
-                      name='engineer'
-                      render={({ field }) => (
-                        <FormItem className=' flex-col flex gap-1 flex-1'>
-                          <FormLabel>Engineer</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger
-                                className='bg-white'
-                                disabled={!edit}
-                              >
-                                {field.value ? (
-                                  <SelectValue placeholder='' />
-                                ) : (
-                                  'Select an Engineer'
-                                )}
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {fetchedEngineerNames.map((option, index) => (
-                                <SelectItem
-                                  key={option.toString()}
-                                  value={option.toString()}
+              {fetchedEngineerNames.length === 0 ? (
+                <p className='text-red-500'>
+                  No engineers found with this department in chalan
+                </p>
+              ) : (
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className='w-full rounded-md'
+                  >
+                    <div className='flex flex-col gap-2'>
+                      <FormField
+                        disabled={!edit}
+                        control={form.control}
+                        name='engineer'
+                        render={({ field }) => (
+                          <FormItem className=' flex-col flex gap-1 flex-1'>
+                            <FormLabel>Engineer</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger
+                                  className='bg-white'
+                                  disabled={!edit}
                                 >
-                                  {option}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                                  {field.value ? (
+                                    <SelectValue placeholder='' />
+                                  ) : (
+                                    'Select an Engineer'
+                                  )}
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {fetchedEngineerNames.map((option, index) => (
+                                  <SelectItem
+                                    key={option.toString()}
+                                    value={option.toString()}
+                                  >
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
 
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type='submit'
-                      className=' bg-green-500 mt-4 mb-4 '
-                      disabled={!edit}
-                    >
-                      Submit
-                    </Button>
-                  </div>
-                </form>
-              </Form>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button
+                        type='submit'
+                        className=' bg-green-500 mt-4 mb-4 '
+                        disabled={!edit}
+                      >
+                        Submit
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              )}
             </div>
           </div>
 

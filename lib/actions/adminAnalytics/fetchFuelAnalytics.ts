@@ -77,29 +77,40 @@ const getVehiclesWithHours = async (
           amount: item.itemCosting,
           hours: item.hours,
         });
-        vehicleData[vehicleNumber].totalHours += item.hours;
-        vehicleData[vehicleNumber].totalCost += item.itemCosting;
+        vehicleData[vehicleNumber]?.totalHours &&
+          (vehicleData[vehicleNumber].totalHours += item.hours);
+        vehicleData[vehicleNumber].totalCost &&
+          (vehicleData[vehicleNumber].totalCost += item.itemCosting);
       });
     });
 
+    console.log('moonth', month, yearNum);
+    console.log('VEHICLE DATA', vehicleData);
     let fuelManagementDocs = await FuelManagement.find({
       month: month,
       year: yearNum,
     });
 
-    fuelManagementDocs.forEach((ele) => {
-      vehicleData[ele.vehicleNumber].totalFuel += ele.fuel;
-      vehicleData[ele.vehicleNumber].fuelCost += ele.amount;
-    });
+    console.log('FUEL MANAGEMENT DOCS', fuelManagementDocs);
+
+    if (Object.keys(vehicleData).length > 0)
+      fuelManagementDocs.forEach((ele) => {
+        vehicleData[ele.vehicleNumber]?.totalFuel &&
+          (vehicleData[ele.vehicleNumber].totalFuel += ele.fuel);
+        vehicleData[ele.vehicleNumber]?.fuelCost &&
+          (vehicleData[ele.vehicleNumber].fuelCost += ele.amount);
+      });
 
     let complianceDocs = await Compliance.find({
       month: month,
       year: yearNum,
     });
 
-    complianceDocs.forEach((ele) => {
-      vehicleData[ele.vehicleNumber].complianceCost += ele.amount;
-    });
+    if (Object.keys(vehicleData).length > 0)
+      complianceDocs.forEach((ele) => {
+        vehicleData[ele.vehicleNumber]?.complianceCost &&
+          (vehicleData[ele.vehicleNumber].complianceCost += ele.amount);
+      });
 
     const result = Object.values(vehicleData);
 

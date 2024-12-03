@@ -115,7 +115,7 @@ const createChalan = async (
       );
       const chalanId = result._id;
       const updatedResult = await fn(chalanId);
-      console.log(updatedResult);
+      console.log('updatedResult', updatedResult);
       return {
         success: true,
         status: 200,
@@ -124,13 +124,12 @@ const createChalan = async (
         error: null,
       };
     } else {
-      console.error('Unexpected data type for file:', file);
-
+      console.error('Unexpected data type for photo:', file);
       return {
         success: false,
         status: 500,
-        message: 'Unexpected data type for file:',
-        error: 'Unexpected Data Type or File',
+        message: 'Unexpected data type for photo:',
+        error: 'Unexpected Data Type for Photo',
         data: null,
       };
     }
@@ -140,7 +139,7 @@ const createChalan = async (
       return {
         success: false,
         status: 409, // Conflict
-        message: 'Chalan number already exists.',
+        message: 'Chalan number already exists',
         error: JSON.stringify(err.message || err),
         data: null,
       };

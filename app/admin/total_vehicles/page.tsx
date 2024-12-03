@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import VehicleInformation from "@/components/admin/VehicleInformation";
-import vehicleAction from "@/lib/actions/vehicle/vehicleAction";
-import { CSSProperties, useEffect, useState } from "react";
-import HashLoader from "react-spinners/HashLoader";
+import VehicleInformation from '@/components/admin/VehicleInformation';
+import vehicleAction from '@/lib/actions/vehicle/vehicleAction';
+import { CSSProperties, useEffect, useState } from 'react';
+import HashLoader from 'react-spinners/HashLoader';
 
 const override: CSSProperties = {
-  display: "block",
-  margin: "0 auto",
-  borderColor: "red",
+  display: 'block',
+  margin: '0 auto',
+  borderColor: 'red',
 };
 
 const Page = () => {
@@ -18,7 +18,8 @@ const Page = () => {
     const fn = async () => {
       const resp = await vehicleAction.FETCH.fetchAllVehicles();
       if (resp?.success) {
-        setVehicles(resp.data);
+        const vehicles = JSON.parse(resp.data);
+        setVehicles(vehicles);
       }
     };
     fn();
@@ -27,15 +28,12 @@ const Page = () => {
   return (
     <>
       <div>
-        <p className="text-2xl ml-20">List of All Vehicles</p>
+        <p className='text-2xl ml-20'>List of All Vehicles</p>
       </div>
       {vehicles ? (
-        <div className="flex-wrap">
+        <div className='flex-wrap'>
           {vehicles.map((vehicle, index) => {
-
-            return(
-                <VehicleInformation  vehicle={vehicle} key={index} />
-            )
+            return <VehicleInformation vehicle={vehicle} key={index} />;
 
             // return (
             //   <div
@@ -102,7 +100,7 @@ const Page = () => {
         </div>
       ) : (
         <>
-          <div className="text-center text-2xl">No Data Available</div>
+          <div className='text-center text-2xl'>No Data Available</div>
         </>
       )}
     </>

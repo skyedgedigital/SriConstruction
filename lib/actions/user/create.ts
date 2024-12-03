@@ -1,4 +1,5 @@
 'use server';
+import { ApiResponse } from '@/interfaces/APIresponses.interface';
 import handleDBConnection from '@/lib/database';
 import Admin from '@/lib/models/admin.model';
 import User from '@/lib/models/user.model';
@@ -50,7 +51,7 @@ const createAdmin = async (adminInfo: admin) => {
   };
 };
 
-const createUser = async (userInfo: user) => {
+const createUser = async (userInfo: user): Promise<ApiResponse<any>> => {
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
   try {
@@ -70,6 +71,7 @@ const createUser = async (userInfo: user) => {
       status: 500,
       message: 'Unexpected error occurred, Failed to create,Please try later',
       error: JSON.stringify(error),
+      data: null,
     };
   }
 
@@ -84,6 +86,7 @@ const createUser = async (userInfo: user) => {
     status: 201,
     message: 'New user created',
     data: userObject,
+    error: null,
   };
 };
 

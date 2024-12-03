@@ -164,7 +164,8 @@ const EditVehicle: React.FC<{}> = () => {
     const fetch = async () => {
       const { data, success, message } =
         await vehicleAction.FETCH.fetchAllVehicles();
-      const vehicles = await JSON.parse(JSON.stringify(data));
+
+      const vehicles = await JSON.parse(data);
       if (success) {
         const vehicleNumbers = vehicles.map((vehicle) => vehicle.vehicleNumber);
         console.log(vehicleNumbers);
