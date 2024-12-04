@@ -73,15 +73,59 @@ const createChalan = async (
 
       const downloadURL = await uploadFile(storageRef, file);
 
+      if (!downloadURL) {
+        return {
+          status: 404,
+          error: JSON.stringify(downloadURL),
+          message:
+            'Could not save photo for now, Please check your Internet Connection ',
+          data: null,
+          success: false,
+        };
+      }
+
       const existingWorkOrderId = await WorkOrder.findOne({
         workOrderNumber: workOrder,
       });
+      if (!existingWorkOrderId) {
+        return {
+          status: 404,
+          error: JSON.stringify(existingWorkOrderId),
+          message:
+            'Provided workorder does not exists in database, make sure provided workorder already created',
+          data: null,
+          success: false,
+        };
+      }
       const workOrderId = existingWorkOrderId._id;
       const existingDepartment = await Department.findOne({
         departmentName: department,
       });
+      if (!existingDepartment) {
+        return {
+          status: 404,
+          error: JSON.stringify(existingWorkOrderId),
+          message:
+            'Provided department does not exists in database, make sure provided department already created',
+          data: null,
+          success: false,
+        };
+      }
       const departmentId = existingDepartment._id;
-      const existingEngineer = await Engineer.findOne({ name: engineer });
+      const existingEngineer = await Engineer.findOne({
+        name: engineer,
+        department: new mongoose.Types.ObjectId(departmentId),
+      });
+      if (!existingEngineer) {
+        return {
+          status: 404,
+          error: JSON.stringify(existingWorkOrderId),
+          message:
+            'Provided engineer does not exists in provided department, Could not create chalan',
+          data: null,
+          success: false,
+        };
+      }
       const engineerId = existingEngineer._id;
       const obj = new Chalan({
         location,
@@ -101,6 +145,17 @@ const createChalan = async (
       });
       console.log('The obj to be saved', obj);
       const resp = await obj.save();
+      console.log('saved chalan', resp);
+      if (!resp) {
+        return {
+          status: 500,
+          success: false,
+          data: null,
+          error: JSON.stringify(resp),
+          message:
+            'Unexpected error Occurred in database, Failed to save chalan, Please try later',
+        };
+      }
       const objId = resp._id;
       const result = await Chalan.findOneAndUpdate(
         {
@@ -116,6 +171,16 @@ const createChalan = async (
       const chalanId = result._id;
       const updatedResult = await fn(chalanId);
       console.log('updatedResult', updatedResult);
+      if (!updatedResult) {
+        return {
+          status: 500,
+          success: false,
+          data: null,
+          error: JSON.stringify(resp),
+          message:
+            'Unexpected error Occurred in database, Failed to save chalan, Please try later',
+        };
+      }
       return {
         success: true,
         status: 200,
