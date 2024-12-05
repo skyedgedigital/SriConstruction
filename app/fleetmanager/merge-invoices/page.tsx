@@ -200,7 +200,7 @@ const Page = ({
           workOrderNumber: workOrderNumber?.workOrderNumber,
         };
         const query = {
-          wo: workOrderNumber?.workOrderNumber,
+          wo: workOrderNumber,
           location: checkedIChalans[0]?.location,
           service: formattedString,
           department: checkedIChalans[0].department?.departmentName,

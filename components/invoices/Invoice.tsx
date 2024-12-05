@@ -57,7 +57,9 @@ const Invoice = ({
   const [totalHours, setTotalHours] = useState(0);
 
   const [itemsList, setItemsList] = useState([]);
-  const [dateMapping, setDateMapping] = useState(null);
+  const [dateMapping, setDateMapping] = useState({});
+
+  console.log('ITEMS', items);
 
   useEffect(() => {
     const fn = async () => {
@@ -82,6 +84,7 @@ const Invoice = ({
         })
       );
 
+      console.log('UPDATED ITEMS', updatedItems);
       // Update state after all hsnNo are fetched
       setItemsList(updatedItems);
       setTotalCgst(cgst);
@@ -94,7 +97,7 @@ const Invoice = ({
       const resp = await chalanAction.FETCH.getSummaryPdfData(invoiceId);
       if (resp.success) {
         // toast.success("Recieved Summary Data")
-        console.error(resp.data);
+        console.log('RESP', resp.data);
         setDateMapping(resp.data);
       }
     };
@@ -104,53 +107,99 @@ const Invoice = ({
   }, [items, invoice]);
 
   const displayDate = (itemName: string) => {
-    let date = dateMapping?.get(itemName).from;
-    console.log(date);
-    return '';
+    // let date = dateMapping?.get(itemName).from;
+    // console.log(date);
+    // return '';
   };
 
   console.warn('The Items Recieved', items);
   const contentArray: any = [];
-  for (let i = 0; i < items.length; i++) {
-    contentArray.push(
-      <tr>
-        <td className='border-[1px] border-black py-2  text-center '>
-          {i + 1}
-        </td>{' '}
-        <td className='border-[1px] border-black py-2  text-center '>
-          {items[i]?.itemName}
-        </td>{' '}
-        <td className='border-[1px] border-black py-2  text-center '>
-          {items[i]?.itemNumber}
-        </td>{' '}
-        <td className='border-[1px] border-black py-2  text-center '>
-          {/* {formatDate(filtered[i]?.date.toString())} */}
-          {
-            dateMapping
-              ?.get(items[i].itemName)
-              ?.from?.toLocaleDateString('en-GB') +
-              '-' +
-              dateMapping?.get(items[i].itemName).to.toLocaleDateString('en-GB')
-            // displayDate(items[i].itemName)
-          }
-        </td>{' '}
-        <td className='border-[1px] border-black py-2 text-center '>
-          {dateMapping?.get(items[i].itemName)?.locations
-            ? Array.from(dateMapping.get(items[i].itemName).locations).join(
-                ', '
-              )
-            : 'No locations available'}
-        </td>
-        <td className='border-[1px] border-black py-2  text-center '>
-          {/* {filtered[i]?.unit === 'minute' &&
-            (parseFloat(filtered[i]?.used.toString()) / 60).toFixed(2)}
-          {filtered[i]?.unit === 'hour' &&
-            parseFloat(filtered[i]?.used.toString()).toFixed(2)} */}
-          {items[i].itemCost.hours}
-        </td>
-      </tr>
-    );
-  }
+
+  // for (let i = 0; i < items.length; i++) {
+  //   contentArray.push(
+  //     <tr>
+  //       <td className='border-[1px] border-black py-2  text-center '>
+  //         {i + 1}
+  //       </td>{' '}
+  //       <td className='border-[1px] border-black py-2  text-center '>
+  //         {items[i]?.itemName}
+  //       </td>{' '}
+  //       <td className='border-[1px] border-black py-2  text-center '>
+  //         {items[i]?.itemNumber}
+  //       </td>{' '}
+  //       <td className='border-[1px] border-black py-2  text-center '>
+  //         {/* {formatDate(filtered[i]?.date.toString())} */}
+  //         {
+  //           dateMapping
+  //             ?.get(items[i].itemId)
+  //             ?.from?.toLocaleDateString('en-GB') +
+  //             '-' +
+  //             dateMapping?.get(items[i].itemId).to.toLocaleDateString('en-GB')
+  //           // displayDate(items[i].itemName)
+  //         }
+  //       </td>{' '}
+  //       <td className='border-[1px] border-black py-2 text-center '>
+  //         {dateMapping?.get(items[i].itemName)?.locations
+  //           ? Array.from(dateMapping.get(items[i].itemName).locations).join(
+  //               ', '
+  //             )
+  //           : 'No locations available'}
+  //       </td>
+  //       <td className='border-[1px] border-black py-2  text-center '>
+  //         {/* {filtered[i]?.unit === 'minute' &&
+  //           (parseFloat(filtered[i]?.used.toString()) / 60).toFixed(2)}
+  //         {filtered[i]?.unit === 'hour' &&
+  //           parseFloat(filtered[i]?.used.toString()).toFixed(2)} */}
+  //         {items[i].itemCost.hours}
+  //       </td>
+  //     </tr>
+  //   );
+  // }
+
+  Object.keys(dateMapping).forEach((key, i) => {
+    const itemDetails = dateMapping[key];
+    itemDetails?.details?.map((item) => {
+      contentArray.push(
+        <tr>
+          <td className='border-[1px] border-black py-2  text-center '>
+            {i + 1}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {item?.itemDescription}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {items &&
+              items?.find(
+                (i) => i?.itemName?.trim() === item?.itemDescription?.trim()
+              ).itemNumber}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {/* {formatDate(filtered[i]?.date.toString())} */}
+            {/* {
+              dateMapping
+                ?.get(items[i].itemId)
+                ?.from?.toLocaleDateString('en-GB') +
+                '-' +
+                dateMapping?.get(items[i].itemId).to.toLocaleDateString('en-GB')
+              // displayDate(items[i].itemName)
+            } */}
+            {item?.chalanDate.toLocaleDateString('en-GB')}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2 text-center '>
+            {item?.location ? item?.location : 'No locations available'}
+          </td>
+          <td className='border-[1px] border-black py-2  text-center '>
+            {/* {filtered[i]?.unit === 'minute' &&
+              (parseFloat(filtered[i]?.used.toString()) / 60).toFixed(2)}
+            {filtered[i]?.unit === 'hour' &&
+              parseFloat(filtered[i]?.used.toString()).toFixed(2)} */}
+            {item.workingHour}
+          </td>
+        </tr>
+      );
+    });
+  });
+
   contentArray.push(
     <tr className={`bg-gray-300`}>
       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
@@ -308,6 +357,7 @@ const Invoice = ({
   };
 
   const total = items.reduce((sum, item) => sum + item.itemCost.itemCost, 0);
+  console.log('TOTAL', total);
   const grandTotal = items.reduce((sum, item) => {
     const itemCost = item.itemCost.itemCost || 0;
     return sum + itemCost + 0.18 * itemCost;
@@ -454,7 +504,9 @@ const Invoice = ({
                   alt='sign image'
                 />{' '}
               </div>
-              <h1 className='font-bold text-sm uppercase'>Sri Constructions</h1>
+              <h1 className='font-bold text-sm uppercase'>
+                Shekhar Enterprises
+              </h1>
             </div>
             <div className=''>
               <p className=' border-b-2 border-b-black w-fit pr-2 pb-2'>
@@ -605,22 +657,22 @@ const Invoice = ({
                           {`${item?.itemCost.unit}`}
                         </td>
                         <td className='border-[1px] border-black pl-2 pb-3 '>
-                          {`${item?.itemPrice}`}
+                          {`${item?.itemPrice?.toFixed(2)}`}
                         </td>
                         <td className='border-[1px] border-black pl-2 pb-3 '>
-                          {`${item?.itemCost.itemCost}`}
-                        </td>
-                        <td className='border-[1px] border-black pl-2 pb-3 '>
-                          9%
+                          {`${item?.itemCost.itemCost?.toFixed(2)}`}
                         </td>
                         <td className='border-[1px] border-black pl-2 pb-3 '>
                           9%
                         </td>
                         <td className='border-[1px] border-black pl-2 pb-3 '>
-                          {0.09 * item?.itemCost.itemCost}{' '}
+                          9%
                         </td>
                         <td className='border-[1px] border-black pl-2 pb-3 '>
-                          {0.09 * item?.itemCost.itemCost}{' '}
+                          {(0.09 * item?.itemCost.itemCost).toFixed(2)}{' '}
+                        </td>
+                        <td className='border-[1px] border-black pl-2 pb-3 '>
+                          {(0.09 * item?.itemCost.itemCost).toFixed(2)}{' '}
                         </td>
                       </tr>
                     ))}
@@ -640,7 +692,9 @@ const Invoice = ({
                       <td className='border-[1px] border-black pl-2 pb-3 '>
                         Total
                       </td>
-                      <td className='border-[1px] border-black pl-2 pb-3 '>{`${total} `}</td>
+                      <td className='border-[1px] border-black pl-2 pb-3 '>{`${total?.toFixed(
+                        2
+                      )} `}</td>
                       <td className='border-[1px] border-black pl-2 pb-3 '></td>
                       <td className='border-[1px] border-black pl-2 pb-3 '></td>
                       <td className='border-[1px] border-black pl-2 pb-3 '>
