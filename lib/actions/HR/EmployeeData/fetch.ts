@@ -32,17 +32,22 @@ const fetchEmployees = async (
   try {
     // console.log('okayyyy');
 
-    console.log('page', page);
+    // console.log(page);
     const skipCount = (page - 1) * pageSize;
-    const docs = await EmployeeData.find({})
+    const docs = await EmployeeData.find({
+      workingStatus: true,
+    })
       .sort({
         date: -1,
+        _id: 1,
       })
-      // .skip(skipCount)
-      // .limit(pageSize)
-      // temporarily turn off skip nad limit for now
+      .skip(skipCount)
+      .limit(pageSize)
       .populate('designation');
-    console.log('DOCS', docs.length);
+    // console.log('skipcount:', skipCount, 'page', page);
+    // const focs = docs.map((item: any) => item.name);
+    // console.log('FOCS', focs);
+    // console.log("DOCS", docs);
     return {
       success: true,
       status: 200,
