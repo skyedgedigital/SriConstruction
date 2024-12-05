@@ -126,6 +126,7 @@ const Client = () => {
   const [month, setMonth] = useState(null);
   const [dep, setDep] = useState(null);
   const [allWorkOrderNumbers, setAllWorkOrderNumbers] = useState([]);
+  const [page, setPage] = useState(1);
   useEffect(() => {
     const fetch = async () => {
       // const { data, success, error } =
@@ -139,33 +140,117 @@ const Client = () => {
       if (success) {
         const workOrderNumbers = JSON.parse(workOrderResp.data);
         setAllWorkOrderNumbers(workOrderNumbers);
-        console.log('yeraaaa wowowowwoncjd', workOrderNumbers);
+        // console.log('yeraaaa wowowowwoncjd', workOrderNumbers);
       } else {
-        toast.error('Can not fetch work order numbers!');
+        toast.error(
+          workOrderResp?.message || 'Can not fetch work order numbers!'
+        );
       }
     };
     fetch();
   }, []);
+
+  useEffect(() => {
+    // console.log(
+    //   'first lawde',
+    //   page <= employees.length / 2,
+    //   page,
+    //   employees.length,
+    //   employees
+    // );
+    if (!(page <= employees.length / 2)) return;
+    // console.log('first jawda');
+    const fn = async () => {
+      if (employees.length / 15 < page) fetchAttendanceAndWages(page);
+    };
+    fn();
+  }, [page]);
+
+  // console.log('EMPLOYEES LENGTH XX', employees.length);
+  const fetchMoreData = async (prevOrNext: 'next' | 'prev') => {
+    if (prevOrNext === 'next') {
+      console.log('GILI');
+      setPage((page) => page + 1);
+    } else {
+      setPage((page) => page - 1);
+    }
+
+    // if (employees.length / 15 < page) await fetchAttendanceAndWages(page);
+  };
+
+  const fetchAttendanceAndWages = async (page_sanku = 1) => {
+    try {
+      // console.log('arree muaaa');
+      // console.log('XX running');
+      const res = await EmployeeDataAction.FETCH.fetchAllEmployeeData(
+        page_sanku
+      );
+      // console.log('page_sanku', page_sanku);
+      const depemployees = JSON.parse(res.data);
+      if (!depemployees || depemployees.length === 0) {
+        toast.error('No employees available');
+        return;
+      }
+      // setEmployees((emp) => [...emp, depemployees]);
+      setEmployees((emp) => employees.concat(depemployees));
+      //   console.log(data);
+      // //  setAttendanceData(null)
+      //  setMonth(data.month)
+      //  setYear(data.year)
+      //  data.month = parseInt(data.month);
+
+      const bata = {
+        month: parseInt(month),
+        year: parseInt(year),
+        workOrder: workOrderNumber,
+      };
+      //   const response = await chalanAction.FETCH.getChalanByChalanNumber(data.chalanNumber)
+      const filter = await JSON.stringify(bata);
+      setEmployeeData(filter);
+
+      const wageresponse = await wagesAction.FETCH.fetchFilledWages(
+        month,
+        year,
+        workOrderNumber
+      );
+      if (wageresponse.success) {
+        toast.success(wageresponse.message);
+        const wagedata = await JSON.parse(wageresponse.data);
+        setWagesData(wagedata);
+
+        console.log('wow kya wage hai', wagedata);
+      } else {
+        toast.error(wageresponse.message);
+      }
+
+      console.log('ek aur respnnse aaigawa', wageresponse);
+    } catch (error) {
+      toast.error(
+        'Something went wrong, Please check internet connection, refresh or Try Later:'
+      );
+      console.error('Internal Server Error:', error);
+    }
+  };
 
   const years = Array.from({ length: 2024 - 2010 + 1 }, (_, i) => 2010 + i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   const onSubmit: SubmitHandler<FormFields> = async (data: any, event) => {
     try {
-      console.log('arrrrreeee sahi h', workOrderNumber);
+      // console.log('arrrrreeee sahi h', workOrderNumber);
       // @ts-ignore
       const action = event.nativeEvent.submitter.value;
-
       const res = await EmployeeDataAction.FETCH.fetchAllEmployeeData();
       let depemployees = [];
       if (res.success) {
         depemployees = JSON.parse(res.data);
       }
-      console.log('DEP EMP:*** ', depemployees);
+      // console.log('DEP EMP:*** ', depemployees);
       if (!depemployees || depemployees.length === 0) {
         toast.error('No employees available');
         return;
       }
+      // console.log('RECEIVED EMPLOYEE LENGTH', depemployees.length);
       setEmployees(depemployees);
       console.log(data);
       //  setAttendanceData(null)
@@ -182,12 +267,12 @@ const Client = () => {
       data.month = parseInt(data.month);
 
       data.year = parseInt(data.year);
-      console.log('kya baat', data);
+      // console.log('kya baat', data);
       //   const response = await chalanAction.FETCH.getChalanByChalanNumber(data.chalanNumber)
       const filter = await JSON.stringify(data);
       setEmployeeData(filter);
       setPeriodData(`${data.month}-${data.year}`);
-      console.log('hhhhhhhhhhhhhhhhhh', data);
+      // console.log('hhhhhhhhhhhhhhhhhh', data);
       const wageresponse = await wagesAction.FETCH.fetchFilledWages(
         data.month,
         data.year,
@@ -203,8 +288,7 @@ const Client = () => {
         toast.error(wageresponse.message);
       }
 
-      console.log('ek aur respnnse aaigawa', wageresponse);
-
+      // console.log('ek aur respnnse aaigawa', wageresponse);
       if (action === 'GWR') {
         // setAAction(action);
         window.open(`/hr/wages-register?${queryString}`, '_blank');
@@ -213,7 +297,8 @@ const Client = () => {
       }
     } catch (error) {
       toast.error(
-        'Something went wrong, Please check internet connection, refresh or Try Later'
+        JSON.stringify(error) ||
+          'Something went wrong, Please check internet connection, refresh or Try Later'
       );
       console.error(
         'Something went wrong, Please check internet connection, refresh or Try Later:',
@@ -410,7 +495,7 @@ const Client = () => {
           //   const query = { employee: JSON.stringify(attendanceData) };
           //   const queryString = new URLSearchParams(query).toString();
 
-          //  window.open(`/hr/wages-register?${queryString}`,'_blank')
+          //  window.open(/hr/wages-register?${queryString},'_blank')
 
           // }
         } else {
@@ -458,21 +543,21 @@ const Client = () => {
             <TableHead>Name</TableHead>
             <TableHead>Father Name</TableHead>
             {/* Table headers for each day */}
-            {days.map((day) => (
-              <TableHead key={day}>{day}</TableHead>
+            {days.map((day, idx) => (
+              <TableHead key={day + 'jum' + idx}>{day}</TableHead>
             ))}
             <TableHead>Total Attendance</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {employeeData.map((employee, index) => (
-            <TableRow key={employee._id}>
+            <TableRow key={employee._id.toString()}>
               <TableCell>{index + 1}</TableCell>
               <TableCell>{employee.employee.name}</TableCell>
               <TableCell>{employee.employee.fathersName}</TableCell>
               {/* Table data for each day (status) */}
               {days.map((day) => (
-                <TableCell key={day}>
+                <TableCell key={day + '' + employee._id.toString()}>
                   {employee.days.find((d) => d.day === day)?.status || '-'}
                 </TableCell>
               ))}
@@ -556,7 +641,7 @@ const Client = () => {
             <TableRow>
               <TableCell>Status</TableCell>
               {statuses.map((status, index) => (
-                <TableCell key={index}>
+                <TableCell key={index + 'hum' + index}>
                   {' '}
                   <Select
                     defaultValue={status}
@@ -626,7 +711,10 @@ const Client = () => {
                     </FormControl>
                     <SelectContent className='max-w-80 max-h-72'>
                       {years?.map((option, index) => (
-                        <SelectItem value={option.toString()} key={option}>
+                        <SelectItem
+                          value={option.toString()}
+                          key={option + 'tum'}
+                        >
                           {option.toString()}
                         </SelectItem>
                       ))}
@@ -660,7 +748,10 @@ const Client = () => {
                     </FormControl>
                     <SelectContent className='max-w-80 max-h-72'>
                       {months?.map((option, index) => (
-                        <SelectItem value={option.toString()} key={option}>
+                        <SelectItem
+                          value={option.toString()}
+                          key={option + 'lum' + index}
+                        >
                           {monthsName[option - 1]}
                         </SelectItem>
                       ))}
@@ -698,7 +789,10 @@ const Client = () => {
                       </SelectItem>
 
                       {allWorkOrderNumbers?.map((option, index) => (
-                        <SelectItem value={option._id.toString()} key={option}>
+                        <SelectItem
+                          value={option._id.toString()}
+                          key={option._id.toString()}
+                        >
                           {option.workOrderNumber}
                         </SelectItem>
                       ))}
@@ -855,7 +949,7 @@ const Client = () => {
                           {allWorkOrderNumbers?.map((option, index) => (
                             <SelectItem
                               value={option._id.toString()}
-                              key={option}
+                              key={option._id.toString()}
                             >
                               {option.workOrderNumber}
                             </SelectItem>
@@ -888,52 +982,7 @@ const Client = () => {
         <button
           className='bg-blue-500 mt-2 hover:bg-blue-600 text-white py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-300'
           onClick={async () => {
-            try {
-              console.log('arree muaaa');
-              const res = await EmployeeDataAction.FETCH.fetchAllEmployeeData();
-              const depemployees = JSON.parse(res.data);
-              if (!depemployees || depemployees.length === 0) {
-                toast.error('No employees available');
-                return;
-              }
-              setEmployees(depemployees);
-              //   console.log(data);
-              // //  setAttendanceData(null)
-              //  setMonth(data.month)
-              //  setYear(data.year)
-              //  data.month = parseInt(data.month);
-
-              const bata = {
-                month: parseInt(month),
-                year: parseInt(year),
-                workOrder: workOrderNumber,
-              };
-              //   const response = await chalanAction.FETCH.getChalanByChalanNumber(data.chalanNumber)
-              const filter = await JSON.stringify(bata);
-              setEmployeeData(filter);
-
-              const wageresponse = await wagesAction.FETCH.fetchFilledWages(
-                month,
-                year,
-                workOrderNumber
-              );
-              if (wageresponse.success) {
-                toast.success(wageresponse.message);
-                const wagedata = await JSON.parse(wageresponse.data);
-                setWagesData(wagedata);
-
-                console.log('wow kya wage hai', wagedata);
-              } else {
-                toast.error(wageresponse.message);
-              }
-
-              console.log('ek aur respnnse aaigawa', wageresponse);
-            } catch (error) {
-              toast.error(
-                'Something went wrong, Please check internet connection, refresh or Try Later:'
-              );
-              console.error('Internal Server Error:', error);
-            }
+            await fetchAttendanceAndWages();
           }}
         >
           Refresh Attendance & Wages
@@ -944,6 +993,10 @@ const Client = () => {
           data={attendanceData}
           columns={wagesColumns}
           filterValue='name'
+          pageCount={15}
+          onNextPage={async () => await fetchMoreData('next')}
+          onPreviousPage={async () => await fetchMoreData('prev')}
+          page={page} // Pass the page state here
         />
       )}
 

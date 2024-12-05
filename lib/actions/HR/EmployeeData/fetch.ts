@@ -30,17 +30,19 @@ const fetchEmployees = async (
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
   try {
-    console.log('okayyyy');
+    // console.log('okayyyy');
 
-    console.log(page);
+    console.log('page', page);
     const skipCount = (page - 1) * pageSize;
     const docs = await EmployeeData.find({})
       .sort({
         date: -1,
       })
-      .skip(skipCount)
-      .limit(pageSize)
+      // .skip(skipCount)
+      // .limit(pageSize)
+      // temporarily turn off skip nad limit for now
       .populate('designation');
+    console.log('DOCS', docs.length);
     return {
       success: true,
       status: 200,
@@ -112,7 +114,7 @@ const fetchAllEmployees = async (): Promise<ApiResponse<any>> => {
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
   try {
-    console.log('yahaan toh hain');
+    // console.log('yahaan toh hain');
 
     const docs = await EmployeeData.find({})
       .sort({

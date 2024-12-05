@@ -118,7 +118,7 @@ const fetchAllAttendance = async (filter: string) => {
         },
       });
 
-    console.log('yera dfghjksj', resp);
+    // console.log('yera dfghjksj', resp);
     return {
       success: true,
       message: 'All attendance fetched successfully.',
@@ -144,10 +144,10 @@ const fetchAllDepAttendance = async (
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
   try {
-    console.log('aatogayayayya');
+    // console.log('aatogayayayya');
 
     const searchFilter = JSON.parse(filter);
-    console.log(searchFilter);
+    // console.log(searchFilter);
     const { year, month, workOrder } = searchFilter; // Destructuring to extract year, month, and workOrder
 
     // Create the base filter with year and month
@@ -176,7 +176,7 @@ const fetchAllDepAttendance = async (
       newFilter.employee = { $in: employeeIds };
     }
 
-    console.log('Attendance filter criteria:', newFilter);
+    // console.log('Attendance filter criteria:', newFilter);
 
     const resp = await Attendance.find(newFilter)
       .populate('employee')
@@ -188,7 +188,7 @@ const fetchAllDepAttendance = async (
         },
       });
 
-    console.log('yera dfghjksj', resp);
+    // console.log('yera dfghjksj', resp);
     return {
       success: true,
       message: 'Department attendance fetched successfully.',
