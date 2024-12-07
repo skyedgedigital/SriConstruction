@@ -157,12 +157,13 @@ const Invoice = ({
   // }
 
   Object.keys(dateMapping).forEach((key, i) => {
+    let total = 0;
     const itemDetails = dateMapping[key];
-    itemDetails?.details?.map((item) => {
+    itemDetails?.details?.map((item, index) => {
       contentArray.push(
         <tr>
           <td className='border-[1px] border-black py-2  text-center '>
-            {i + 1}
+            {index + 1}
           </td>{' '}
           <td className='border-[1px] border-black py-2  text-center '>
             {item?.itemDescription}
@@ -171,15 +172,6 @@ const Invoice = ({
             {item?.chalanNumber}
           </td>{' '}
           <td className='border-[1px] border-black py-2  text-center '>
-            {/* {formatDate(filtered[i]?.date.toString())} */}
-            {/* {
-              dateMapping
-                ?.get(items[i].itemId)
-                ?.from?.toLocaleDateString('en-GB') +
-                '-' +
-                dateMapping?.get(items[i].itemId).to.toLocaleDateString('en-GB')
-              // displayDate(items[i].itemName)
-            } */}
             {item?.chalanDate.toLocaleDateString('en-GB')}
           </td>{' '}
           <td className='border-[1px] border-black py-2 text-center '>
@@ -194,7 +186,23 @@ const Invoice = ({
           </td>
         </tr>
       );
+      total += Number(item?.workingHour);
     });
+    contentArray.push(
+      <tr className={`bg-gray-100`}>
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] bg-300 border-black py-2 font-bold  text-center '>
+          Item total hours
+        </td>
+        <td className='border-[1px] border-black py-2  text-center '>
+          {/* {totalHourObject[key]} */}
+          {total}
+        </td>
+      </tr>
+    );
   });
 
   contentArray.push(

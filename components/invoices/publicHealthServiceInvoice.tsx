@@ -112,12 +112,13 @@ const PublicHealthServiceInvoice = ({
   console.warn('The Items Recieved', items);
   const contentArray: any = [];
   Object.keys(dateMapping).forEach((key, i) => {
+    let total = 0;
     const itemDetails = dateMapping[key];
-    itemDetails?.details?.map((item) => {
+    itemDetails?.details?.map((item, index) => {
       contentArray.push(
         <tr>
           <td className='border-[1px] border-black py-2  text-center '>
-            {i + 1}
+            {index + 1}
           </td>{' '}
           <td className='border-[1px] border-black py-2  text-center '>
             {item?.itemDescription}
@@ -132,11 +133,31 @@ const PublicHealthServiceInvoice = ({
             {item?.location ? item?.location : 'No locations available'}
           </td>
           <td className='border-[1px] border-black py-2  text-center '>
+            {/* {filtered[i]?.unit === 'minute' &&
+              (parseFloat(filtered[i]?.used.toString()) / 60).toFixed(2)}
+            {filtered[i]?.unit === 'hour' &&
+              parseFloat(filtered[i]?.used.toString()).toFixed(2)} */}
             {item.workingHour}
           </td>
         </tr>
       );
+      total += Number(item?.workingHour);
     });
+    contentArray.push(
+      <tr className={`bg-gray-100`}>
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] bg-300 border-black py-2 font-bold  text-center '>
+          Item total hours
+        </td>
+        <td className='border-[1px] border-black py-2  text-center '>
+          {/* {totalHourObject[key]} */}
+          {total}
+        </td>
+      </tr>
+    );
   });
   contentArray.push(
     <tr className={`bg-gray-300`}>
