@@ -6,28 +6,28 @@ import { getStorage } from 'firebase/storage';
 
 const apiKey =
   process.env.NODE_ENV === 'production'
-    ? process.env.FIREBASE_CONFIG_API_KEY
-    : process.env.FIREBASE_CONFIG_API_KEY_DEV;
+    ? process.env.NEXT_PUBLIC_FIREBASE_CONFIG_API_KEY
+    : process.env.NEXT_PUBLIC_FIREBASE_CONFIG_API_KEY_DEV;
 const authDomain =
   process.env.NODE_ENV === 'production'
-    ? process.env.FIREBASE_CONFIG_AUTH_DOMAIN
-    : process.env.FIREBASE_CONFIG_AUTH_DOMAIN_DEV;
+    ? process.env.NEXT_PUBLIC_FIREBASE_CONFIG_AUTH_DOMAIN
+    : process.env.NEXT_PUBLIC_FIREBASE_CONFIG_AUTH_DOMAIN_DEV;
 const projectId =
   process.env.NODE_ENV === 'production'
-    ? process.env.FIREBASE_CONFIG_PROJECT_ID
-    : process.env.FIREBASE_CONFIG_PROJECT_ID_DEV;
+    ? process.env.NEXT_PUBLIC_FIREBASE_CONFIG_PROJECT_ID
+    : process.env.NEXT_PUBLIC_FIREBASE_CONFIG_PROJECT_ID_DEV;
 const storageBucket =
   process.env.NODE_ENV === 'production'
-    ? process.env.FIREBASE_CONFIG_STORAGE_BUCKET
-    : process.env.FIREBASE_CONFIG_STORAGE_BUCKET_DEV;
+    ? process.env.NEXT_PUBLIC_FIREBASE_CONFIG_STORAGE_BUCKET
+    : process.env.NEXT_PUBLIC_FIREBASE_CONFIG_STORAGE_BUCKET_DEV;
 const messagingSenderId =
   process.env.NODE_ENV === 'production'
-    ? process.env.FIREBASE_CONFIG_MESSAGING_SENDER_ID
-    : process.env.FIREBASE_CONFIG_MESSAGING_SENDER_ID_DEV;
+    ? process.env.NEXT_PUBLIC_FIREBASE_CONFIG_MESSAGING_SENDER_ID
+    : process.env.NEXT_PUBLIC_FIREBASE_CONFIG_MESSAGING_SENDER_ID_DEV;
 const appId =
   process.env.NODE_ENV === 'production'
-    ? process.env.FIREBASE_CONFIG_APP_ID
-    : process.env.FIREBASE_CONFIG_APP_ID_DEV;
+    ? process.env.NEXT_PUBLIC_FIREBASE_CONFIG_APP_ID
+    : process.env.NEXT_PUBLIC_FIREBASE_CONFIG_APP_ID_DEV;
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey,
@@ -40,6 +40,5 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
-
+const storage = getStorage(app, `gs://${storageBucket}`);
 export { app, storage, firebaseConfig };

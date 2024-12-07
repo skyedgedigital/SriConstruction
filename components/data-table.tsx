@@ -165,7 +165,9 @@ export function DataTable<TData, TValue>({
           variant='outline'
           size='sm'
           onClick={async () => {
-            await onPreviousPage();
+            if (onPreviousPage) {
+              await onPreviousPage();
+            }
             table.previousPage();
           }}
           disabled={!table.getCanPreviousPage()}
@@ -176,7 +178,9 @@ export function DataTable<TData, TValue>({
           variant='outline'
           size='sm'
           onClick={async () => {
-            await onNextPage();
+            if (onNextPage) {
+              await onNextPage();
+            }
             table.nextPage();
           }}
           // disabled={!table.getCanNextPage()}

@@ -57,7 +57,7 @@ const WMDInvoice = ({
   const [totalHours, setTotalHours] = useState(0);
 
   const [itemsList, setItemsList] = useState([]);
-  const [dateMapping, setDateMapping] = useState(null);
+  const [dateMapping, setDateMapping] = useState({});
 
   useEffect(() => {
     const fn = async () => {
@@ -84,8 +84,8 @@ const WMDInvoice = ({
 
       // Update state after all hsnNo are fetched
       setItemsList(updatedItems);
-      setTotalCgst(cgst);
-      setTotalSgst(sgst);
+      setTotalCgst(Number(cgst.toFixed(2)));
+      setTotalSgst(Number(sgst.toFixed(2)));
       setTotalHours(totalHours);
     };
 
@@ -103,54 +103,45 @@ const WMDInvoice = ({
     summarySheetInfo();
   }, [items, invoice]);
 
-  const displayDate = (itemName: string) => {
-    let date = dateMapping?.get(itemName).from;
-    console.log(date);
-    return '';
-  };
+  // const displayDate = (itemName: string) => {
+  //   let date = dateMapping?.get(itemName).from;
+  //   console.log(date);
+  //   return '';
+  // };
 
   console.warn('The Items Recieved', items);
   const contentArray: any = [];
-  for (let i = 0; i < items.length; i++) {
-    contentArray.push(
-      <tr>
-        <td className='border-[1px] border-black py-2  text-center '>
-          {i + 1}
-        </td>{' '}
-        <td className='border-[1px] border-black py-2  text-center '>
-          {items[i]?.itemName}
-        </td>{' '}
-        <td className='border-[1px] border-black py-2  text-center '>
-          {items[i]?.itemNumber}
-        </td>{' '}
-        <td className='border-[1px] border-black py-2  text-center '>
-          {/* {formatDate(filtered[i]?.date.toString())} */}
-          {
-            dateMapping
-              ?.get(items[i].itemName)
-              .from.toLocaleDateString('en-GB') +
-              '-' +
-              dateMapping?.get(items[i].itemName).to.toLocaleDateString('en-GB')
-            // displayDate(items[i].itemName)
-          }
-        </td>{' '}
-        <td className='border-[1px] border-black py-2 text-center '>
-          {dateMapping?.get(items[i].itemName)?.locations
-            ? Array.from(dateMapping.get(items[i].itemName).locations).join(
-                ', '
-              )
-            : 'No locations available'}
-        </td>
-        <td className='border-[1px] border-black py-2  text-center '>
-          {/* {filtered[i]?.unit === 'minute' &&
-            (parseFloat(filtered[i]?.used.toString()) / 60).toFixed(2)}
-          {filtered[i]?.unit === 'hour' &&
-            parseFloat(filtered[i]?.used.toString()).toFixed(2)} */}
-          {items[i].itemCost.hours}
-        </td>
-      </tr>
-    );
-  }
+  Object.keys(dateMapping).forEach((key, i) => {
+    const itemDetails = dateMapping[key];
+    itemDetails?.details?.map((item) => {
+      contentArray.push(
+        <tr>
+          <td className='border-[1px] border-black py-2  text-center '>
+            {i + 1}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {item?.itemDescription}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {item?.chalanNumber}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {item?.chalanDate.toLocaleDateString('en-GB')}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2 text-center '>
+            {item?.location ? item?.location : 'No locations available'}
+          </td>
+          <td className='border-[1px] border-black py-2  text-center '>
+            {/* {filtered[i]?.unit === 'minute' &&
+              (parseFloat(filtered[i]?.used.toString()) / 60).toFixed(2)}
+            {filtered[i]?.unit === 'hour' &&
+              parseFloat(filtered[i]?.used.toString()).toFixed(2)} */}
+            {item.workingHour}
+          </td>
+        </tr>
+      );
+    });
+  });
   contentArray.push(
     <tr className={`bg-gray-300`}>
       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
@@ -472,7 +463,7 @@ const WMDInvoice = ({
               </div>
               <div className='w-full flex gap-2'>
                 <span>3. Vendor&apos;s name:</span>
-                <span className='font-normal'>SHEKHAR ENTERPRISES</span>
+                <span className='font-normal uppercase'>Sri Construction</span>
               </div>
               <div className='w-full flex gap-2'>
                 <span>4. Job Location:</span>
@@ -759,7 +750,7 @@ const WMDInvoice = ({
                   description
                 </th>
                 <th className='border-[1px] border-black capitalize py-1 pb-2  text-center '>
-                  Item no.
+                  Chalan no.
                 </th>
                 <th className='border-[1px] border-black capitalize py-1 pb-2  text-center '>
                   date

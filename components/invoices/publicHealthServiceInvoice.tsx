@@ -57,7 +57,7 @@ const PublicHealthServiceInvoice = ({
   const [totalHours, setTotalHours] = useState(0);
 
   const [itemsList, setItemsList] = useState([]);
-  const [dateMapping, setDateMapping] = useState(null);
+  const [dateMapping, setDateMapping] = useState({});
 
   useEffect(() => {
     const fn = async () => {
@@ -104,53 +104,40 @@ const PublicHealthServiceInvoice = ({
   }, [items, invoice]);
 
   const displayDate = (itemName: string) => {
-    let date = dateMapping?.get(itemName).from;
-    console.log(date);
-    return '';
+    // let date = dateMapping?.get(itemName).from;
+    // console.log(date);
+    // return '';
   };
 
   console.warn('The Items Recieved', items);
   const contentArray: any = [];
-  for (let i = 0; i < items.length; i++) {
-    contentArray.push(
-      <tr>
-        <td className='border-[1px] border-black py-2  text-center '>
-          {i + 1}
-        </td>{' '}
-        <td className='border-[1px] border-black py-2  text-center '>
-          {items[i]?.itemName}
-        </td>{' '}
-        <td className='border-[1px] border-black py-2  text-center '>
-          {items[i]?.itemNumber}
-        </td>{' '}
-        <td className='border-[1px] border-black py-2  text-center '>
-          {/* {formatDate(filtered[i]?.date.toString())} */}
-          {
-            dateMapping
-              ?.get(items[i].itemName)
-              .from.toLocaleDateString('en-GB') +
-              '-' +
-              dateMapping?.get(items[i].itemName).to.toLocaleDateString('en-GB')
-            // displayDate(items[i].itemName)
-          }
-        </td>{' '}
-        <td className='border-[1px] border-black py-2 text-center '>
-          {dateMapping?.get(items[i].itemName)?.locations
-            ? Array.from(dateMapping.get(items[i].itemName).locations).join(
-                ', '
-              )
-            : 'No locations available'}
-        </td>
-        <td className='border-[1px] border-black py-2  text-center '>
-          {/* {filtered[i]?.unit === 'minute' &&
-            (parseFloat(filtered[i]?.used.toString()) / 60).toFixed(2)}
-          {filtered[i]?.unit === 'hour' &&
-            parseFloat(filtered[i]?.used.toString()).toFixed(2)} */}
-          {items[i].itemCost.hours}
-        </td>
-      </tr>
-    );
-  }
+  Object.keys(dateMapping).forEach((key, i) => {
+    const itemDetails = dateMapping[key];
+    itemDetails?.details?.map((item) => {
+      contentArray.push(
+        <tr>
+          <td className='border-[1px] border-black py-2  text-center '>
+            {i + 1}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {item?.itemDescription}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {item?.chalanNumber}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {item?.chalanDate.toLocaleDateString('en-GB')}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2 text-center '>
+            {item?.location ? item?.location : 'No locations available'}
+          </td>
+          <td className='border-[1px] border-black py-2  text-center '>
+            {item.workingHour}
+          </td>
+        </tr>
+      );
+    });
+  });
   contentArray.push(
     <tr className={`bg-gray-300`}>
       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
@@ -455,9 +442,7 @@ const PublicHealthServiceInvoice = ({
                   alt='sign image'
                 />{' '}
               </div>
-              <h1 className='font-bold text-sm uppercase'>
-                Shekhar Enterprises
-              </h1>
+              <h1 className='font-bold text-sm uppercase'>Sri Constructions</h1>
             </div>
             <div className=''>
               <p className=' border-b-2 border-b-black w-fit pr-2 pb-2'>
@@ -820,7 +805,7 @@ const PublicHealthServiceInvoice = ({
                   description
                 </th>
                 <th className='border-[1px] border-black capitalize py-1 pb-2  text-center '>
-                  Item no.
+                  Chalan no.
                 </th>
                 <th className='border-[1px] border-black capitalize py-1 pb-2  text-center '>
                   date

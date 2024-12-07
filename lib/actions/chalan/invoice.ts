@@ -14,6 +14,7 @@ const checkIfExisting = async (
 ): Promise<ApiResponse<any>> => {
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
+
   const sortedChalanNumbers = chalanNumbers.sort().join(',').trim();
   try {
     const result = await Invoice.findOne({
@@ -418,11 +419,10 @@ const generateContinousInvocieNumber = async (): Promise<ApiResponse<any>> => {
         _id: -1,
       })
       .limit(1);
-    console.log(latestDoc);
+    console.log('LATEST DOC', latestDoc);
     const latestInvoiceNumber = incrementInvoiceNumber(
       latestDoc[0].invoiceNumber
     );
-    console.log(latestInvoiceNumber);
 
     return {
       success: true,

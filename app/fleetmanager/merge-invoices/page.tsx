@@ -329,7 +329,10 @@ const Page = ({
                     </FormControl>
                     <SelectContent className='max-w-80 max-h-72'>
                       {allWorkOrderNumbers?.map((option, index) => (
-                        <SelectItem value={option._id.toString()} key={option}>
+                        <SelectItem
+                          value={option._id.toString()}
+                          key={option._id.toString()}
+                        >
                           {option.workOrderNumber}
                         </SelectItem>
                       ))}
@@ -366,7 +369,7 @@ const Page = ({
                       {allEngineers?.map((option, index) => (
                         <SelectItem
                           value={option._id.toString()}
-                          key={option.toString()}
+                          key={option._id.toString()}
                         >
                           {option.name}
                         </SelectItem>
