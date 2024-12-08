@@ -746,7 +746,7 @@ const CreateChalan = () => {
                 name={`items.${index}.hours`}
                 render={({ field }) => (
                   <FormItem className=' flex-col flex gap-1 flex-1'>
-                    <FormLabel>Hours</FormLabel>
+                    <FormLabel>Quantity</FormLabel>
                     <FormControl>
                       <Input type='number' {...field} className=' bg-white ' />
                     </FormControl>
