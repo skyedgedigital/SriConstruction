@@ -38,12 +38,11 @@ const fetchEmployees = async (
       workingStatus: true,
     })
       .sort({
-        date: -1,
-        _id: 1,
+        name: 1,
       })
-      .skip(skipCount)
-      .limit(pageSize)
-      .populate('designation');
+      .populate("designation");
+    // .skip(skipCount)
+    // .limit(pageSize)
     // console.log('skipcount:', skipCount, 'page', page);
     // const focs = docs.map((item: any) => item.name);
     // console.log('FOCS', focs);
