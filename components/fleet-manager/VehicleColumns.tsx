@@ -63,6 +63,19 @@ const formatDate = (date: Date | string | null): string => {
   return format(date, 'PPP');
 };
 
+const formatDateDDMMYY = (date: Date | string | null): string => {
+  if (!date) return "N/A";
+  if (typeof date === "string") {
+    const dateObj = new Date(date);
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const year = String(dateObj.getFullYear()).slice(-2);
+    const formattedDate = `${day}-${month}-${year}`;
+    return formattedDate;
+  }
+  return format(date, "PPP");
+};
+
 const isDateNearExpiry = (date: Date | string | null): boolean => {
   if (!date) return false;
   if (typeof date === 'string') date = parseISO(date);
@@ -100,7 +113,7 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
   
       return (
         <span >
-          {formatDate(date)}
+          {formatDateDDMMYY(date)}
         </span>
       );
     },
@@ -160,7 +173,7 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
       const nearExpiry = isDateNearExpiry(date);
       return (
         <span style={{ color: nearExpiry ? 'red' : 'inherit' }}>
-          {formatDate(date)}
+          {formatDateDDMMYY(date)}
         </span>
       );
     },
@@ -177,7 +190,7 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
       const nearExpiry = isDateNearExpiry(date);
       return (
         <span style={{ color: nearExpiry ? 'red' : 'inherit' }}>
-          {formatDate(date)}
+          {formatDateDDMMYY(date)}
         </span>
       );
     },
@@ -194,7 +207,7 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
       const nearExpiry = isDateNearExpiry(date);
       return (
         <span style={{ color: nearExpiry ? 'red' : 'inherit' }}>
-          {formatDate(date)}
+          {formatDateDDMMYY(date)}
         </span>
       );
     },
@@ -211,7 +224,7 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
       const nearExpiry = isDateNearExpiry(date);
       return (
         <span style={{ color: nearExpiry ? 'red' : 'inherit' }}>
-          {formatDate(date)}
+          {formatDateDDMMYY(date)}
         </span>
       );
     },
@@ -228,7 +241,7 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
       const nearExpiry = isDateNearExpiry(date);
       return (
         <span style={{ color: nearExpiry ? 'red' : 'inherit' }}>
-          {formatDate(date)}
+          {formatDateDDMMYY(date)}
         </span>
       );
     },},
@@ -244,7 +257,7 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
       const nearExpiry = isDateNearExpiry(date);
       return (
         <span style={{ color: nearExpiry ? 'red' : 'inherit' }}>
-          {formatDate(date)}
+          {formatDateDDMMYY(date)}
         </span>
       );
     },
@@ -261,7 +274,7 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
       const nearExpiry = isDateNearExpiry(date);
       return (
         <span style={{ color: nearExpiry ? 'red' : 'inherit' }}>
-          {formatDate(date)}
+          {formatDateDDMMYY(date)}
         </span>
       );
     },
