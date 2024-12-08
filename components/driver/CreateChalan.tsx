@@ -477,7 +477,14 @@ const CreateChalan = () => {
                         key={option.toString()}
                         value={option.toString()}
                       >
-                        {option}
+                        {option
+                          ?.toLowerCase()
+                          .split(" ")
+                          .map(
+                            (word: string) =>
+                              word.charAt(0).toUpperCase() + word.slice(1)
+                          )
+                          .join(" ")}
                       </SelectItem>
                     ))}
                   </SelectContent>
