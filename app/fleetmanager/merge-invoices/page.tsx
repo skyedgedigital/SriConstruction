@@ -371,7 +371,14 @@ const Page = ({
                           value={option._id.toString()}
                           key={option._id.toString()}
                         >
-                          {option.name}
+                          {option?.name
+                            ?.toLowerCase()
+                            .split(" ")
+                            .map(
+                              (word: string) =>
+                                word.charAt(0).toUpperCase() + word.slice(1)
+                            )
+                            .join(" ")}
                         </SelectItem>
                       ))}
                     </SelectContent>
