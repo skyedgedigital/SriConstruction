@@ -406,7 +406,7 @@ const Create = () => {
             htmlFor='input'
             className='block text-sm font-medium text-gray-700 mb-2'
           >
-            Bank:
+            Bank IFSC:
           </label>
           <select
             id='bank'
