@@ -39,8 +39,8 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   filterValue?: String;
   pageCount?: number;
-  onNextPage?: () => Promise<void>;
-  onPreviousPage?: () => Promise<void>;
+  // onNextPage?: () => Promise<void>;
+  // onPreviousPage?: () => Promise<void>;
   page?: number;
 }
 
@@ -49,8 +49,8 @@ export function DataTable<TData, TValue>({
   data,
   filterValue,
   pageCount = 10,
-  onNextPage,
-  onPreviousPage,
+  // onNextPage,
+  // onPreviousPage,
   page,
 }: DataTableProps<TData, TValue>) {
   console.log(filterValue);
@@ -61,8 +61,8 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns,
-    manualPagination: true,
-    pageCount: pageCount,
+    // manualPagination: true,
+    // pageCount: pageCount,
     state: {
       sorting,
       columnFilters,
@@ -164,10 +164,7 @@ export function DataTable<TData, TValue>({
         <Button
           variant='outline'
           size='sm'
-          onClick={async () => {
-            if (onPreviousPage) {
-              await onPreviousPage();
-            }
+          onClick={() => {
             table.previousPage();
           }}
           disabled={!table.getCanPreviousPage()}
@@ -177,13 +174,10 @@ export function DataTable<TData, TValue>({
         <Button
           variant='outline'
           size='sm'
-          onClick={async () => {
-            if (onNextPage) {
-              await onNextPage();
-            }
+          onClick={() => {
             table.nextPage();
           }}
-          // disabled={!table.getCanNextPage()}
+          disabled={!table.getCanNextPage()}
         >
           Next
         </Button>
