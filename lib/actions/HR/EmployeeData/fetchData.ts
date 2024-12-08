@@ -11,10 +11,9 @@ const fetchEmpNames = async (
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
   try {
-    const resp = await EmployeeData.find({})
-      .select('name')
-      .skip(page * limit)
-      .limit(limit);
+    const resp = await EmployeeData.find({}).select("name").sort({ name: 1 });
+      // .skip(page * limit)
+      // .limit(limit);
     return {
       success: true,
       data: JSON.stringify(resp),
