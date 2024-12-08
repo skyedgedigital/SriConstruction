@@ -996,8 +996,6 @@ const Client = () => {
           columns={wagesColumns}
           filterValue='name'
           pageCount={15}
-          onNextPage={async () => await fetchMoreData('next')}
-          onPreviousPage={async () => await fetchMoreData('prev')}
           page={page} // Pass the page state here
         />
       )}
