@@ -36,22 +36,22 @@ const ViewEmpData = () => {
     }, [page]);
 
     // Load more data when scrolling to the bottom
-    const handleScroll = () => {
-        if (
-            window.innerHeight + document.documentElement.scrollTop + 10 >=
-            document.documentElement.scrollHeight
-        ) {
-            if (!loading && hasMore) {
-                setPage((prev) => prev + 1); // Increment page to fetch more data
-            }
-        }
-    };
+    // const handleScroll = () => {
+    //     if (
+    //         window.innerHeight + document.documentElement.scrollTop + 10 >=
+    //         document.documentElement.scrollHeight
+    //     ) {
+    //         if (!loading && hasMore) {
+    //             setPage((prev) => prev + 1); // Increment page to fetch more data
+    //         }
+    //     }
+    // };
 
     // Attach scroll event listener
-    useEffect(() => {
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll); // Cleanup
-    }, [loading, hasMore]);
+    // useEffect(() => {
+    //     window.addEventListener('scroll', handleScroll);
+    //     return () => window.removeEventListener('scroll', handleScroll); // Cleanup
+    // }, [loading, hasMore]);
 
     return (
         <div>
