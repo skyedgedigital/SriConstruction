@@ -2,6 +2,7 @@
 
 import { ApiResponse } from '@/interfaces/APIresponses.interface';
 import handleDBConnection from '@/lib/database';
+import Fuel from '@/lib/models/fuel.model';
 import FuelManagement from '@/lib/models/fuelManagement.model';
 
 const fetchFuelManagement = async (
@@ -47,4 +48,38 @@ const fetchFuelManagement = async (
   }
 };
 
-export { fetchFuelManagement };
+const fetchSavedFuelPrices = async (): Promise<ApiResponse<any>> => {
+  try {
+    const dbConnection = await handleDBConnection();
+    if (!dbConnection.success) return dbConnection;
+
+    const res = await Fuel.find();
+    if (!res) {
+      return {
+        status: 400,
+        success: false,
+        message: 'Can not fetch fuel prices now, Please try later',
+        error: null,
+        data: null,
+      };
+    }
+    return {
+      status: 200,
+      success: true,
+      message: 'Fuel Prices fetched successfully',
+      error: null,
+      data: res,
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      success: false,
+      message:
+        'Unexpected error occurred, Failed to fetch fuel prices, Please try later',
+      data: null,
+      error: JSON.stringify(error),
+    };
+  }
+};
+
+export { fetchFuelManagement, fetchSavedFuelPrices };

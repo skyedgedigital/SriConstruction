@@ -1,4 +1,5 @@
 'use client';
+import FuelPrices from '@/components/fleet-manager/fuelManagement/FuelPrices';
 import View from '@/components/fleet-manager/fuelManagement/View';
 import Create from '@/components/fleet-manager/fuelManagement/create';
 import vehicleAction from '@/lib/actions/vehicle/vehicleAction';
@@ -41,10 +42,23 @@ const Page = () => {
               View Entries
             </button>
           </li>
+          <li className='me-2'>
+            <button
+              onClick={() => handleTabClick('fuel-prices')}
+              className={`inline-block p-4 rounded-t-lg ${
+                activeTab === 'fuel-prices'
+                  ? 'text-blue-600 bg-gray-100'
+                  : 'hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300'
+              }`}
+            >
+              Fuel Prices
+            </button>
+          </li>
         </ul>
         <div className='tab-content'>
           {activeTab === 'create' && <Create />}
           {activeTab === 'view' && <View />}
+          {activeTab === 'fuel-prices' && <FuelPrices />}
         </div>
       </div>
     </>

@@ -859,7 +859,7 @@ const AddVehicle: React.FC<{}> = () => {
             name='fuelCost'
             render={({ field }) => (
               <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Fuel Consumption</FormLabel>
+                <FormLabel>Fuel Consumption Per Hour</FormLabel>
                 <FormControl>
                   {field.value ? (
                     <Input
