@@ -120,11 +120,12 @@ const Page = ({
       console.log('filetered', filteredChalans);
 
       if (filteredChalans.length > 0) {
-        const currentChalans = filteredChalans;
-        const startIndex = (page - 1) * limit;
-        const endIndex = Math.min(startIndex + limit, currentChalans.length);
-        const finalChalans = currentChalans.slice(startIndex, endIndex);
-        setChalanss(finalChalans);
+        // THIS COMMENTED CODE WERE USED TO IMPLEMENT PAGING
+        // const currentChalans = filteredChalans;
+        // const startIndex = (page - 1) * limit;
+        // const endIndex = Math.min(startIndex + limit, currentChalans.length);
+        // const finalChalans = currentChalans.slice(startIndex, endIndex);
+        setChalanss(filteredChalans);
       }
     };
 
@@ -370,15 +371,16 @@ const Page = ({
                         <SelectItem
                           value={option._id.toString()}
                           key={option._id.toString()}
+                          // className="capitalize"
                         >
                           {option?.name
                             ?.toLowerCase()
-                            .split(" ")
+                            .split(' ')
                             .map(
                               (word: string) =>
                                 word.charAt(0).toUpperCase() + word.slice(1)
                             )
-                            .join(" ")}
+                            .join(' ')}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -398,7 +400,7 @@ const Page = ({
       <Separator className='my-4' />
 
       <div className=' flex items-center justify-end my-4 px-2'>
-        <div className='flex space-x-4'>
+        {/* <div className='flex space-x-4'>
           <Link
             href={{
               pathname: '/fleetmanager/merge-invoices',
@@ -428,7 +430,7 @@ const Page = ({
           >
             Next
           </Link>
-        </div>
+        </div> */}
       </div>
       <div className='flex flex-col gap-10 pr-4 '>
         {chalanss?.length > 0 ? (
