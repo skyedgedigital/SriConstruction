@@ -288,7 +288,7 @@ const Sidebar = forwardRef<HTMLDivElement, Props>(
                 variant: "ghost",
               },
               {
-                title: "Payments",
+                title: "Checklist and Register",
                 href: "/hr/payments",
                 icon: ReceiptIndianRupee,
                 variant: "ghost",
