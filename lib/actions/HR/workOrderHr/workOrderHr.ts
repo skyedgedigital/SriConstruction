@@ -53,7 +53,7 @@ const fetchAllWorkOrderHr = async () => {
   try {
     const dbConnection = await handleDBConnection();
     if (!dbConnection.success) return dbConnection;
-    const resp = await WorkOrderHr.find();
+    const resp = await WorkOrderHr.find({}).sort({ workOrderNumber: 1 });
     return {
       success: true,
       message: 'Work Orders Retrieved',
