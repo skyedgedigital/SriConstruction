@@ -29,15 +29,17 @@ const Page = ({
   const [attendanceData, setAttendanceData] = useState(null);
 
   const contentRef = React.useRef(null);
- const reactToPrintFn = useReactToPrint({ contentRef,
-  documentTitle:`FormXVII/${searchParams.year}`, })
- const handleOnClick = async () => {
-  if(!attendanceData){
-    toast.error('Attendance data not available for Print generation.');
-    return;
-  }
+  const reactToPrintFn = useReactToPrint({
+    contentRef,
+    documentTitle: `FormXVII/${searchParams.year}`,
+  });
+  const handleOnClick = async () => {
+    if (!attendanceData) {
+      toast.error('Attendance data not available for Print generation.');
+      return;
+    }
     reactToPrintFn();
-};
+  };
 
   const handleDownloadPDF = async () => {
     if (!attendanceData) {
@@ -129,12 +131,11 @@ const Page = ({
   return (
     <div className='ml-[80px]'>
       <div className='flex gap-2 mb-2'>
-      <Button onClick={handleDownloadPDF}>Download PDF</Button>
-      <Button onClick={handleOnClick}>Print</Button> 
+        <Button onClick={handleDownloadPDF}>Download PDF</Button>
+        <Button onClick={handleOnClick}>Print</Button>
       </div>
 
-      <div id={`${searchParams.month}/${searchParams.year}`}
-      ref={contentRef}>
+      <div id={`${searchParams.month}/${searchParams.year}`} ref={contentRef}>
         <div
           className='container left-0 right-0 bg-white  overflow-hidden font-mono  w-[1600px]'
           id='container-id'
@@ -152,7 +153,7 @@ const Page = ({
                 <div className='font-bold text-blue-600 max-w-64 '>
                   Name and Address of Contractor:
                 </div>
-                <div>Sri construction and Co.</div>
+                <div className='uppercase'>Shekhar Enterprises</div>
               </div>
               <div className='flex gap-3 mb-4'>
                 <div className='font-bold text-blue-600  '>
@@ -271,7 +272,9 @@ const Page = ({
                   <TableHead className=' text-black border-2 border-black'>
                     Net Amount Paid
                   </TableHead>
-                  <TableHead className="text-black border-2 border-black">Total Allowance</TableHead>
+                  <TableHead className='text-black border-2 border-black'>
+                    Total Allowance
+                  </TableHead>
                   <TableHead className=' text-black border-2 border-black'>
                     Signature/Thumb impression of workman
                   </TableHead>
@@ -312,9 +315,11 @@ const Page = ({
                       </div>
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {(
-                        employee?.designation.basic * employee?.attendance
-                      ).toFixed(2)}
+                      {Math.round(
+                        Number(
+                          employee?.designation.basic * employee?.attendance
+                        )
+                      )}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {(
@@ -343,9 +348,20 @@ const Page = ({
                       {employee?.otherDeduction}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {employee?.netAmountPaid.toFixed(2)}
+                      {Math.round(employee?.netAmountPaid)}
                     </TableCell>
-                    <TableCell className='border-black border-2 text-black'>{Number(employee?.otherCashDescription?.ca)+Number(employee?.otherCashDescription?.eoc)+Number(employee?.otherCashDescription?.hra)+Number(employee?.otherCashDescription?.incumb)+Number(employee?.otherCashDescription?.ma)+Number(employee?.otherCashDescription?.mob)+Number(employee?.otherCashDescription?.oa)+Number(employee?.otherCashDescription?.pb)+Number(employee?.otherCashDescription?.ssa)+Number(employee?.otherCashDescription?.wa)}</TableCell>
+                    <TableCell className='border-black border-2 text-black'>
+                      {Number(employee?.otherCashDescription?.ca) +
+                        Number(employee?.otherCashDescription?.eoc) +
+                        Number(employee?.otherCashDescription?.hra) +
+                        Number(employee?.otherCashDescription?.incumb) +
+                        Number(employee?.otherCashDescription?.ma) +
+                        Number(employee?.otherCashDescription?.mob) +
+                        Number(employee?.otherCashDescription?.oa) +
+                        Number(employee?.otherCashDescription?.pb) +
+                        Number(employee?.otherCashDescription?.ssa) +
+                        Number(employee?.otherCashDescription?.wa)}
+                    </TableCell>
                     <TableCell className='border-black border-2 text-black'></TableCell>
                     <TableCell className='border-black border-2 text-black'></TableCell>
                     <TableCell className='border-black border-2 text-black'></TableCell>
