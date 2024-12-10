@@ -75,7 +75,7 @@ const exportToExcel = (data, totalData, startDate, endDate) => {
 const Page = () => {
   const [startingDate, setStartingDate] = useState('');
   const [endingDate, setEndingDate] = useState('');
-  const [result, setResult] = useState([]);
+  const [result, setResult] = useState(null);
   const [totalData, setTotalData] = useState(null);
 
   const handleSubmit = async (e) => {
@@ -89,7 +89,7 @@ const Page = () => {
 
     if (resp.success) {
       console.log(JSON.parse(resp.data));
-      setResult(JSON.parse(resp.data).arr);
+      setResult(JSON.parse(resp.data).vehicleReport);
       setTotalData(JSON.parse(resp.data).total);
       toast.success('Done');
     } else {
@@ -152,7 +152,7 @@ const Page = () => {
 
         {/* Display Table */}
         <div>
-          {result.length > 0 && (
+          {result?.length > 0 && (
             <>
               <button
                 onClick={() =>
@@ -224,6 +224,11 @@ const Page = () => {
                 </tbody>
               </table>
             </>
+          )}
+          {result?.length === 0 && (
+            <div className='flex items-center justify-center text-3xl pt-9'>
+              No Result to Display
+            </div>
           )}
         </div>
       </div>
