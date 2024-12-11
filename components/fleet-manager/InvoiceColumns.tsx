@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import chalanAction from "@/lib/actions/chalan/chalanAction";
 import { getObjectURL } from "@/utils/aws";
+import { deleteInvoiceById } from "@/lib/actions/chalan/invoice";
 export type Invoice = {
   invoiceNumber: string;
   SesNo: Number;
@@ -20,6 +21,7 @@ export type Invoice = {
   chalans: String[];
   pdfLink?: String; 
   summaryLink?: String;
+  _id: string;
 };
 
 
@@ -146,6 +148,20 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
           `/fleetmanager/chalanList?invoiceNumber=${invoiceNumber}&invoiceCreatedAt=${invoiceCreatedAt}`
         );
       };
+
+      const invoiceDeleteHandler = async (id: string) => {
+        console.log(id);
+        if (!id) {
+          toast.error("Id not found");
+          return;
+        }
+        const res = await deleteInvoiceById(id);
+        if (res.success) {
+          toast.success(`${res.message}`);
+        } else {
+          toast.error(res.message);
+        }
+      };
       
       return (
         <DropdownMenu>
@@ -168,6 +184,9 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
               }
             >
               View Chalans Involved
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => invoiceDeleteHandler(invoice._id)}>
+              Delete Invoice
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
