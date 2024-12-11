@@ -114,7 +114,7 @@ const Invoice = ({
 
   console.warn('The Items Recieved', items);
   const contentArray: any = [];
-
+  let new_total_hours = 0;
   // for (let i = 0; i < items.length; i++) {
   //   contentArray.push(
   //     <tr>
@@ -188,6 +188,7 @@ const Invoice = ({
       );
       total += Number(item?.workingHour);
     });
+    new_total_hours += total;
     contentArray.push(
       <tr className={`bg-gray-100`}>
         <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
@@ -216,7 +217,7 @@ const Invoice = ({
       </td>
       <td className='border-[1px] border-black py-2  text-center '>
         {/* {totalHourObject[key]} */}
-        {totalHours}
+        {new_total_hours}
       </td>
     </tr>
   );
