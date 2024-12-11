@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from '../ui/button';
 import { MdOutlineFileDownload } from 'react-icons/md';
 import toast from 'react-hot-toast';
@@ -24,6 +24,7 @@ import {
 import { storage } from '@/utils/fireBase/config';
 import itemAction from '@/lib/actions/item/itemAction';
 import chalanAction from '@/lib/actions/chalan/chalanAction';
+import { useReactToPrint } from "react-to-print";
 
 const todayDate = () => {
   let date = new Date().toLocaleDateString();
@@ -58,6 +59,14 @@ const WMDInvoice = ({
 
   const [itemsList, setItemsList] = useState([]);
   const [dateMapping, setDateMapping] = useState({});
+  const contentRefInvoice = useRef(null);
+  const reactToPrintFnInvoice = useReactToPrint({
+    contentRef: contentRefInvoice,
+  });
+  const contentRefSummary = useRef(null);
+  const reactToPrintFnSummary = useReactToPrint({
+    contentRef: contentRefSummary,
+  });
 
   useEffect(() => {
     const fn = async () => {
@@ -438,6 +447,13 @@ const WMDInvoice = ({
     <main className=' w-full flex flex-col gap-1 p-4 pt-20'>
       <div className='flex justify-between items-center pr-6 '>
         <Button
+          onClick={() => {
+            reactToPrintFnInvoice();
+          }}
+        >
+          Print WMD Invoice
+        </Button>
+        <Button
           onClick={(e) => {
             e.preventDefault();
             generateAndUploadInvoicePDF();
@@ -449,7 +465,7 @@ const WMDInvoice = ({
           <p>Download WMD Invoice</p>
         </Button>
       </div>
-      <div className='   ' id={`${invoice?.invoiceId}`}>
+      <div className='   ' id={`${invoice?.invoiceId}`} ref={contentRefInvoice}>
         <div className='  tracking-wider w-full  text-[0.75rem] font-semibold'>
           <div className='flex'>
             <div className='w-full flex flex-col gap-2 justify-center items-center'>
@@ -735,6 +751,13 @@ const WMDInvoice = ({
 
       <div className='mt-10 flex justify-between items-center pr-6 '>
         <Button
+          onClick={() => {
+            reactToPrintFnSummary();
+          }}
+        >
+          Print Summary Sheet
+        </Button>
+        <Button
           onClick={(e) => {
             e.preventDefault();
             generateAndUploadInvoiceSummaryPDF();
@@ -749,6 +772,7 @@ const WMDInvoice = ({
       <div className='flex items-center justify-center '>
         <div
           id={`${invoice?.invoiceId}-summary`}
+          ref={contentRefSummary}
           className='flex flex-col justify-center items-center w-full '
         >
           <h2 className='text-center font-bold mb-4 text-base flex gap-1 mx-auto '>
