@@ -148,43 +148,53 @@ const markChalanAsVerified = async (
     const updatedChalan = await Chalan.findOneAndUpdate(filter, updatesObj, {
       new: true,
     });
-    if (updatedChalan) {
-      console.log(updatedChalan);
-      const dateString = updatedChalan.date;
-      const date = new Date(dateString);
-      const year = date.getFullYear();
-      const monthIndex = date.getMonth();
-      const monthName = months[monthIndex];
-      let items = updatedChalan.items;
-      const promises = items.map(async (ele) => {
-        const EleVehicle = ele.vehicleNumber;
-        console.log(EleVehicle);
-        const vehicleData = await Vehicle.findOne({
-          vehicleNumber: EleVehicle,
-        });
-        console.log(vehicleData);
-        const cost = vehicleData.fuelCost;
-        const totalCost = cost * ele.hours;
-        const dataObj = {
-          vehicleNumber: ele.vehicleNumber,
-          fuel: ele.hours,
-          month: monthName,
-          year: year,
-          DocId: monthName + year,
-          entry: false,
-          amount: totalCost,
-          meterReading: 'Chalan',
-          chalan: chalanNumber,
-          duration: ele.hours,
-        };
-        const Obj = new FuelManagement({
-          ...dataObj,
-        });
-        const savedObj = await Obj.save();
-        console.log(savedObj);
-        return savedObj; // Return the saved object
-      });
-      await Promise.all(promises);
+    // this commented code was used to vcalculate vehicle fuel cost
+    // if (updatedChalan) {
+    //   console.log(updatedChalan);
+    //   const dateString = updatedChalan.date;
+    //   const date = new Date(dateString);
+    //   const year = date.getFullYear();
+    //   const monthIndex = date.getMonth();
+    //   const monthName = months[monthIndex];
+    //   let items = updatedChalan.items;
+    //   const promises = items.map(async (ele) => {
+    //     const EleVehicle = ele.vehicleNumber;
+    //     console.log(EleVehicle);
+    //     const vehicleData = await Vehicle.findOne({
+    //       vehicleNumber: EleVehicle,
+    //     });
+    //     console.log(vehicleData);
+    //     const cost = vehicleData.fuelCost;
+    //     const totalCost = cost * ele.hours;
+    //     const dataObj = {
+    //       vehicleNumber: ele.vehicleNumber,
+    //       fuel: ele.hours,
+    //       month: monthName,
+    //       year: year,
+    //       DocId: monthName + year,
+    //       entry: false,
+    //       amount: totalCost,
+    //       meterReading: 'Chalan',
+    //       chalan: chalanNumber,
+    //       duration: ele.hours,
+    //     };
+    //     const Obj = new FuelManagement({
+    //       ...dataObj,
+    //     });
+    //     const savedObj = await Obj.save();
+    //     console.log(savedObj);
+    //     return savedObj; // Return the saved object
+    //   });
+    //   await Promise.all(promises);
+    // }
+    if (!updatedChalan) {
+      return {
+        success: false,
+        status: 400,
+        message: 'Failed to makr verified, Please try later',
+        error: null,
+        data: null,
+      };
     }
     revalidatePath('/fleetmanager/merge-invoices');
     revalidatePath('/fleetmanager/chalans');

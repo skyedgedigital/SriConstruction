@@ -1,3 +1,4 @@
+import { IFuelPrices } from '@/interfaces/fuel.interface';
 import chalanAction from '@/lib/actions/chalan/chalanAction';
 import fuelManagementAction from '@/lib/actions/fuelManagement/fuelManagementAction';
 import vehicleAction from '@/lib/actions/vehicle/vehicleAction';
@@ -13,6 +14,11 @@ const Create = () => {
   const [selectedYear, setSelectedYear] = useState('');
   const [meterReading, setMeterReading] = useState('');
   const [date, setDate] = useState('');
+  const [savedFuelPrices, setSavedFuelPrices] = useState<IFuelPrices[]>([]);
+  const [selectedFuel, setSelectedFuel] = useState<IFuelPrices>({
+    fuelType: '',
+    price: 0,
+  });
 
   let months = [
     'January',
@@ -102,11 +108,30 @@ const Create = () => {
     }
   };
 
+  useEffect(() => {
+    const fn = async () => {
+      try {
+        const res = await fuelManagementAction.FETCH.fetchSavedFuelPrices();
+        if (res.success) {
+          // console.log('FETCHED SUCCESSFULLY')
+          setSavedFuelPrices(res.data);
+          toast.success(res.message);
+        }
+        if (!res.success) {
+          toast.error(res.message);
+        }
+      } catch (error) {
+        toast.error(error || 'Failed to fetch fuel prices, Please try later');
+      }
+    };
+    fn();
+  }, []);
+
   return (
-    <>
+    <div className='flex flex-col-reverse md:flex-row gap-6'>
       <form
         onSubmit={handleSubmit}
-        className='max-w-md mx-auto mt-4 p-6 bg-white shadow-md rounded-md flex-wrap'
+        className='flex-1 mx-auto mt-4 p-6 bg-white shadow-md rounded-md flex-wrap'
       >
         <div className='mb-4'>
           <label
@@ -132,6 +157,38 @@ const Create = () => {
             ))}
           </select>
         </div>
+        <div className='mb-4'>
+          <label
+            htmlFor='dropdown'
+            className='block text-sm font-medium text-gray-700'
+          >
+            Select Fuel Type:
+          </label>
+          <select
+            id='dropdown'
+            value={selectedFuel.fuelType}
+            onChange={(e) => {
+              const fuel = savedFuelPrices.find(
+                (fuel) =>
+                  fuel.fuelType.toLowerCase() === e.target.value.toLowerCase()
+              );
+              setAmount(0);
+              setFuel(0);
+              setSelectedFuel(fuel);
+            }}
+            className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+          >
+            <option value=''>Select...</option>
+            {/* <option value="option1">Option 1</option>
+                      <option value="option2">Option 2</option>
+                      <option value="option3">Option 3</option> */}
+            {savedFuelPrices?.map((vehicle) => (
+              <option key={vehicle.fuelType} value={vehicle.fuelType}>
+                {vehicle.fuelType}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className='mb-4'>
           <label
@@ -146,6 +203,8 @@ const Create = () => {
             value={fuel}
             onChange={(e) => {
               setFuel(parseInt(e.target.value));
+              const fp = parseInt(e.target.value) * selectedFuel.price;
+              setAmount(fp);
             }}
             className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
             placeholder='Enter Tool Here'
@@ -270,7 +329,34 @@ const Create = () => {
           </button>
         </div>
       </form>
-    </>
+      <div className='mt-4 p-6 bg-white shadow-md rounded-md flex-wrap flex flex-col gap-3  flex-1 h-fit'>
+        <h3 className='font-semibold text-blue-500'>Current Saved prices</h3>
+        {savedFuelPrices.length > 0 ? (
+          <table className='flex-1'>
+            <thead className='bg-gray-100 border-[1px] border-b-gray-200'>
+              <th className='text-center py-2'>Fuel Type</th>
+              <th className='text-center py-2'>Price</th>
+            </thead>
+            <tbody>
+              {savedFuelPrices?.map((info) => (
+                <tr
+                  key={info.fuelType}
+                  className='border-[1px] border-b-gray-200'
+                >
+                  <td className='text-center py-2'>{info?.fuelType}</td>
+                  <td className='text-center'>{info?.price}</td>
+                </tr>
+              ))}
+              <tr>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        ) : (
+          <p className='flex-1'>Loading fuel prices...</p>
+        )}
+      </div>
+    </div>
   );
 };
 

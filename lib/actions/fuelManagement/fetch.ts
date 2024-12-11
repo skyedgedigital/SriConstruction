@@ -6,7 +6,7 @@ import Fuel from '@/lib/models/fuel.model';
 import FuelManagement from '@/lib/models/fuelManagement.model';
 
 const fetchFuelManagement = async (
-  vehicleNumber: string,
+  vehicleNumber: string | undefined,
   month: string,
   year: string
 ): Promise<ApiResponse<any>> => {
@@ -14,10 +14,19 @@ const fetchFuelManagement = async (
     const dbConnection = await handleDBConnection();
     if (!dbConnection.success) return dbConnection;
     let total = 0;
-    const docs = await FuelManagement.find({
-      vehicleNumber: vehicleNumber,
-      DocId: month + year,
-    });
+    console.log('Vehicle Number', vehicleNumber);
+
+    let docs: any;
+    if (!vehicleNumber) {
+      docs = await FuelManagement.find({
+        DocId: month + year,
+      });
+    } else {
+      docs = await FuelManagement.find({
+        vehicleNumber: vehicleNumber,
+        DocId: month + year,
+      });
+    }
     for (let i = 0; i < docs.length; i++) {
       if (docs[i].entry) {
         total += docs[i].amount;

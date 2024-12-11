@@ -616,20 +616,27 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
             Invoice already created
           </button> */}
           {/* ) : ( */}
-          <div className='flex justify-end'>
-            <button
-              onClick={handleDeleteChalan}
-              className='bg-red-700 text-white px-4 py-2 mx-2 rounded'
-            >
-              Delete Chalan
-            </button>
-
-            <Button
-              className='bg-green-700 text-white px-4 py-2 rounded'
-              onClick={() => mergeSelectedChalans(chalan)}
-            >
-              Create invoice
-            </Button>
+          <div className='flex flex-col gap-2'>
+            <div className='flex justify-end'>
+              <button
+                onClick={handleDeleteChalan}
+                className='bg-red-700 text-white px-4 py-2 mx-2 rounded'
+              >
+                Delete Chalan
+              </button>
+              <Button
+                disabled={!chalan?.verified}
+                className='bg-green-700 text-white px-4 py-2 rounded'
+                onClick={() => mergeSelectedChalans(chalan)}
+              >
+                Create invoice
+              </Button>
+            </div>
+            {!chalan?.verified && (
+              <p className='text-gray-500'>
+                Please mark chalan verified to create invoice
+              </p>
+            )}
           </div>
         </div>{' '}
       </div>

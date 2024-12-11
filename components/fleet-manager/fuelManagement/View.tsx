@@ -45,10 +45,10 @@ const View = () => {
     fn();
   }, []);
   const verify = (): boolean => {
-    if (selectedOption === '') {
-      toast.error('No Vehicle Selected');
-      return false;
-    }
+    // if (selectedOption === '') {
+    //   toast.error('No Vehicle Selected');
+    //   return false;
+    // }
     if (selectedMonth === '') {
       toast.error('No Month Selected');
       return false;
@@ -119,7 +119,7 @@ const View = () => {
             onChange={(e) => setSelectedOption(e.target.value)}
             className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
           >
-            <option value=''>Select...</option>
+            <option value=''>All vehicles for selected month & year</option>
             {/* <option value="option1">Option 1</option>
                     <option value="option2">Option 2</option>
                     <option value="option3">Option 3</option> */}
@@ -198,39 +198,12 @@ const View = () => {
       </div>
       {result && (
         <div className='flex flex-col items-center justify-center mt-6'>
+          <span className='mr-auto ml-3 my-2 text-gray-500'>
+            Total Documents : {result?.length}
+          </span>
           <table className='min-w-full divide-y divide-gray-200'>
             <thead className='bg-gray-50'>
               <tr>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                >
-                  MeterReading
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                >
-                  Chalan
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                >
-                  Fuel Quantity
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                >
-                  Fuel Duration
-                </th>
-                <th
-                  scope='col'
-                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                >
-                  Amount
-                </th>
                 <th
                   scope='col'
                   className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
@@ -241,8 +214,29 @@ const View = () => {
                   scope='col'
                   className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
                 >
-                  Entry / Chalan
+                  Vehicle Number
                 </th>
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                >
+                  MeterReading
+                </th>
+
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                >
+                  Fuel Quantity
+                </th>
+
+                <th
+                  scope='col'
+                  className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                >
+                  Amount
+                </th>
+
                 <th
                   scope='col'
                   className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
@@ -255,51 +249,23 @@ const View = () => {
               {console.log('The Result', result)}
               {result?.map((ele) => (
                 <tr key={ele._id} className='hover:bg-gray-100'>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {ele.entry ? (
-                      <span className='text-green-500'>{ele.meterReading}</span>
-                    ) : (
-                      <span className='text-red-500'>-</span>
-                    )}
+                  <td className='px-6 py-2 text-base whitespace-nowrap'>
+                    {formatDate(ele.date)}
                   </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {ele.entry ? (
-                      <span className='text-green-500'>-</span>
-                    ) : (
-                      <span className='text-red-500'>{ele.chalan}</span>
-                    )}
+                  <td className='px-6 py-2 text-base whitespace-nowrap'>
+                    {ele?.vehicleNumber}
                   </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
+                  <td className='px-6 py-2 text-base whitespace-nowrap'>
+                    {ele.meterReading}
+                  </td>
+                  <td className='px-6 py-2 text-base whitespace-nowrap'>
                     {<span>{`${ele.fuel} Ltrs`}</span>}
                   </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {ele.entry ? (
-                      <span>-</span>
-                    ) : (
-                      <span>{`${ele.duration} Hours`}</span>
-                    )}
+                  <td className='px-6 py-2 text-base whitespace-nowrap'>
+                    {ele?.amount}
                   </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {ele.entry ? (
-                      <span className='text-green-500'>{'+' + ele.amount}</span>
-                    ) : (
-                      <span className='text-red-500'>{'-' + ele.amount}</span>
-                    )}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    {' '}
-                    {formatDate(ele.date)}{' '}
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
-                    <span>
-                      {ele.entry ? (
-                        <span className='text-blue-500'>Entry</span>
-                      ) : (
-                        <span className='text-blue-500'>Chalan</span>
-                      )}
-                    </span>
-                  </td>
-                  <td className='px-6 py-4 whitespace-nowrap'>
+
+                  <td className='px-6 py-2 text-base whitespace-nowrap'>
                     <button
                       className='text-red-500'
                       onClick={async () => {
