@@ -74,7 +74,7 @@ const AnalyticsComponent = ({ data, color, tag }) => {
         className="text-4xl font-bold mt-4"
         style={{ color: color ? `var(--color-${color})` : "#333" }}
       >
-        {count}
+        {Math.round(count)}
       </h2>
       <p className="text-lg text-gray-700">{tag}</p>
     </div>
