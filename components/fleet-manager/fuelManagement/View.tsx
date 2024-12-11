@@ -3,6 +3,8 @@ import vehicleAction from '@/lib/actions/vehicle/vehicleAction';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { getChalansForFuelManagement } from '@/lib/actions/chalan/fetch';
+import { Button } from "@/components/ui/button";
+import * as XLSX from "xlsx";
 
 const View = () => {
   const [selectedOption, setSelectedOption] = useState('');
@@ -100,6 +102,45 @@ const View = () => {
     return `${day}-${month}-${year}`;
   };
 
+   const exportToExcelHandler = async () => {
+    console.log("first");
+    const excelReportTitle = `Fuel Report for month: ${selectedMonth} year:${selectedYear}`;
+    const rowsForTitle = [[excelReportTitle], []];
+    
+    const worksheetData = result?.map((item: any) => {
+      return {
+        Date: formatDate(item?.date),
+        "Vehicle No.": item?.vehicleNumber || "No Vehichle",
+        "Meter Reading": item?.meterReading || 0,
+        "Fuel Qty.": item?.fuel || 0,
+        Amount: item?.amount || 0,
+      };
+    });
+    
+    worksheetData.push({
+      Date: "",
+      "Vehicle No.": "",
+      "Meter Reading": "",
+      "Fuel Qty.": "Total",
+      Amount: total,
+    });
+    
+    const combinedExcelRows = rowsForTitle.concat(
+      XLSX.utils.sheet_to_json(XLSX.utils.json_to_sheet(worksheetData), {
+        header: 1,
+      })
+    );
+    
+    const worksheet = XLSX.utils.aoa_to_sheet(combinedExcelRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Fuel Report");
+    XLSX.writeFile(
+      workbook,
+      `fuel_report_${selectedMonth}_${selectedYear}.xlsx`
+    );
+    toast.success("Export Completed");
+  };
+  
   return (
     <>
       <form
@@ -192,6 +233,14 @@ const View = () => {
       </form>
 
       <div className='flex items-center justify-center mt-5 p-2 flex-col min-w-full'>
+        {result?.length > 0 && (
+          <Button
+            className="mt-4 mb-4 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 mr-auto"
+            onClick={exportToExcelHandler}
+          >
+            Export to Excel
+          </Button>
+        )}
         {result && (
           <div className='text-2xl'>List Of Entries/Chalans for Fuel</div>
         )}
