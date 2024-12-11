@@ -82,7 +82,7 @@ const chalanSchema = z.object({
     .array(
       z.object({
         item: z.string(),
-        vehicleNumber: z.string().optional(),
+        vehicleNumber: z.string().trim().min(1, 'Required'),
         unit: z.string().trim().min(1, 'Required'),
         hours: zodInputStringPipe(
           z.number().positive('Value must be greater than 0')
