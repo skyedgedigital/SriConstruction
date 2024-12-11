@@ -4,7 +4,7 @@ import AddVehicle from '@/components/fleet-manager/AddVehicle';
 import EditVehicle from '@/components/fleet-manager/EditVehicle';
 import { vehicleColumns } from '@/components/fleet-manager/VehicleColumns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DataTable } from '@/components/data-table';
+import { DataTable } from '@/components/hr/VehicleSettingsDataTable';
 import vehicleAction from '@/lib/actions/vehicle/vehicleAction';
 
 // eslint-disable-next-line @next/next/no-async-client-component
