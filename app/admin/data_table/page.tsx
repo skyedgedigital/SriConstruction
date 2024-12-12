@@ -44,6 +44,7 @@ const Page = () => {
         selectedYear
       );
       if (resp?.success) {
+        console.warn(resp.data);
         toast.success('Data fetched');
         setData(JSON.parse(resp.data));
       } else {
@@ -134,6 +135,8 @@ const Page = () => {
               <th className='border border-gray-300 px-4 py-2'>
                 Amount(from Challan)
               </th>
+              <th>Amount(from Consumables)</th>
+              <th>Amount(from Compliances)</th>
               <th className='border border-gray-300 px-4 py-2'>Total Fuel</th>
               <th className='border border-gray-300 px-4 py-2'>
                 Total Fuel Cost
@@ -156,13 +159,22 @@ const Page = () => {
                   {vehicle?.totalCost}
                 </td>
                 <td className='border border-gray-300 px-4 py-2'>
+                  {vehicle?.consumablesCost}
+                </td>
+                <td className='border border-gray-300 px-4 py-2'>
+                  {vehicle?.complianceCost}
+                </td>
+                <td className='border border-gray-300 px-4 py-2'>
                   {vehicle?.totalFuel}
                 </td>
                 <td className='border border-gray-300 px-4 py-2'>
                   {vehicle?.fuelCost}
                 </td>
                 <td className='border border-gray-300 px-4 py-2'>
-                  {vehicle?.totalCost - vehicle?.fuelCost}
+                  {vehicle?.totalCost -
+                    vehicle?.fuelCost -
+                    vehicle?.consumablesCost -
+                    vehicle?.complianceCost}
                 </td>
               </tr>
             ))}
