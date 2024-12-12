@@ -112,9 +112,9 @@ const schema = z.object({
     })
     .optional(),
   fuelType: z.enum(['Diesel', 'Petrol']),
-  fuelCost: zodInputStringPipe(
-    z.number().nonnegative('Price must be non-negative')
-  ),
+  // fuelCost: zodInputStringPipe(
+  //   z.number().nonnegative('Price must be non-negative')
+  // ),
 });
 
 type FormFields = z.infer<typeof schema>;
@@ -166,7 +166,7 @@ const AddVehicle: React.FC<{}> = () => {
       puc: '',
       pucExpiryDate: undefined,
       fuelType: 'Diesel',
-      fuelCost: '',
+      // fuelCost: '',
     },
     resolver: zodResolver(schema),
   });
@@ -201,7 +201,7 @@ const AddVehicle: React.FC<{}> = () => {
           puc: '',
           pucExpiryDate: undefined,
           fuelType: 'Diesel',
-          fuelCost: '',
+          // fuelCost: '',
         });
         console.log('Vehicle created successfully:');
         // Handle successful creation (e.g., display success message, redirect)
@@ -854,7 +854,7 @@ const AddVehicle: React.FC<{}> = () => {
             )}
           />
 
-          <FormField
+          {/* <FormField
             control={form.control}
             name='fuelCost'
             render={({ field }) => (
@@ -880,7 +880,7 @@ const AddVehicle: React.FC<{}> = () => {
                 <FormMessage />
               </FormItem>
             )}
-          />
+          /> */}
 
           <FormField
             control={form.control}

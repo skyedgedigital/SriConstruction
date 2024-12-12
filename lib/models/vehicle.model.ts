@@ -62,12 +62,6 @@ const VehicleSchema: mongoose.Schema<IVehicle> = new mongoose.Schema({
     type: String,
     default: 'Diesel',
   },
-  // fuelCost is storing how much fuel does this vehicle consume in an hour
-  // we it must be renamed later, leaving for now
-  fuelCost: {
-    type: Number,
-    default: 0,
-  },
   emi: {
     type: Number,
     default: 0,
