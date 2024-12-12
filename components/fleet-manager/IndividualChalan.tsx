@@ -75,7 +75,7 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
   const formattedDate = `${day}/${month}/${year}`;
   const [isVerified, setIsVerified] = useState(chalan.verified);
   const [edit, setEdit] = useState(false);
-  console.log('hdjdjdj', chalan);
+  // console.log('hdjdjdj', chalan);
   const [isSigned, setIsSigned] = useState(chalan.signed);
   const [fetchedEngineerNames, setFetchedEngineerNames] = useState([]);
   useEffect(() => {
@@ -249,7 +249,7 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
           service: formattedString,
           department: chalan.department?.departmentName,
           invoiceId: response?.invoiceId,
-          mergedItems: response.mergedItems,
+          mergedItems: response?.mergedItems,
         };
         const queryString = new URLSearchParams(query).toString();
         console.log('dfghjk', queryString);

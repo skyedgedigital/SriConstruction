@@ -4,7 +4,12 @@ const nextConfig = {
     serverComponentsExternalPackages: ['@aws-sdk'],
   },
   images: {
-    domains: ['firebasestorage.googleapis.com'], // Add this line
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+      },
+    ],
   },
 };
 export default nextConfig;
