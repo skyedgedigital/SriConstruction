@@ -66,12 +66,23 @@ const Create = () => {
       toast.error('No Year Selected');
       return false;
     }
-    if (date === '' || !dateFormatRegex.test(date)) {
+
+    const inputDate = new Date(date);
+    const formattedDate = inputDate
+      .toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+      .replace(/\//g, '-');
+
+    setDate(formattedDate);
+    if (formattedDate === '' || !dateFormatRegex.test(formattedDate)) {
       toast.error('Please Select a Date in the format DD-MM-YYYY');
       return false;
     }
-    const trimmedDate = date.replace(/\s/g, '');
-    if (trimmedDate !== date) {
+    const trimmedDate = formattedDate.replace(/\s/g, '');
+    if (trimmedDate !== formattedDate) {
       toast.error('Date should not contain any blank spaces');
       return false;
     }
@@ -97,6 +108,7 @@ const Create = () => {
       DocId: selectedMonth + selectedYear,
       entry: true,
       amount: amount,
+      date: date,
     };
     const resp = await fuelManagementAction.CREATE.createFuelManagement(
       JSON.stringify(dataObj)
@@ -201,9 +213,12 @@ const Create = () => {
             type='number'
             id='input'
             value={fuel}
+            step={0.001}
             onChange={(e) => {
-              setFuel(parseInt(e.target.value));
-              const fp = parseInt(e.target.value) * selectedFuel.price;
+              setFuel(parseFloat(e.target.value));
+              const fp = Number(
+                (parseFloat(e.target.value) * selectedFuel.price).toFixed(2)
+              );
               setAmount(fp);
             }}
             className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
@@ -223,8 +238,9 @@ const Create = () => {
             type='number'
             id='input'
             value={amount}
+            step={0.001}
             onChange={(e) => {
-              setAmount(parseInt(e.target.value));
+              setAmount(Number(parseFloat(e.target.value).toFixed(2)));
             }}
             className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
             placeholder='Enter Tool Here'
@@ -287,10 +303,10 @@ const Create = () => {
             htmlFor='input'
             className='block text-sm font-medium text-gray-700'
           >
-            Date(DD-MM-YYYY):
+            Date:
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             value={date}
             onChange={(e) => {

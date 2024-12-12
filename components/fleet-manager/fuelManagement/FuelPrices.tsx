@@ -101,11 +101,12 @@ const FuelPrices = () => {
             <input
               type='number'
               id='input'
+              step={0.001}
               value={fuelInfo.price}
               onChange={(e) => {
                 setFuelInfo((info) => ({
                   ...info,
-                  price: parseInt(e.target.value),
+                  price: parseFloat(e.target.value),
                 }));
               }}
               className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
