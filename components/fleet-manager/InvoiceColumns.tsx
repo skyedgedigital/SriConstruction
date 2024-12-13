@@ -1,52 +1,51 @@
-"use client";
-import { useRouter } from "next/router";
-import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, ArrowUpDown } from "lucide-react";
-import toast from "react-hot-toast";
-import { Button } from "@/components/ui/button";
+'use client';
+import { useRouter } from 'next/router';
+import { ColumnDef } from '@tanstack/react-table';
+import { MoreHorizontal, ArrowUpDown } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import chalanAction from "@/lib/actions/chalan/chalanAction";
-import { getObjectURL } from "@/utils/aws";
-import { deleteInvoiceById } from "@/lib/actions/chalan/invoice";
+} from '@/components/ui/dropdown-menu';
+import chalanAction from '@/lib/actions/chalan/chalanAction';
+import { getObjectURL } from '@/utils/aws';
+import { deleteInvoiceById } from '@/lib/actions/chalan/invoice';
 export type Invoice = {
   invoiceNumber: string;
   SesNo: Number;
   DoNo: Number;
   createdAt: Date;
   chalans: String[];
-  pdfLink?: String; 
+  pdfLink?: String;
   summaryLink?: String;
   _id: string;
 };
 
-
 export const invoiceColumns: ColumnDef<Invoice>[] = [
   {
-    accessorKey: "invoiceNumber",
+    accessorKey: 'invoiceNumber',
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          variant='ghost'
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Number
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className='ml-2 h-4 w-4' />
         </Button>
       );
     },
   },
 
   {
-    accessorKey: "SesNo",
+    accessorKey: 'SesNo',
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
+          variant='ghost'
           //   onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           SES
@@ -56,11 +55,11 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     },
   },
   {
-    accessorKey: "DoNo",
+    accessorKey: 'DoNo',
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
+          variant='ghost'
           //   onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           DO
@@ -70,11 +69,25 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     },
   },
   {
-    accessorKey: "chalans",
+    accessorKey: 'TaxNumber',
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
+          variant='ghost'
+          //   onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Tax Number
+          {/* <ArrowUpDown className='ml-2 h-4 w-4' /> */}
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: 'chalans',
+    header: ({ column }) => {
+      return (
+        <Button
+          variant='ghost'
           //   onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Issued for Chalan(s)
@@ -84,20 +97,20 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     },
     cell: ({ row }) => {
       const invoice = row.original;
-      console.log("aagya og pog", invoice);
+      console.log('aagya og pog', invoice);
       const chalans = Array.isArray(invoice.chalans)
-        ? invoice.chalans.join(", ")
-        : "";
+        ? invoice.chalans.join(', ')
+        : '';
 
       return <span>{chalans}</span>;
     },
   },
   {
-    accessorKey: "chalans",
+    accessorKey: 'chalans',
     header: ({ column }) => {
       return (
         <Button
-          variant="ghost"
+          variant='ghost'
           //   onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Issued on
@@ -107,12 +120,12 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     },
     cell: ({ row }) => {
       const invoice = row.original;
-      console.log("aagya og pog", invoice);
+      console.log('aagya og pog', invoice);
 
       const formatDate = (datee: Date) => {
         const date = new Date(datee);
-        const day = String(date.getDate()).padStart(2, "0");
-        const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
         const year = date.getFullYear();
         return `${day}/${month}/${year}`;
       };
@@ -121,20 +134,21 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
     },
   },
   {
-    id: "actions",
+    id: 'actions',
 
     cell: ({ row }) => {
       const invoice = row.original;
 
       const viewInvoice = async (pdfLink: any) => {
+        console.log('LALLU', invoice._id);
         if (!pdfLink) {
-          toast.error("Pdf not available for this invoice");
+          toast.error('Pdf not available for this invoice');
           return;
         }
         try {
           // const res = await getObjectURL(pdfLink);
           const res = pdfLink;
-          window.open(res, "_blank");
+          window.open(res, '_blank');
         } catch (error) {
           console.error(`Error deleting employee: ${error}`);
         }
@@ -152,7 +166,7 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
       const invoiceDeleteHandler = async (id: string) => {
         console.log(id);
         if (!id) {
-          toast.error("Id not found");
+          toast.error('Id not found');
           return;
         }
         const res = await deleteInvoiceById(id);
@@ -162,13 +176,13 @@ export const invoiceColumns: ColumnDef<Invoice>[] = [
           toast.error(res.message);
         }
       };
-      
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
+            <Button variant='ghost' className='h-8 w-8 p-0'>
+              <span className='sr-only'>Open menu</span>
+              <MoreHorizontal className='h-4 w-4' />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>

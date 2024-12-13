@@ -200,7 +200,7 @@ const updateInvoice = async (invoiceData): Promise<ApiResponse<any>> => {
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
   try {
-    const { invoiceNumber, SESNo, DONo } = JSON.parse(invoiceData);
+    const { invoiceNumber, SESNo, DONo, TaxNumber } = JSON.parse(invoiceData);
 
     // Find the invoice by invoiceNumber
     let invoice = await Invoice.findOne({ invoiceNumber });
@@ -209,10 +209,11 @@ const updateInvoice = async (invoiceData): Promise<ApiResponse<any>> => {
       // If the invoice exists, update SESNo and DONo
       invoice.SesNo = SESNo;
       invoice.DoNo = DONo;
+      invoice.TaxNumber = TaxNumber;
       invoice = await invoice.save();
       return {
         success: true,
-        message: 'Invoice SES and DO updated',
+        message: 'Invoice updated',
         data: JSON.stringify(invoice),
         status: 200,
         error: null,

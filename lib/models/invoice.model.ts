@@ -37,6 +37,9 @@ const InvoiceSchema: mongoose.Schema<IInvoice> = new mongoose.Schema({
   mergedItems: {
     type: String,
   },
+  TaxNumber: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

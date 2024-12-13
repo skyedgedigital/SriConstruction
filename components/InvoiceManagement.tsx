@@ -25,6 +25,7 @@ const invoiceManagementFormSchema = z.object({
   invoiceNumber: z.string().min(1, 'Required'),
   SESNo: z.string().min(1, 'Required'),
   DONo: z.string().min(1, 'Required'),
+  TaxNumber: z.string().min(1, 'Required'),
 });
 
 type FormFields = z.infer<typeof invoiceManagementFormSchema>;
@@ -43,6 +44,7 @@ const InvoiceManagement: React.FC<{}> = () => {
       invoiceNumber: '',
       SESNo: '',
       DONo: '',
+      TaxNumber: '',
     },
   });
 
@@ -127,6 +129,21 @@ const InvoiceManagement: React.FC<{}> = () => {
                 return (
                   <FormItem className=' flex-col flex gap-1 flex-1'>
                     <FormLabel>D.O. Number: </FormLabel>
+                    <FormControl>
+                      <Input type='text' disabled={editNotAllowed} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
+            <FormField
+              control={form.control}
+              name='TaxNumber'
+              render={({ field }) => {
+                return (
+                  <FormItem className=' flex-col flex gap-1 flex-1'>
+                    <FormLabel>Tax Number: </FormLabel>
                     <FormControl>
                       <Input type='text' disabled={editNotAllowed} {...field} />
                     </FormControl>
