@@ -50,6 +50,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler } from 'react-hook-form';
 import { z, ZodTypeAny } from 'zod';
 import engineerAction from '@/lib/actions/engineer/engineerAction';
+import { Blocks, Cross, Edit } from 'lucide-react';
+import { MdClose } from 'react-icons/md';
 // import { calcItemPrice } from "@/app/_utils/calculatePrices";
 // import { getObjectURL } from "@/app/_utils/aws";
 // import { returnThreeLetterMonth } from "@/app/_utils/dates/date";
@@ -57,6 +59,7 @@ import engineerAction from '@/lib/actions/engineer/engineerAction';
 // import { deleteChalanById } from "@/app/_utils/server_actions/chalans";
 const engSchema = z.object({
   engineer: z.string(),
+  location: z.string().optional(),
 });
 
 type FormFields = z.infer<typeof engSchema>;
@@ -100,6 +103,7 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
   const form = useForm<FormFields>({
     defaultValues: {
       engineer: chalan?.engineer?.name,
+      location: chalan?.location,
     },
     resolver: zodResolver(engSchema),
   });
@@ -108,7 +112,7 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
     receivedeng: FormFields
   ) => {
     try {
-      console.log('eng submitted', receivedeng);
+      console.log('form submitted', receivedeng);
       const filter = await JSON.stringify(receivedeng);
       const res = await chalanAction.UPDATE.updateChalan(chalan._id, filter);
 
@@ -391,19 +395,19 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
                 )}
               </span>
             </div>
-            <div className='flex flex-col items-center w-fit justify-center gap-4'>
-              <Button
-                className='w-fit items-center justify-center bg-white border-2 border-black text-black'
+            <div className='flex flex-col items-end w-fit justify-center gap-4'>
+              <button
+                className='text-base items-center justify-center bg-white border-2 border-black text-black px-4 py-1 rounded'
                 onClick={() => {
                   setEdit((prev) => !prev);
                 }}
               >
                 {!edit ? (
-                  <>Click here to update Engineer</>
+                  <p className='text-blue-600'>Edit</p>
                 ) : (
-                  <>Click here to make engineer not editable</>
+                  <p className='text-red-600'>Cancel</p>
                 )}
-              </Button>
+              </button>
               {fetchedEngineerNames.length === 0 ? (
                 <p className='text-red-500'>
                   No engineers found with this department in chalan
@@ -414,7 +418,26 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
                     onSubmit={form.handleSubmit(onSubmit)}
                     className='w-full rounded-md'
                   >
-                    <div className='flex flex-col gap-2'>
+                    <div className='flex flex-col md:flex-row gap-2 justify-center items-end'>
+                      <FormField
+                        control={form.control}
+                        name='location'
+                        render={({ field }) => {
+                          return (
+                            <FormItem className='flex-col flex gap-1 flex-1'>
+                              <FormLabel>Location:</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type='text'
+                                  disabled={!edit}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
+                      />
                       <FormField
                         disabled={!edit}
                         control={form.control}
@@ -454,9 +477,10 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
                           </FormItem>
                         )}
                       />
+
                       <Button
                         type='submit'
-                        className=' bg-green-500 mt-4 mb-4 '
+                        className=' bg-green-500'
                         disabled={!edit}
                       >
                         Submit

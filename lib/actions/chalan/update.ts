@@ -20,7 +20,7 @@ const updateChalan = async (
   try {
     const dbConnection = await handleDBConnection();
     if (!dbConnection.success) return dbConnection;
-    console.log('Running');
+    console.log('Running updates', updates);
     const filter = {
       _id: new mongoose.Types.ObjectId(chalanId),
     };
