@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../ui/button';
 import { MdOutlineFileDownload } from 'react-icons/md';
 import toast from 'react-hot-toast';
@@ -24,7 +24,7 @@ import {
 import { storage } from '@/utils/fireBase/config';
 import itemAction from '@/lib/actions/item/itemAction';
 import chalanAction from '@/lib/actions/chalan/chalanAction';
-import { useReactToPrint } from "react-to-print";
+import { useReactToPrint } from 'react-to-print';
 
 const todayDate = () => {
   let date = new Date().toLocaleDateString();
@@ -155,13 +155,13 @@ const PublicHealthServiceInvoice = ({
     });
     new_total_hours += total;
     contentArray.push(
-      <tr className={`bg-gray-100`}>
+      <tr className={`bg-gray-300`}>
         <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
         <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
         <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
         <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
         <td className='border-[1px] bg-300 border-black py-2 font-bold  text-center '>
-          Item total hours
+          Item-total
         </td>
         <td className='border-[1px] border-black py-2  text-center '>
           {/* {totalHourObject[key]} */}
@@ -186,8 +186,8 @@ const PublicHealthServiceInvoice = ({
     </tr>
   );
 
-  const generatePDF = async () => {
-    const originalElementId = invoice?.invoiceId;
+  const generatePDF = async (printOrDownload: string) => {
+    const originalElementId = `PHS-${invoice?.invoiceId}`;
 
     const pdf = new jsPDF('l', 'pt', 'a4');
     const originalElement = document.getElementById(originalElementId)!;
@@ -199,7 +199,8 @@ const PublicHealthServiceInvoice = ({
       callback: async () => {
         // Generate the PDF as a data URL
         const pdfDataUrl = pdf.output('dataurlstring');
-        pdf.save(`${invoice?.invoiceNumber}.pdf`);
+        const fileName = `PHS-${invoice?.invoiceNumber}.pdf`;
+        if (printOrDownload === 'download') pdf.save(fileName);
         const byteString = atob(pdfDataUrl.split(',')[1]);
         const mimeString = pdfDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -209,7 +210,6 @@ const PublicHealthServiceInvoice = ({
         }
         const blob = new Blob([ab], { type: mimeString });
 
-        const fileName = `${invoice?.invoiceNumber}.pdf`;
         const storageRef = ref(storage, `invoices/${fileName}`);
 
         const uploadTask = uploadBytesResumable(storageRef, blob);
@@ -244,7 +244,7 @@ const PublicHealthServiceInvoice = ({
             }
           }
         );
-        await generateSummaryPDF();
+        await generateSummaryPDF(printOrDownload);
       },
       x: 10,
       y: 10,
@@ -253,13 +253,12 @@ const PublicHealthServiceInvoice = ({
     });
   };
 
-  const generateSummaryPDF = async () => {
-    const elementId = `${invoice?.invoiceId}-summary`;
-    const originalElementId = invoice?.invoiceId;
+  const generateSummaryPDF = async (printOrDownload: string) => {
+    const originalElementId = `PHS-${invoice?.invoiceId}-summary`;
 
     // console.log('found element', elementId);
     const pdf = new jsPDF('l', 'pt', 'a4');
-    const originalElement = document.getElementById(elementId)!;
+    const originalElement = document.getElementById(originalElementId)!;
     const element = originalElement.cloneNode(true) as HTMLElement;
 
     element.style.width = '1250px';
@@ -268,7 +267,8 @@ const PublicHealthServiceInvoice = ({
     pdf.html(element, {
       callback: async () => {
         const pdfDataUrl = pdf.output('dataurlstring');
-        pdf.save(`${invoice?.invoiceNumber}-summary.pdf`);
+        const fileName = `PHS-${invoice?.invoiceNumber}.pdf`;
+        if (printOrDownload === 'download') pdf.save(fileName);
         const byteString = atob(pdfDataUrl.split(',')[1]);
         const mimeString = pdfDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -278,7 +278,6 @@ const PublicHealthServiceInvoice = ({
         }
         const blob = new Blob([ab], { type: mimeString });
 
-        const fileName = `PHS-${invoice?.invoiceNumber}.pdf`;
         const storageRef = ref(storage, `invoices/${fileName}`);
 
         const uploadTask = uploadBytesResumable(storageRef, blob);
@@ -331,17 +330,19 @@ const PublicHealthServiceInvoice = ({
     const itemCost = item.itemCost.itemCost || 0;
     return sum + itemCost + 0.18 * itemCost;
   }, 0);
-  const generateAndUploadInvoiceSummaryPDF = async () => {
+  const generateAndUploadInvoiceSummaryPDF = async (
+    printOrDownload: string
+  ) => {
     try {
-      await generateSummaryPDF(); // Generate PDF for download/printing
+      await generateSummaryPDF(printOrDownload); // Generate PDF for download/printing
     } catch (err) {
       console.log('error toh yeh hai boss', err);
     }
   };
 
-  const generateAndUploadInvoicePDF = async () => {
+  const generateAndUploadInvoicePDF = async (printOrDownload: string) => {
     try {
-      await generatePDF();
+      await generatePDF(printOrDownload);
     } catch (err) {
       console.log('error toh yeh hai boss', err);
     }
@@ -449,6 +450,7 @@ const PublicHealthServiceInvoice = ({
         <Button
           onClick={() => {
             reactToPrintFnInvoice();
+            generateAndUploadInvoicePDF('print');
           }}
         >
           Print PHS Invoice
@@ -456,7 +458,7 @@ const PublicHealthServiceInvoice = ({
         <Button
           onClick={(e) => {
             e.preventDefault();
-            generateAndUploadInvoicePDF();
+            generateAndUploadInvoicePDF('download');
             return;
           }}
           className='bg-green-700 text-white px-4 py-2 flex gap-1 items-center rounded ml-auto hover:bg-blue-200 hover:text-primary-color-extreme text-xs'
@@ -468,8 +470,8 @@ const PublicHealthServiceInvoice = ({
       <div className=' '>
         <div
           className=' border-[1px] border-gray-700  tracking-wider w-full  text-[0.75rem] font-semibold'
+          id={`PHS-${invoice?.invoiceId}`}
           ref={contentInvoiceRef}
-          id={`${invoice?.invoiceId}`}
         >
           <h1 className='font-bold text-center w-full py-1'>PROFOMA INVOICE</h1>
           <div className='w-full   flex flex-col gap-3 my-3 ml-4'>
@@ -482,7 +484,9 @@ const PublicHealthServiceInvoice = ({
                   alt='sign image'
                 />{' '}
               </div>
-              <h1 className='font-bold text-sm uppercase'>Sri Constructions</h1>
+              <h1 className='font-bold text-sm uppercase'>
+                Shekhar Enterprises
+              </h1>
             </div>
             <div className=''>
               <p className=' border-b-2 border-b-black w-fit pr-2 pb-2'>
@@ -813,6 +817,7 @@ const PublicHealthServiceInvoice = ({
         <Button
           onClick={() => {
             reactToPrintFnSummary();
+            generateAndUploadInvoiceSummaryPDF('print');
           }}
         >
           Print Summary Sheet
@@ -820,7 +825,7 @@ const PublicHealthServiceInvoice = ({
         <Button
           onClick={(e) => {
             e.preventDefault();
-            generateAndUploadInvoiceSummaryPDF();
+            generateAndUploadInvoiceSummaryPDF('download');
             return;
           }}
           className='bg-green-700 text-white px-4 py-2 flex gap-1 items-center rounded ml-auto hover:bg-blue-200 hover:text-primary-color-extreme text-xs'
@@ -831,7 +836,7 @@ const PublicHealthServiceInvoice = ({
       </div>
       <div className='flex items-center justify-center '>
         <div
-          id={`${invoice?.invoiceId}-summary`}
+          id={`PHS-${invoice?.invoiceId}-summary`}
           ref={contentSummaryRef}
           className='flex flex-col justify-center items-center w-full '
         >
@@ -853,7 +858,7 @@ const PublicHealthServiceInvoice = ({
                   description
                 </th>
                 <th className='border-[1px] border-black capitalize py-1 pb-2  text-center '>
-                  Chalan no.
+                  Item no.
                 </th>
                 <th className='border-[1px] border-black capitalize py-1 pb-2  text-center '>
                   date

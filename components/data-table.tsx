@@ -83,7 +83,7 @@ export function DataTable<TData, TValue>({
     <>
       {/* Filters */}
 
-      <div className='flex items-center justify-between'>
+      <div className='flex items-baseline gap-3'>
         <div className='flex items-center pt-16 pb-4 '>
           <Input
             placeholder='Search...'
@@ -102,6 +102,11 @@ export function DataTable<TData, TValue>({
       </div>
 
       {/* Table */}
+      {data?.length ? (
+        <p className='text-gray-400 text-sm mb-1'>({data?.length} Documents)</p>
+      ) : (
+        ''
+      )}
       <div className='rounded-md border-2 border-slate-500 text-black'>
         <Table className='overflow-x-auto'>
           <TableHeader className='border-slate-500 border-b-2 text-black font-semibold'>

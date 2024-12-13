@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../ui/button';
 import { MdOutlineFileDownload } from 'react-icons/md';
 import toast from 'react-hot-toast';
@@ -24,7 +24,7 @@ import {
 import { storage } from '@/utils/fireBase/config';
 import itemAction from '@/lib/actions/item/itemAction';
 import chalanAction from '@/lib/actions/chalan/chalanAction';
-import { useReactToPrint } from "react-to-print";
+import { useReactToPrint } from 'react-to-print';
 
 const todayDate = () => {
   let date = new Date().toLocaleDateString();
@@ -121,55 +121,55 @@ const WMDInvoice = ({
   console.warn('The Items Recieved', items);
   const contentArray: any = [];
   let new_total_hours = 0;
- Object.keys(dateMapping).forEach((key, i) => {
-   let total = 0;
-   const itemDetails = dateMapping[key];
-   itemDetails?.details?.map((item, index) => {
-     contentArray.push(
-       <tr>
-         <td className='border-[1px] border-black py-2  text-center '>
-           {index + 1}
-         </td>{' '}
-         <td className='border-[1px] border-black py-2  text-center '>
-           {item?.itemDescription}
-         </td>{' '}
-         <td className='border-[1px] border-black py-2  text-center '>
-           {item?.chalanNumber}
-         </td>{' '}
-         <td className='border-[1px] border-black py-2  text-center '>
-           {item?.chalanDate.toLocaleDateString('en-GB')}
-         </td>{' '}
-         <td className='border-[1px] border-black py-2 text-center '>
-           {item?.location ? item?.location : 'No locations available'}
-         </td>
-         <td className='border-[1px] border-black py-2  text-center '>
-           {/* {filtered[i]?.unit === 'minute' &&
+  Object.keys(dateMapping).forEach((key, i) => {
+    let total = 0;
+    const itemDetails = dateMapping[key];
+    itemDetails?.details?.map((item, index) => {
+      contentArray.push(
+        <tr>
+          <td className='border-[1px] border-black py-2  text-center '>
+            {index + 1}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {item?.itemDescription}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {item?.chalanNumber}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2  text-center '>
+            {item?.chalanDate.toLocaleDateString('en-GB')}
+          </td>{' '}
+          <td className='border-[1px] border-black py-2 text-center '>
+            {item?.location ? item?.location : 'No locations available'}
+          </td>
+          <td className='border-[1px] border-black py-2  text-center '>
+            {/* {filtered[i]?.unit === 'minute' &&
               (parseFloat(filtered[i]?.used.toString()) / 60).toFixed(2)}
             {filtered[i]?.unit === 'hour' &&
               parseFloat(filtered[i]?.used.toString()).toFixed(2)} */}
-           {item.workingHour}
-         </td>
-       </tr>
-     );
-     total += Number(item?.workingHour);
-   });
-   new_total_hours += total;
-   contentArray.push(
-     <tr className={`bg-gray-100`}>
-       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
-       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
-       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
-       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
-       <td className='border-[1px] bg-300 border-black py-2 font-bold  text-center '>
-         Item total hours
-       </td>
-       <td className='border-[1px] border-black py-2  text-center '>
-         {/* {totalHourObject[key]} */}
-         {total}
-       </td>
-     </tr>
-   );
- });
+            {item.workingHour}
+          </td>
+        </tr>
+      );
+      total += Number(item?.workingHour);
+    });
+    new_total_hours += total;
+    contentArray.push(
+      <tr className={`bg-gray-300`}>
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
+        <td className='border-[1px] bg-300 border-black py-2 font-bold  text-center '>
+          Item-total
+        </td>
+        <td className='border-[1px] border-black py-2  text-center '>
+          {/* {totalHourObject[key]} */}
+          {total}
+        </td>
+      </tr>
+    );
+  });
   contentArray.push(
     <tr className={`bg-gray-300`}>
       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
@@ -186,8 +186,8 @@ const WMDInvoice = ({
     </tr>
   );
 
-  const generatePDF = async () => {
-    const originalElementId = invoice?.invoiceId;
+  const generatePDF = async (printOrDownload: string) => {
+    const originalElementId = `WMD-${invoice?.invoiceId}`;
 
     const pdf = new jsPDF('l', 'pt', 'a4');
     const originalElement = document.getElementById(originalElementId)!;
@@ -199,7 +199,9 @@ const WMDInvoice = ({
       callback: async () => {
         // Generate the PDF as a data URL
         const pdfDataUrl = pdf.output('dataurlstring');
-        pdf.save(`${invoice?.invoiceNumber}.pdf`);
+        const fileName = `WMD-${invoice?.invoiceNumber}.pdf`;
+        if (printOrDownload === 'download') pdf.save(fileName);
+
         const byteString = atob(pdfDataUrl.split(',')[1]);
         const mimeString = pdfDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -209,7 +211,6 @@ const WMDInvoice = ({
         }
         const blob = new Blob([ab], { type: mimeString });
 
-        const fileName = `${invoice?.invoiceNumber}.pdf`;
         const storageRef = ref(storage, `invoices/${fileName}`);
 
         const uploadTask = uploadBytesResumable(storageRef, blob);
@@ -244,7 +245,7 @@ const WMDInvoice = ({
             }
           }
         );
-        await generateSummaryPDF();
+        await generateSummaryPDF(printOrDownload);
       },
       x: 10,
       y: 10,
@@ -253,13 +254,12 @@ const WMDInvoice = ({
     });
   };
 
-  const generateSummaryPDF = async () => {
-    const elementId = `${invoice?.invoiceId}-summary`;
-    const originalElementId = invoice?.invoiceId;
+  const generateSummaryPDF = async (printOrDownload: string) => {
+    const originalElementId = `WMD-${invoice?.invoiceId}-summary`;
 
     // console.log('found element', elementId);
     const pdf = new jsPDF('l', 'pt', 'a4');
-    const originalElement = document.getElementById(elementId)!;
+    const originalElement = document.getElementById(originalElementId)!;
     const element = originalElement.cloneNode(true) as HTMLElement;
 
     element.style.width = '1250px';
@@ -268,7 +268,9 @@ const WMDInvoice = ({
     pdf.html(element, {
       callback: async () => {
         const pdfDataUrl = pdf.output('dataurlstring');
-        pdf.save(`${invoice?.invoiceNumber}-summary.pdf`);
+        const fileName = `WMD-${invoice?.invoiceNumber}.pdf`;
+        if (printOrDownload === 'download') pdf.save(fileName);
+
         const byteString = atob(pdfDataUrl.split(',')[1]);
         const mimeString = pdfDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -278,7 +280,6 @@ const WMDInvoice = ({
         }
         const blob = new Blob([ab], { type: mimeString });
 
-        const fileName = `${invoice?.invoiceNumber}.pdf`;
         const storageRef = ref(storage, `invoices/${fileName}`);
 
         const uploadTask = uploadBytesResumable(storageRef, blob);
@@ -331,17 +332,20 @@ const WMDInvoice = ({
     const itemCost = item.itemCost.itemCost || 0;
     return sum + itemCost + 0.18 * itemCost;
   }, 0);
-  const generateAndUploadInvoiceSummaryPDF = async () => {
+
+  const generateAndUploadInvoiceSummaryPDF = async (
+    printOrDownload: string
+  ) => {
     try {
-      await generateSummaryPDF(); // Generate PDF for download/printing
+      await generateSummaryPDF(printOrDownload); // Generate PDF for download/printing
     } catch (err) {
       console.log('error toh yeh hai boss', err);
     }
   };
 
-  const generateAndUploadInvoicePDF = async () => {
+  const generateAndUploadInvoicePDF = async (printOrDownload: string) => {
     try {
-      await generatePDF();
+      await generatePDF(printOrDownload);
     } catch (err) {
       console.log('error toh yeh hai boss', err);
     }
@@ -449,6 +453,7 @@ const WMDInvoice = ({
         <Button
           onClick={() => {
             reactToPrintFnInvoice();
+            generateAndUploadInvoicePDF('print');
           }}
         >
           Print WMD Invoice
@@ -456,7 +461,7 @@ const WMDInvoice = ({
         <Button
           onClick={(e) => {
             e.preventDefault();
-            generateAndUploadInvoicePDF();
+            generateAndUploadInvoicePDF('download');
             return;
           }}
           className='bg-green-700 text-white px-4 py-2 flex gap-1 items-center rounded ml-auto hover:bg-blue-200 hover:text-primary-color-extreme text-xs'
@@ -465,7 +470,11 @@ const WMDInvoice = ({
           <p>Download WMD Invoice</p>
         </Button>
       </div>
-      <div className='   ' id={`${invoice?.invoiceId}`} ref={contentRefInvoice}>
+      <div
+        className='   '
+        id={`WMD-${invoice?.invoiceId}`}
+        ref={contentRefInvoice}
+      >
         <div className='  tracking-wider w-full  text-[0.75rem] font-semibold'>
           <div className='flex'>
             <div className='w-full flex flex-col gap-2 justify-center items-center'>
@@ -498,7 +507,7 @@ const WMDInvoice = ({
               </div>
               <div className='w-full flex gap-2'>
                 <span>3. Vendor&apos;s name:</span>
-                <span className='font-normal uppercase'>Sri Construction</span>
+                <span className='font-normal'>SHEKHAR ENTERPRISES</span>
               </div>
               <div className='w-full flex gap-2'>
                 <span>4. Job Location:</span>
@@ -753,6 +762,7 @@ const WMDInvoice = ({
         <Button
           onClick={() => {
             reactToPrintFnSummary();
+            generateAndUploadInvoiceSummaryPDF('print');
           }}
         >
           Print Summary Sheet
@@ -760,7 +770,7 @@ const WMDInvoice = ({
         <Button
           onClick={(e) => {
             e.preventDefault();
-            generateAndUploadInvoiceSummaryPDF();
+            generateAndUploadInvoiceSummaryPDF('download');
             return;
           }}
           className='bg-green-700 text-white px-4 py-2 flex gap-1 items-center rounded ml-auto hover:bg-blue-200 hover:text-primary-color-extreme text-xs'
@@ -771,7 +781,7 @@ const WMDInvoice = ({
       </div>
       <div className='flex items-center justify-center '>
         <div
-          id={`${invoice?.invoiceId}-summary`}
+          id={`WMD-${invoice?.invoiceId}-summary`}
           ref={contentRefSummary}
           className='flex flex-col justify-center items-center w-full '
         >
@@ -793,7 +803,7 @@ const WMDInvoice = ({
                   description
                 </th>
                 <th className='border-[1px] border-black capitalize py-1 pb-2  text-center '>
-                  Chalan no.
+                  Item no.
                 </th>
                 <th className='border-[1px] border-black capitalize py-1 pb-2  text-center '>
                   date

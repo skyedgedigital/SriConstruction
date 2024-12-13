@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../ui/button';
 import { MdOutlineFileDownload } from 'react-icons/md';
 import toast from 'react-hot-toast';
@@ -24,7 +24,7 @@ import {
 import { storage } from '@/utils/fireBase/config';
 import itemAction from '@/lib/actions/item/itemAction';
 import chalanAction from '@/lib/actions/chalan/chalanAction';
-import { useReactToPrint } from "react-to-print";
+import { useReactToPrint } from 'react-to-print';
 
 const todayDate = () => {
   let date = new Date().toLocaleDateString();
@@ -96,8 +96,8 @@ const Invoice = ({
       console.log('UPDATED ITEMS', updatedItems);
       // Update state after all hsnNo are fetched
       setItemsList(updatedItems);
-      setTotalCgst(cgst);
-      setTotalSgst(sgst);
+      setTotalCgst(Number(cgst.toFixed(2)));
+      setTotalSgst(Number(sgst.toFixed(2)));
       setTotalHours(totalHours);
     };
 
@@ -124,47 +124,6 @@ const Invoice = ({
   console.warn('The Items Recieved', items);
   const contentArray: any = [];
   let new_total_hours = 0;
-  // for (let i = 0; i < items.length; i++) {
-  //   contentArray.push(
-  //     <tr>
-  //       <td className='border-[1px] border-black py-2  text-center '>
-  //         {i + 1}
-  //       </td>{' '}
-  //       <td className='border-[1px] border-black py-2  text-center '>
-  //         {items[i]?.itemName}
-  //       </td>{' '}
-  //       <td className='border-[1px] border-black py-2  text-center '>
-  //         {items[i]?.itemNumber}
-  //       </td>{' '}
-  //       <td className='border-[1px] border-black py-2  text-center '>
-  //         {/* {formatDate(filtered[i]?.date.toString())} */}
-  //         {
-  //           dateMapping
-  //             ?.get(items[i].itemId)
-  //             ?.from?.toLocaleDateString('en-GB') +
-  //             '-' +
-  //             dateMapping?.get(items[i].itemId).to.toLocaleDateString('en-GB')
-  //           // displayDate(items[i].itemName)
-  //         }
-  //       </td>{' '}
-  //       <td className='border-[1px] border-black py-2 text-center '>
-  //         {dateMapping?.get(items[i].itemName)?.locations
-  //           ? Array.from(dateMapping.get(items[i].itemName).locations).join(
-  //               ', '
-  //             )
-  //           : 'No locations available'}
-  //       </td>
-  //       <td className='border-[1px] border-black py-2  text-center '>
-  //         {/* {filtered[i]?.unit === 'minute' &&
-  //           (parseFloat(filtered[i]?.used.toString()) / 60).toFixed(2)}
-  //         {filtered[i]?.unit === 'hour' &&
-  //           parseFloat(filtered[i]?.used.toString()).toFixed(2)} */}
-  //         {items[i].itemCost.hours}
-  //       </td>
-  //     </tr>
-  //   );
-  // }
-
   Object.keys(dateMapping).forEach((key, i) => {
     let total = 0;
     const itemDetails = dateMapping[key];
@@ -222,7 +181,7 @@ const Invoice = ({
       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
       <td className='border-[1px] bg-300 border-black py-2 font-bold  text-center '>
-        total
+        Total Hours
       </td>
       <td className='border-[1px] border-black py-2  text-center '>
         {/* {totalHourObject[key]} */}
@@ -231,7 +190,7 @@ const Invoice = ({
     </tr>
   );
 
-  const generatePDF = async () => {
+  const generatePDF = async (printOrDownload: string) => {
     const originalElementId = invoice?.invoiceId;
 
     const pdf = new jsPDF('l', 'pt', 'a4');
@@ -244,7 +203,9 @@ const Invoice = ({
       callback: async () => {
         // Generate the PDF as a data URL
         const pdfDataUrl = pdf.output('dataurlstring');
-        pdf.save(`${invoice?.invoiceNumber}.pdf`);
+        const fileName = `${invoice?.invoiceNumber}.pdf`;
+        if (printOrDownload === 'download') pdf.save(fileName);
+
         const byteString = atob(pdfDataUrl.split(',')[1]);
         const mimeString = pdfDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -254,7 +215,6 @@ const Invoice = ({
         }
         const blob = new Blob([ab], { type: mimeString });
 
-        const fileName = `${invoice?.invoiceNumber}.pdf`;
         const storageRef = ref(storage, `invoices/${fileName}`);
 
         const uploadTask = uploadBytesResumable(storageRef, blob);
@@ -289,7 +249,7 @@ const Invoice = ({
             }
           }
         );
-        await generateSummaryPDF();
+        await generateSummaryPDF(printOrDownload);
       },
       x: 10,
       y: 10,
@@ -298,22 +258,22 @@ const Invoice = ({
     });
   };
 
-  const generateSummaryPDF = async () => {
-    const elementId = `${invoice?.invoiceId}-summary`;
-    const originalElementId = invoice?.invoiceId;
+  const generateSummaryPDF = async (printOrDownload: string) => {
+    const originalElementId = `${invoice?.invoiceId}-summary`;
 
     // console.log('found element', elementId);
     const pdf = new jsPDF('l', 'pt', 'a4');
-    const originalElement = document.getElementById(elementId)!;
+    const originalElement = document.getElementById(originalElementId)!;
     const element = originalElement.cloneNode(true) as HTMLElement;
 
     element.style.width = '1250px';
 
-    // pdf.save(`${elementId}.pdf`);
     pdf.html(element, {
       callback: async () => {
         const pdfDataUrl = pdf.output('dataurlstring');
-        pdf.save(`${invoice?.invoiceNumber}-summary.pdf`);
+        const fileName = `${invoice?.invoiceNumber}-summary.pdf`;
+        if (printOrDownload === 'download') pdf.save(fileName);
+
         const byteString = atob(pdfDataUrl.split(',')[1]);
         const mimeString = pdfDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -323,7 +283,6 @@ const Invoice = ({
         }
         const blob = new Blob([ab], { type: mimeString });
 
-        const fileName = `${invoice?.invoiceNumber}.pdf`;
         const storageRef = ref(storage, `invoices/${fileName}`);
 
         const uploadTask = uploadBytesResumable(storageRef, blob);
@@ -377,17 +336,19 @@ const Invoice = ({
     const itemCost = item.itemCost.itemCost || 0;
     return sum + itemCost + 0.18 * itemCost;
   }, 0);
-  const generateAndUploadInvoiceSummaryPDF = async () => {
+  const generateAndUploadInvoiceSummaryPDF = async (
+    printOrDownload: string
+  ) => {
     try {
-      await generateSummaryPDF(); // Generate PDF for download/printing
+      await generateSummaryPDF(printOrDownload); // Generate PDF for download/printing
     } catch (err) {
       console.log('error toh yeh hai boss', err);
     }
   };
 
-  const generateAndUploadInvoicePDF = async () => {
+  const generateAndUploadInvoicePDF = async (printOrDownload: string) => {
     try {
-      await generatePDF();
+      await generatePDF(printOrDownload);
     } catch (err) {
       console.log('error toh yeh hai boss', err);
     }
@@ -495,6 +456,7 @@ const Invoice = ({
         <Button
           onClick={() => {
             reactToPrintFnInvoice();
+            generateAndUploadInvoicePDF('print');
           }}
         >
           Print Invoice
@@ -502,7 +464,7 @@ const Invoice = ({
         <Button
           onClick={(e) => {
             e.preventDefault();
-            generateAndUploadInvoicePDF();
+            generateAndUploadInvoicePDF('download');
             return;
           }}
           className='bg-green-700 text-white px-4 py-2 flex gap-1 items-center rounded ml-auto hover:bg-blue-200 hover:text-primary-color-extreme text-xs'
@@ -528,7 +490,7 @@ const Invoice = ({
                 />{' '}
               </div>
               <h1 className='font-bold text-sm uppercase'>
-                Sri Constructions
+                Shekhar Enterprises
               </h1>
             </div>
             <div className=''>
@@ -780,7 +742,11 @@ const Invoice = ({
                   width={'100'}
                   height={'100'}
                   alt='sign image'
-                  style={{ display: 'block', maxWidth: '100%' }}
+                  style={{
+                    display: 'block',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                  }}
                 />
               </div>
             </div>
@@ -792,6 +758,7 @@ const Invoice = ({
         <Button
           onClick={() => {
             reactToPrintFnSummary();
+            generateAndUploadInvoiceSummaryPDF('print');
           }}
         >
           Print Summary Sheet
@@ -799,7 +766,7 @@ const Invoice = ({
         <Button
           onClick={(e) => {
             e.preventDefault();
-            generateAndUploadInvoiceSummaryPDF();
+            generateAndUploadInvoiceSummaryPDF('download');
             return;
           }}
           className='bg-green-700 text-white px-4 py-2 flex gap-1 items-center rounded ml-auto hover:bg-blue-200 hover:text-primary-color-extreme text-xs'
@@ -811,8 +778,8 @@ const Invoice = ({
       <div className='flex items-center justify-center '>
         <div
           id={`${invoice?.invoiceId}-summary`}
-          ref={contentSummaryRef}
           className='flex flex-col justify-center items-center w-full '
+          ref={contentSummaryRef}
         >
           <h2 className='text-center font-bold mb-4 text-base flex gap-1 mx-auto '>
             Invoice no.{' '}
