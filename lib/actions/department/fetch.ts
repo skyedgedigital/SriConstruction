@@ -9,11 +9,15 @@ const fetchAllDepartments = async (): Promise<ApiResponse<any>> => {
     const dbConnection = await handleDBConnection();
     if (!dbConnection.success) return dbConnection;
     const result = await Department.find({});
+    const sortedResp = result?.sort((a, b) =>
+      a.departmentName.localeCompare(b.departmentName)
+    );
+
     return {
       success: true,
       status: 200,
       message: 'List of All Departments',
-      data: JSON.stringify(result),
+      data: JSON.stringify(sortedResp),
       error: null,
     };
   } catch (err) {

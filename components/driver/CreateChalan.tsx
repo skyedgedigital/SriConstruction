@@ -184,7 +184,7 @@ const CreateChalan = () => {
 
       console.log(formData);
 
-      if (res.success) {  
+      if (res.success) {
         toast.success(res.message);
         form.reset({
           workOrder: '', // Allow optional workOrder
@@ -210,7 +210,9 @@ const CreateChalan = () => {
       }
     } catch (error) {
       console.error(error);
-      toast.error(error.message || JSON.stringify(error) || 'something went wrong');
+      toast.error(
+        error.message || JSON.stringify(error) || 'something went wrong'
+      );
     }
   };
 
@@ -258,6 +260,7 @@ const CreateChalan = () => {
         const engineers = res?.data
           ? JSON.parse(res?.data).map((engineer) => engineer.name)
           : [];
+        console.log('engineers', engineers);
         setFetchedEngineerNames(engineers);
       }
       if (!res.success) {
@@ -476,15 +479,16 @@ const CreateChalan = () => {
                       <SelectItem
                         key={option.toString()}
                         value={option.toString()}
+                        className='capitalize'
                       >
                         {option
                           ?.toLowerCase()
-                          .split(" ")
+                          .split(' ')
                           .map(
                             (word: string) =>
                               word.charAt(0).toUpperCase() + word.slice(1)
                           )
-                          .join(" ")}
+                          .join(' ')}
                       </SelectItem>
                     ))}
                   </SelectContent>

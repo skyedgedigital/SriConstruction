@@ -43,11 +43,15 @@ const fetchAllEmployees = async (): Promise<ApiResponse<any>> => {
     const dbConnection = await handleDBConnection();
     if (!dbConnection.success) return dbConnection;
     const result = await Employee.find({});
+
+    // Sort the response array by engineer name in alphabetical order
+    const sortedResp = result.sort((a, b) => a.name.localeCompare(b.name));
+
     return {
       success: true,
       status: 200,
       message: 'List of All Employees',
-      data: JSON.stringify(result),
+      data: JSON.stringify(sortedResp),
       error: null,
     };
   } catch (err) {

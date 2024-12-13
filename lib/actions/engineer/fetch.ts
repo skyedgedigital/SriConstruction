@@ -18,11 +18,14 @@ const fetchAllEngineers = async (): Promise<ApiResponse<any>> => {
       'department',
       'departmentName'
     );
+    // Sort the result array by engineer name in alphabetical order
+    const sortedResult = result.sort((a, b) => a.name.localeCompare(b.name));
+
     return {
       success: true,
       status: 200,
       message: 'List of All Engineers Fetched',
-      data: JSON.stringify(result),
+      data: JSON.stringify(sortedResult),
       error: null,
     };
   } catch (err) {
@@ -59,11 +62,14 @@ const fetchEngineerByDepartment = async (
     const resp = await Engineer.find({
       department: departmentId,
     });
+    // Sort the response array by engineer name in alphabetical order
+    const sortedResp = resp?.sort((a, b) => a.name.localeCompare(b.name));
+
     return {
       success: true,
       status: 200,
       message: `List of Engineers for the department ${departmentName}`,
-      data: JSON.stringify(resp),
+      data: JSON.stringify(sortedResp),
       error: null,
     };
   } catch (err) {
