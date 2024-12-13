@@ -8,7 +8,7 @@ import FileReader from 'filereader';
 import stream from 'stream';
 import handleDBConnection from '@/lib/database';
 import { ApiResponse } from '@/interfaces/APIresponses.interface';
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from 'next/cache';
 
 const checkIfExisting = async (
   chalanNumbers: string[]
@@ -290,7 +290,7 @@ const getAllInvoices = async (): Promise<ApiResponse<any>> => {
   try {
     const dbConnection = await handleDBConnection();
     if (!dbConnection.success) return dbConnection;
-    const docs = await Invoice.find({}).sort({ date: -1 });
+    const docs = await Invoice.find({}).sort({ createdAt: -1 });
 
     return {
       success: true,
@@ -449,21 +449,22 @@ const deleteInvoiceById = async (id: string) => {
     if (!dbConnection.success) return dbConnection;
     const invoiceExist = await Invoice.find({ _id: id });
     if (!invoiceExist) {
-      revalidatePath("/fleetmanager/invoice-management");
+      revalidatePath('/fleetmanager/invoice-management');
       return {
         success: false,
         status: 200,
-        message: "Invoice does not exist",
+        message: 'Invoice does not exist',
         data: null,
         error: null,
       };
     }
+
     await Invoice.deleteOne({ _id: id });
-    revalidatePath("/fleetmanager/invoice-management");
+    revalidatePath('/fleetmanager/invoice-management');
     return {
       success: true,
       status: 204,
-      message: "Invoice Successfully Deleted",
+      message: 'Invoice Successfully Deleted',
       data: null,
       error: null,
     };
@@ -471,7 +472,7 @@ const deleteInvoiceById = async (id: string) => {
     return {
       success: false,
       status: 500,
-      message: err.message || "Unexpected error occurred,Please try later",
+      message: err.message || 'Unexpected error occurred,Please try later',
       error: JSON.stringify(err),
       data: null,
     };

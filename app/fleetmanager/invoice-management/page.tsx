@@ -10,6 +10,7 @@ const page = async () => {
   if (res.success) {
     invoices = await JSON.parse(res.data);
   }
+
   return (
     <Tabs defaultValue='invoice'>
       <h1 className='font-bold text-blue-500 border-b-2 border-blue-500 text-center py-2 mb-4'>
