@@ -1,6 +1,7 @@
 'use client';
 
 import AdminAnalytics from '@/lib/actions/adminAnalytics/adminAnalyticsAction';
+import { formatCurrency } from '@/utils/formatCurrency';
 import React, { CSSProperties, useState } from 'react';
 import toast from 'react-hot-toast';
 import HashLoader from 'react-spinners/HashLoader';
@@ -44,7 +45,7 @@ const Page = () => {
         selectedYear
       );
       if (resp?.success) {
-        console.warn(resp.data);
+        // console.warn(resp.data);
         toast.success('Data fetched');
         setData(JSON.parse(resp.data));
       } else {
@@ -57,6 +58,28 @@ const Page = () => {
       setLoading(false);
     }
   };
+
+  const totalCost = data?.reduce((accumulator, vehicle) => {
+    return accumulator + vehicle.totalCost;
+  }, 0);
+  const totalHours = data?.reduce((accumulator, vehicle) => {
+    return accumulator + vehicle.totalHours;
+  }, 0);
+
+  const fuelCost = data?.reduce((accumulator, vehicle) => {
+    return accumulator + vehicle.fuelCost;
+  }, 0);
+  const totalFuel = data?.reduce((accumulator, vehicle) => {
+    return accumulator + vehicle.totalFuel;
+  }, 0);
+
+  const consumablesCost = data?.reduce((accumulator, vehicle) => {
+    return accumulator + vehicle.consumablesCost;
+  }, 0);
+
+  const complianceCost = data?.reduce((accumulator, vehicle) => {
+    return accumulator + vehicle.complianceCost;
+  }, 0);
 
   return (
     <div>
@@ -126,9 +149,9 @@ const Page = () => {
       ) : // Render the data if not loading
       data.length > 0 ? (
         <table className='table-auto border-collapse border border-gray-300 w-full mt-5'>
-          <thead>
-            <tr className='bg-gray-100'>
-              <th className='border border-gray-300 px-4 py-2'>
+          <thead className='text-sm'>
+            <tr className='bg-gray-800 text-white'>
+              <th className='border border-gray-300 px-4 py-4'>
                 Vehicle Number
               </th>
               <th className='border border-gray-300 px-4 py-2'>Total Hours</th>
@@ -147,37 +170,65 @@ const Page = () => {
             </tr>
           </thead>
           <tbody>
-            {data.map((vehicle, index) => (
+            {data?.map((vehicle, index) => (
               <tr key={index}>
                 <td className='border border-gray-300 px-4 py-2'>
                   {vehicle?.vehicleNumber}
                 </td>
                 <td className='border border-gray-300 px-4 py-2'>
-                  {vehicle?.totalHours}
+                  {Math.round(vehicle?.totalHours)}
                 </td>
                 <td className='border border-gray-300 px-4 py-2'>
-                  {vehicle?.totalCost}
+                  {formatCurrency(vehicle?.totalCost)}
                 </td>
                 <td className='border border-gray-300 px-4 py-2'>
-                  {vehicle?.consumablesCost}
+                  {formatCurrency(vehicle?.consumablesCost)}
                 </td>
                 <td className='border border-gray-300 px-4 py-2'>
-                  {vehicle?.complianceCost}
+                  {formatCurrency(vehicle?.complianceCost)}
                 </td>
                 <td className='border border-gray-300 px-4 py-2'>
-                  {vehicle?.totalFuel}
+                  {Math.round(vehicle?.totalFuel)}
                 </td>
                 <td className='border border-gray-300 px-4 py-2'>
-                  {vehicle?.fuelCost}
+                  {formatCurrency(vehicle?.fuelCost)}
                 </td>
                 <td className='border border-gray-300 px-4 py-2'>
-                  {vehicle?.totalCost -
-                    vehicle?.fuelCost -
-                    vehicle?.consumablesCost -
-                    vehicle?.complianceCost}
+                  {formatCurrency(
+                    vehicle?.totalCost -
+                      vehicle?.fuelCost -
+                      vehicle?.consumablesCost -
+                      vehicle?.complianceCost
+                  )}
                 </td>
               </tr>
             ))}
+            <tr className='bg-gray-800 text-white'>
+              <td className='border border-gray-300 px-4 py-4'>Total</td>
+              <td className='border border-gray-300 px-4 py-2'>
+                {Math.round(totalHours)} Hour
+              </td>
+              <td className='border border-gray-300 px-4 py-2'>
+                {formatCurrency(totalCost)}
+              </td>
+              <td className='border border-gray-300 px-4 py-2'>
+                {formatCurrency(consumablesCost)}
+              </td>
+              <td className='border border-gray-300 px-4 py-2'>
+                {formatCurrency(complianceCost)}
+              </td>
+              <td className='border border-gray-300 px-4 py-2'>
+                {Math.round(totalFuel)} Ltr.
+              </td>
+              <td className='border border-gray-300 px-4 py-2'>
+                {formatCurrency(fuelCost)}
+              </td>
+              <td className='border border-gray-300 px-4 py-2'>
+                {formatCurrency(
+                  totalCost - fuelCost - consumablesCost - complianceCost
+                )}
+              </td>
+            </tr>
           </tbody>
         </table>
       ) : (
