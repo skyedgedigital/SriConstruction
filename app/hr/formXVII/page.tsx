@@ -20,6 +20,15 @@ import {
 import { fetchAllAttendance } from '@/lib/actions/attendance/fetch';
 
 import React, { useEffect, useState } from 'react';
+interface Attendance {
+  day: number;
+  status: string;
+  _id: string;
+}
+interface EmployeeIdAndAttendance {
+  employeeId: string;
+  attendance: Attendance[];
+}
 
 const Page = ({
   searchParams,
@@ -27,6 +36,9 @@ const Page = ({
   searchParams: { [key: string]: string | undefined };
 }) => {
   const [attendanceData, setAttendanceData] = useState(null);
+  const [attendanceArray, setAttendanceArray] = useState<
+    EmployeeIdAndAttendance[]
+  >([]);
 
   const contentRef = React.useRef(null);
   const reactToPrintFn = useReactToPrint({
@@ -105,7 +117,23 @@ const Page = ({
             ),
           }));
           setAttendanceData(parsedData);
-
+          const attendanceArrayResult = await fetchAllAttendance(
+            JSON.stringify({ month, year, workOrderHr: searchParams?.wo || '' })
+          );
+          if (attendanceArrayResult.success) {
+            // console.log("LALA", JSON.parse(attendanceArrayResult.data));
+            const parsed_attendance_data = JSON.parse(
+              attendanceArrayResult.data
+            );
+            const updated_data: EmployeeIdAndAttendance[] =
+              parsed_attendance_data.map((lol: any) => {
+                return {
+                  employeeId: lol?.employee?._id,
+                  attendance: lol.days,
+                };
+              });
+            setAttendanceArray(updated_data);
+          }
           console.log('aagya response', parsedData);
         } else {
           const errobj = await JSON.parse(response?.error);
@@ -127,6 +155,28 @@ const Page = ({
   console.log('sahi h bhai');
 
   const days = Array.from({ length: 31 }, (_, i) => i + 1); // Array of days (1 to 31)
+
+  function calculateTotal(arr: [number]) {
+    let total = arr.reduce((sum, current) => sum + current, 0);
+    return total;
+  }
+  function CalculateNationalHolidays(arr: Attendance[]) {
+    let count_nh = 0;
+    arr.forEach((item) => {
+      if (item.status === 'NH') {
+        count_nh++;
+      }
+    });
+    return count_nh;
+  }
+  function findAttendanceByEmployeeId(id: string) {
+    const employee = attendanceArray.find((item) => item.employeeId === id);
+    if (!employee) {
+      return [];
+    } else {
+      return employee.attendance;
+    }
+  }
 
   return (
     <div className='ml-[80px]'>
@@ -303,7 +353,20 @@ const Page = ({
                       {employee?.designation.designation}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {employee?.attendance}
+                      <div className='ml-5'>
+                        {Number(employee?.attendance) -
+                          CalculateNationalHolidays(
+                            findAttendanceByEmployeeId(employee?.employee._id)
+                          )}
+                      </div>
+                      <div>
+                        {`NH: ${CalculateNationalHolidays(
+                          findAttendanceByEmployeeId(employee?.employee._id)
+                        )}`}
+                      </div>
+                      <div className='border-t-2 border-black pl-5'>
+                        {employee?.attendance}
+                      </div>
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'></TableCell>
                     <TableCell className='border-black border-2 text-black'>
@@ -367,6 +430,92 @@ const Page = ({
                     <TableCell className='border-black border-2 text-black'></TableCell>
                   </TableRow>
                 ))}
+                 <TableRow className='text-black font-mono h-28'>
+                  <TableCell className='border-black border-2 text-black'></TableCell>
+                  <TableCell className='border-black border-2 text-black'></TableCell>
+                  <TableCell className='border-black border-2 text-black'></TableCell>
+                  <TableCell className='border-black border-2 text-black'>
+                    Total:
+                  </TableCell>
+                  <TableCell className='border-black border-2 text-black'>
+                    {calculateTotal(
+                      attendanceData?.map((item) => item?.attendance)
+                    )}
+                  </TableCell>
+                  <TableCell className='border-black border-2 text-black'></TableCell>
+                  <TableCell className='border-black border-2 text-black'>
+                    {calculateTotal(
+                      attendanceData?.map(
+                        (item) =>
+                          Number(item?.designation?.basic) +
+                          Number(item?.designation.DA)
+                      )
+                    ).toFixed(2)}
+                  </TableCell>
+                  <TableCell className='border-black border-2 text-black'>
+                    {Math.round(
+                      calculateTotal(
+                        attendanceData.map(
+                          (item) =>
+                            Number(item?.designation.basic) *
+                            Number(item?.attendance)
+                        )
+                      )
+                    )}
+                  </TableCell>
+                  <TableCell className='border-black border-2 text-black'></TableCell>
+                  <TableCell className='border-black border-2 text-black'></TableCell>
+                  <TableCell className='border-black border-2 text-black'>
+                    {calculateTotal(
+                      attendanceData.map((item) => Number(item?.otherCash))
+                    ).toFixed(2)}
+                  </TableCell>
+                  <TableCell className='border-black border-2 text-black'>
+                    {calculateTotal(
+                      attendanceData.map((item) => Number(item?.total))
+                    ).toFixed(2)}
+                  </TableCell>
+                  <TableCell className='border-black border-2 text-black'>
+                    {calculateTotal(
+                      attendanceData.map((item) => 0.12 * Number(item?.total))
+                    ).toFixed(2)}
+                  </TableCell>
+                  <TableCell className='border-black border-2 text-black'>
+                    {calculateTotal(
+                      attendanceData.map((item) => 0.0075 * Number(item?.total))
+                    ).toFixed(2)}
+                  </TableCell>
+                  <TableCell className='border-black border-2 text-black'>
+                    {calculateTotal(
+                      attendanceData.map((item) => Number(item?.otherDeduction))
+                    ).toFixed(2)}
+                  </TableCell>
+                  <TableCell className='border-black border-2 text-black'>
+                    {calculateTotal(
+                      attendanceData.map((item) => Number(item?.netAmountPaid))
+                    ).toFixed(2)}
+                  </TableCell>
+                  <TableCell className='border-black border-2 text-black'>
+                    {calculateTotal(
+                      attendanceData.map(
+                        (item) =>
+                          Number(item?.otherCashDescription?.ca) +
+                          Number(item?.otherCashDescription?.eoc) +
+                          Number(item?.otherCashDescription?.hra) +
+                          Number(item?.otherCashDescription?.incumb) +
+                          Number(item?.otherCashDescription?.ma) +
+                          Number(item?.otherCashDescription?.mob) +
+                          Number(item?.otherCashDescription?.oa) +
+                          Number(item?.otherCashDescription?.pb) +
+                          Number(item?.otherCashDescription?.ssa) +
+                          Number(item?.otherCashDescription?.wa)
+                      )
+                    ).toFixed(2)}
+                  </TableCell>
+                  <TableCell className='border-black border-2 text-black'></TableCell>
+                  <TableCell className='border-black border-2 text-black'></TableCell>
+                  <TableCell className='border-black border-2 text-black'></TableCell>
+                </TableRow>
               </TableBody>
             </PDFTable>
           </div>
