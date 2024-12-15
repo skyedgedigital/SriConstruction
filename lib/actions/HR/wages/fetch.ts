@@ -43,15 +43,30 @@ const fetchFilledWages = async (
 
     // Populate employee IDs
 
+    // const resp = await Wages.find(filter)
+    //   .populate('designation')
+    //   .populate('employee')
+    //   .populate({
+    //     path: 'employee',
+    //     populate: {
+    //       path: 'designation',
+    //       model: 'Designation',
+    //     },
+    //   });
     const resp = await Wages.find(filter)
       .populate('designation')
-      .populate('employee')
       .populate({
         path: 'employee',
-        populate: {
-          path: 'designation',
-          model: 'Designation',
-        },
+        populate: [
+          {
+            path: 'designation',
+            model: 'Designation',
+          },
+          {
+            path: 'bank',
+            model: 'Bank', // Assuming you have a Bank model
+          },
+        ],
       });
     console.log('bbbbbbbbbbbbbb', resp);
     return {
