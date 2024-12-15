@@ -1118,7 +1118,7 @@ const AddVehicle: React.FC<{}> = () => {
             name='fitness'
             render={({ field }) => (
               <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Gate Fitness Number</FormLabel>
+                <FormLabel>Fitness Number</FormLabel>
                 <FormControl>
                   {field.value ? (
                     <Input placeholder='' {...field} className=' bg-white ' />
@@ -1242,7 +1242,7 @@ const AddVehicle: React.FC<{}> = () => {
             name='safety'
             render={({ field }) => (
               <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Gate Safety Number</FormLabel>
+                <FormLabel>Safety Number</FormLabel>
                 <FormControl>
                   {field.value ? (
                     <Input placeholder='' {...field} className=' bg-white ' />

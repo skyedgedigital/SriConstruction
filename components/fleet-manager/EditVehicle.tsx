@@ -112,9 +112,9 @@ const schema = z.object({
     })
     .optional(),
   fuelType: z.enum(['Diesel', 'Petrol']),
-  fuelCost: zodInputStringPipe(
-    z.number().nonnegative('Price must be non-negative')
-  ),
+  // fuelCost: zodInputStringPipe(
+  //   z.number().nonnegative('Price must be non-negative')
+  // ),
   emi: zodInputStringPipe(z.number().nonnegative('Price must be non-negative')),
   emiStatus: z.enum(['Open', 'Close']),
 });
@@ -153,7 +153,7 @@ const EditVehicle: React.FC<{}> = () => {
       puc: '',
       pucExpiryDate: undefined,
       fuelType: 'Diesel',
-      fuelCost: '',
+      // fuelCost: '',
       emi: 0,
       emiStatus: 'Close',
     },
@@ -210,7 +210,7 @@ const EditVehicle: React.FC<{}> = () => {
         form.setValue('puc', vehicleDetails?.puc);
         form.setValue('pucExpiryDate', vehicleDetails?.pucExpiryDate);
         form.setValue('fuelType', vehicleDetails?.fuelType);
-        form.setValue('fuelCost', (vehicleDetails?.fuelCost).toString());
+        // form.setValue('fuelCost', (vehicleDetails?.fuelCost).toString());
         form.setValue('emi', vehicleDetails?.emi);
         form.setValue('emiStatus', vehicleDetails?.emiStatus);
 
@@ -276,7 +276,7 @@ const EditVehicle: React.FC<{}> = () => {
           puc: '',
           pucExpiryDate: undefined,
           fuelType: 'Diesel',
-          fuelCost: '',
+          // fuelCost: '',
           emi: 0,
           emiStatus: 'Close',
         });
@@ -391,7 +391,7 @@ const EditVehicle: React.FC<{}> = () => {
             )}
           />
 
-          <FormField
+          {/* <FormField
             control={form.control}
             name='fuelCost'
             render={({ field }) => (
@@ -417,7 +417,7 @@ const EditVehicle: React.FC<{}> = () => {
                 <FormMessage />
               </FormItem>
             )}
-          />
+          /> */}
 
           <FormField
             control={form.control}
@@ -593,7 +593,7 @@ const EditVehicle: React.FC<{}> = () => {
             name='tax'
             render={({ field }) => (
               <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Gate Pass Number</FormLabel>
+                <FormLabel>Tax Number</FormLabel>
                 <FormControl>
                   {field.value ? (
                     <Input placeholder='' {...field} className=' bg-white ' />
@@ -655,7 +655,7 @@ const EditVehicle: React.FC<{}> = () => {
             name='fitness'
             render={({ field }) => (
               <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Gate Pass Number</FormLabel>
+                <FormLabel>Fitness Number</FormLabel>
                 <FormControl>
                   {field.value ? (
                     <Input placeholder='' {...field} className=' bg-white ' />
@@ -779,7 +779,7 @@ const EditVehicle: React.FC<{}> = () => {
             name='safety'
             render={({ field }) => (
               <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Gate Pass Number</FormLabel>
+                <FormLabel> Safety Number</FormLabel>
                 <FormControl>
                   {field.value ? (
                     <Input placeholder='' {...field} className=' bg-white ' />

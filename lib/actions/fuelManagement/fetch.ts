@@ -28,13 +28,9 @@ const fetchFuelManagement = async (
       });
     }
     for (let i = 0; i < docs.length; i++) {
-      if (docs[i].entry) {
-        total += docs[i].amount;
-      } else {
-        total -= docs[i].amount;
-      }
+      total += docs[i]?.amount;
     }
-    console.log('The Docs', docs);
+
     return {
       success: true,
       status: 200,

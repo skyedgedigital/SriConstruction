@@ -215,7 +215,7 @@ const AddItem = () => {
             name={`items.hsnNo`}
             render={({ field }) => (
               <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>hsnNo</FormLabel>
+                <FormLabel>HSN No.</FormLabel>
                 <FormControl>
                   <Input placeholder='' {...field} className=' bg-white ' />
                 </FormControl>
