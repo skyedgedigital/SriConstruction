@@ -449,6 +449,10 @@ const Client = () => {
                 ? existingAttendance.days.reduce((acc, day) => {
                     if (day.status === 'Present') {
                       return acc + 1;
+                    } else if (day.status === 'NH') {
+                      return acc + 1;
+                    } else if (day.status === 'Half Day') {
+                      return acc + 0.5;
                     }
                     return acc;
                   }, 0)
