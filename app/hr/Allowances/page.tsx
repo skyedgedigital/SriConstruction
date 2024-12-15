@@ -22,12 +22,23 @@ import React, { useEffect, useState } from 'react';
 import { FaWindows } from 'react-icons/fa6';
 import WorkOrderHr from '@/lib/models/HR/workOrderHr.model';
 
+interface Attendance {
+  day: number;
+  status: string;
+  _id: string;
+}
+interface EmployeeIdAndAttendance {
+  employeeId: string;
+  attendance: Attendance[];
+}
+
 const Page = ({
   searchParams,
 }: {
   searchParams: { [key: string]: string };
 }) => {
   const [wagesData, setWagesData] = useState(null);
+  const [attendance, setAttendance] = useState<EmployeeIdAndAttendance[]>([]);
 
   const contentRef = React.useRef(null);
   const reactToPrintFn = useReactToPrint({
@@ -96,6 +107,21 @@ const Page = ({
           Year,
           workOrder
         );
+        const attendanceResult = await fetchAllAttendance(
+          JSON.stringify({ month, year: Year, workOrderHr: workOrder })
+        );
+        if (attendanceResult.success) {
+          // console.log("LALA", JSON.parse(attendanceResult.data));
+          const parsed_attendance_data = JSON.parse(attendanceResult.data);
+          const updated_data: EmployeeIdAndAttendance[] =
+            parsed_attendance_data.map((lol: any) => {
+              return {
+                employeeId: lol?.employee?._id,
+                attendance: lol.days,
+              };
+            });
+          setAttendance(updated_data);
+        }
         //   console.log(JSON.parse(response.data))
         if (response?.success) {
           toast.success(response.message);
@@ -129,6 +155,24 @@ const Page = ({
   }, []);
   console.log('sahi h bhai');
 
+  function CalculateNationalHolidays(arr: Attendance[]) {
+    let count_nh = 0;
+    arr.forEach((item) => {
+      if (item.status === "NH") {
+        count_nh++;
+      }
+    });
+    return count_nh;
+  }
+  function findAttendanceByEmployeeId(id: string) {
+    const employee = attendance.find((item) => item.employeeId === id);
+    if (!employee) {
+      return [];
+    } else {
+      return employee.attendance;
+    }
+  }
+  
   return (
     <div className='ml-[80px]'>
       <div className='flex gap-2 mb-2'>
@@ -214,6 +258,15 @@ const Page = ({
               <TableHead className='text-black border-2 border-black'>
                 Employee Name
               </TableHead>
+              <TableHead className="text-black border-2 border-black">
+                Emp. Code
+              </TableHead>
+              <TableHead className="text-black border-2 border-black">
+                Present Days
+              </TableHead>
+              <TableHead className="text-black border-2 border-black">
+                NH
+              </TableHead>
               <TableHead className='text-black border-2 border-black'>
                 HRA
               </TableHead>
@@ -258,6 +311,17 @@ const Page = ({
                 </TableCell>
                 <TableCell className='border-black border-2 text-black'>
                   {employee.employee?.name}
+                </TableCell>
+                 <TableCell className='border-black border-2 text-black'>
+                  {employee.employee?.code}
+                </TableCell>
+                <TableCell className='border-black border-2 text-black'>
+                  {employee?.attendance}
+                </TableCell>
+                <TableCell className='border-black border-2 text-black'>
+                  {CalculateNationalHolidays(
+                    findAttendanceByEmployeeId(employee.employee._id)
+                  )}
                 </TableCell>
                 <TableCell className='border-black border-2 text-black'>
                   {(employee.otherCashDescription?.hra).toFixed(2)}
