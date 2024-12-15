@@ -18,53 +18,26 @@ const SidebarANDRestContainer = ({
     setIsCollapsed(!isCollapsed);
   }
 
-  // useEffect(() => {
-  //   const handleOnline = () => {
-  //     toast.success('Back online!');
-  //   };
-
-  //   const handleOffline = () => {
-  //     toast.error('No internet connection. Please check your connection.');
-  //   };
-
-  //   window.addEventListener('online', handleOnline);
-  //   window.addEventListener('offline', handleOffline);
-
-  //   // Initial check for online status
-  //   if (!navigator.onLine) {
-  //     handleOffline();
-  //   }
-
-  //   // Cleanup event listeners on component unmount
-  //   return () => {
-  //     window.removeEventListener('online', handleOnline);
-  //     window.removeEventListener('offline', handleOffline);
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   const checkDBConnection = async () => {
-  //     const res = await handleDBConnection();
-  //     if (!res.success) {
-  //       toast.error(`Database connection issue: ${res.message}`);
-  //     }
-  //   };
-
-  //   // Initial check for database connection
-  //   checkDBConnection();
-
-  //   // Set an interval to check the database connection every 5 minutes
-  //   const intervalId = setInterval(checkDBConnection, 2 * 60 * 1000);
-
-  //   // Cleanup interval on component unmount
-  //   return () => clearInterval(intervalId);
-  // }, []);
-
   useEffect(() => {
+    const handleResize = () => {
+      if (sidebarRef.current) {
+        setSidebarWidth(sidebarRef.current.offsetWidth + 12);
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(handleResize);
     if (sidebarRef.current) {
-      setSidebarWidth(sidebarRef.current.offsetWidth + 12);
+      resizeObserver.observe(sidebarRef.current);
     }
-  }, [isCollapsed]);
+
+    // Cleanup observer on component unmount
+    return () => {
+      if (sidebarRef.current) {
+        resizeObserver.unobserve(sidebarRef.current);
+      }
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   return (
     <main>
@@ -74,7 +47,7 @@ const SidebarANDRestContainer = ({
         isCollapsed={isCollapsed}
       />
       <section
-        className='p-2 pt-0 px-4 mt-16 w-ful'
+        className='p-2 pt-0 px-4 mt-16 w-full'
         style={{ paddingLeft: sidebarWidth }}
       >
         {children}
