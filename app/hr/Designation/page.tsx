@@ -40,17 +40,54 @@ const Page = () => {
   }, []);
   const handleInputChange = (event: any) => {
     const { name, value } = event.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    if (name === 'basic') {
+      setFormData((prevData) => {
+        return {
+          ...prevData,
+          [name]: value,
+          PayRate: Number(value) + Number(prevData.DA),
+        };
+      });
+    } else if (name === 'DA') {
+      setFormData((prevData) => {
+        return {
+          ...prevData,
+          [name]: value,
+          PayRate: Number(value) + Number(prevData.basic),
+        };
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
   const handleEditInputChange = (event: any) => {
     const { name, value } = event.target;
-    setEditFormData({
-      ...editFormData,
-      [name]: value,
-    });
+    console.log(typeof value);
+    if (name === 'basic') {
+      setEditFormData((prevData) => {
+        return {
+          ...prevData,
+          [name]: value,
+          PayRate: Number(value) + Number(prevData.DA),
+        };
+      });
+    } else if (name === 'DA') {
+      setEditFormData((prevData) => {
+        return {
+          ...prevData,
+          [name]: value,
+          PayRate: Number(value) + Number(prevData.basic),
+        };
+      });
+    } else {
+      setEditFormData({
+        ...editFormData,
+        [name]: value,
+      });
+    }
   };
   const handleSubmit = async (e: any) => {
     e.preventDefault();
