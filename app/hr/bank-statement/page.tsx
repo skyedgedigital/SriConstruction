@@ -22,6 +22,7 @@ import { fetchAllAttendance } from '@/lib/actions/attendance/fetch';
 import React, { useEffect, useState } from 'react';
 import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
 import { backgroundClip } from 'html2canvas/dist/types/css/property-descriptors/background-clip';
+import * as XLSX from 'xlsx';
 
 const Page = ({
   searchParams,
@@ -173,6 +174,37 @@ const Page = ({
 
   const days = Array.from({ length: 31 }, (_, i) => i + 1); // Array of days (1 to 31)
 
+  const exportToExcelHandler = async () => {
+    console.log('first');
+    const excelReportTitle = `Bank Statement for year: ${searchParams.year} month: ${searchParams.month} department: ${searchParams.dept}`;
+    const rowsForTitle = [[excelReportTitle], []];
+    const worksheetData = attendanceData.map((employee, index) => {
+      return {
+        'Sl No.': index + 1,
+        'W.M. Sl.No.': employee.employee.workManNo || '',
+        'Name of Workman.': employee.employee.name || '',
+        'Bank A/c': employee.employee.accountNumber || '',
+        'IFSC Code': employee.employee.bank.ifsc || 0,
+        Amount: Math.round(employee.netAmountPaid.toFixed(2)),
+      };
+    });
+    const combinedExcelRows = rowsForTitle.concat(
+      XLSX.utils.sheet_to_json(XLSX.utils.json_to_sheet(worksheetData), {
+        header: 1,
+      })
+    );
+    const worksheet = XLSX.utils.aoa_to_sheet(combinedExcelRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Bank Statement');
+    XLSX.writeFile(
+      workbook,
+      `Bank_Statement_${searchParams.month || ''}_${
+        searchParams.year || ''
+      }.xlsx`
+    );
+    toast.success('Export Completed');
+  };
+
   return (
     <div>
       <div className='flex gap-2 mb-2'>
@@ -230,6 +262,17 @@ const Page = ({
           </div>
         </div>
 
+        {attendanceData?.length > 0 && (
+          <div>
+            <Button
+              className='mt-4 mb-4 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 mr-auto'
+              onClick={exportToExcelHandler}
+            >
+              Export to Excel
+            </Button>
+          </div>
+        )}
+
         {attendanceData && (
           <div>
             <PDFTable className='border-2 border-black  '>
@@ -280,7 +323,7 @@ const Page = ({
                       {employee.employee.bank.ifsc}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black text-lg'>
-                      {employee.netAmountPaid.toFixed(2)}
+                      {Math.round(employee.netAmountPaid.toFixed(2))}
                     </TableCell>
                   </TableRow>
                 ))}
