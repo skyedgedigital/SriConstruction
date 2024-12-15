@@ -102,7 +102,7 @@ const AddWage = ({ employeee }) => {
       hra: '',
       mob: '',
       incumb: '',
-      eoc: '',
+      eoc: employeee?.existingWage?.otherCash?.toFixed(2) || '',
       pb: '',
       wa: '',
       ca: '',
