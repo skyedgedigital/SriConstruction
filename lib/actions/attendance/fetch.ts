@@ -107,7 +107,16 @@ const fetchAllAttendance = async (filter: string) => {
     if (!dbConnection.success) return dbConnection;
     const searchFilter = JSON.parse(filter);
     console.log(searchFilter);
-
+    if (searchFilter?.workOrderHr === 'Default') {
+      delete searchFilter.workOrderHr;
+    }
+    // console.log(
+    //   '-----------------------------------------------------------------------'
+    // );
+    // console.log(searchFilter);
+    // console.log(
+    //   '------------------------------------------------------------------------------'
+    // );
     const resp = await Attendance.find(searchFilter)
       .populate('employee')
       .populate({
