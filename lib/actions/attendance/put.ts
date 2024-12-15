@@ -58,6 +58,10 @@ const putAttendance = async (
       attendanceArray.forEach((day) => {
         if (day.status === 'Present') {
           presentDaysCount++;
+        } else if (day.status === 'NH') {
+          presentDaysCount++;
+        } else if (day.status === 'Half Day') {
+          presentDaysCount += 0.5;
         }
       });
 
