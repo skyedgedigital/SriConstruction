@@ -305,7 +305,7 @@ export const wagesColumns: ColumnDef<EmployeeData>[] = [
                           0
                         </TableCell>
                         <TableCell className='border-black border-2 text-black'>
-                          {payment.existingWage.netAmountPaid.toFixed(2)}
+                          {Math.ceil(payment.existingWage.netAmountPaid)}
                         </TableCell>
                       </TableRow>
                     </TableBody>
