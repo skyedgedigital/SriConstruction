@@ -177,7 +177,24 @@ const Page = ({
   const exportToExcelHandler = async () => {
     console.log('first');
     const excelReportTitle = `Bank Statement for year: ${searchParams.year} month: ${searchParams.month} department: ${searchParams.dept}`;
-    const rowsForTitle = [[excelReportTitle], []];
+    const rowsForTitle = [
+      ['To'],
+      ['The Branch Manager'],
+      [
+        `Regarding: Fund Transfer for Bank Payment ${
+          months[parseInt(searchParams.month) - 1]
+        }-${searchParams.year}`,
+      ],
+      [
+        `This is to bring to your kind attention that I issued a self cheque of Rs.${total} vide Cheque No.`,
+      ],
+      [
+        `I wish to transfer this amount to the following accounts. Details of which are given below:`,
+      ],
+      [`Respected Sir,`],
+      [][excelReportTitle],
+      [],
+    ];
     const worksheetData = attendanceData.map((employee, index) => {
       return {
         'Sl No.': index + 1,
