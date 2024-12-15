@@ -230,6 +230,10 @@ const fetchStatus = async (filter: string): Promise<ApiResponse<any>> => {
         obj['Leave'] = obj['Leave'] + 1;
       } else if (ele.status == 'Off') {
         obj['Off'] = obj['Off'] + 1;
+      } else if (ele.status == 'NH') {
+        obj['Present'] = obj['Present'] + 1;
+      } else if (ele.status == 'Half Day') {
+        obj['Present'] = obj['Present'] + 0.5;
       }
     });
     return {
