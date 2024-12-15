@@ -377,6 +377,9 @@ const Page = ({
                 Total
               </TableCell>
               <TableCell className='border-black border-2 text-black'></TableCell>
+               <TableCell className='border-black border-2 text-black'></TableCell>
+              <TableCell className='border-black border-2 text-black'></TableCell>
+              <TableCell className='border-black border-2 text-black'></TableCell>
               <TableCell className='border-black border-2 text-black'>
                 {wagesData
                   .reduce(
