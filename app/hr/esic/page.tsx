@@ -23,6 +23,7 @@ import React, { useEffect, useState } from 'react';
 import StateActionHr from '@/lib/actions/HR/State/StateAction';
 import { array } from 'zod';
 import { Loader2 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 const Page = ({
   searchParams
@@ -177,12 +178,54 @@ const Page = ({
 
     const days = Array.from({ length: 31 }, (_, i) => i + 1); // Array of days (1 to 31)
 
+    const exportToExcelHandler = async () => {
+    console.log('first');
+    const excelReportTitle = `ESIC Report for year: ${searchParams.year} month: ${searchParams.month} state: ${searchParams.esistate}`;
+    const rowsForTitle = [[excelReportTitle], []];
+    const worksheetData = attendanceData.map((employee, index) => {
+      return {
+        'Sl No.': index + 1,
+        'IP Number': employee?.employee?.UAN || '',
+        'P.F. No.': employee?.employee?.pfNo || '',
+        'IP Name': employee?.employee?.name || '',
+        'No. of days for which wages paid/payable': employee?.attendance || 0,
+        'Total Monthly Wage': (employee?.total).toFixed(2),
+      };
+    });
+    const combinedExcelRows = rowsForTitle.concat(
+      XLSX.utils.sheet_to_json(XLSX.utils.json_to_sheet(worksheetData), {
+        header: 1,
+      })
+    );
+    const worksheet = XLSX.utils.aoa_to_sheet(combinedExcelRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'ESIC Report');
+    XLSX.writeFile(
+      workbook,
+      `ESIC${searchParams.month || ''}_${searchParams.year || ''}_${
+        searchParams.esistate
+      }.xlsx`
+    );
+    toast.success('Export Completed');
+  };
+
     return (
       <div className='ml-[80px]'>
         <div className='flex gap-2 mb-2'>
           <Button onClick={handleDownloadPDF}>Download PDF</Button>
           <Button onClick={handleOnClick}>Print</Button>
         </div>
+
+      {attendanceData?.length > 0 && (
+        <div>
+          <Button
+            className='mt-4 mb-4 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 mr-auto'
+            onClick={exportToExcelHandler}
+          >
+            Export to Excel
+          </Button>
+        </div>
+      )}
 
         <div id={`${searchParams.month}/${searchParams.year}`} ref={contentRef}>
           {attendanceData && !loading ? (
