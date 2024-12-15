@@ -284,7 +284,7 @@ export const wagesColumns: ColumnDef<EmployeeData>[] = [
                           0
                         </TableCell>
                         <TableCell className='border-black border-2 text-black'>
-                          {payment.existingWage.otherCash}
+                          {payment.existingWage.otherCash.toFixed(2)}
                         </TableCell>
                         <TableCell className='border-black border-2 text-black'>
                           {payment.existingWage.allowances}
