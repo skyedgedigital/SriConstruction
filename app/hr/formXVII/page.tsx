@@ -403,19 +403,19 @@ const Page = ({
                   {employee.allowances}
                   </TableCell> */}
                     <TableCell className='border-black border-2 text-black'>
-                      {(employee?.total).toFixed(2)}
+                      {Math.round(employee?.total).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {(0.12 * employee?.total).toFixed(2)}
+                      {Math.round(0.12 * employee?.total).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {(0.0075 * employee?.total).toFixed(2)}
+                      {Math.round(0.0075 * employee?.total).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {employee?.otherDeduction}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {Math.round(employee?.netAmountPaid)}
+                      {Math.round(employee?.netAmountPaid).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {Number(employee?.otherCashDescription?.ca) +
@@ -522,7 +522,7 @@ const Page = ({
                 </TableRow> */}
               </TableBody>
             </PDFTable>
-            <div className='w-[1650px] min-w-fit border-2 border-black mt-2 flex text-sm p-2 items-center justify-between gap-10'>
+            <div className='w-[1675px] min-w-fit border-2 border-black mt-2 flex text-sm p-2 items-center justify-between gap-10'>
               <div className='flex items-center justify-center gap-4'>
                 <span>Basic:</span>
                 <span>
