@@ -378,11 +378,15 @@ const Page = ({
                       </div>
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {Math.round(
-                        Number(
-                          employee?.designation.basic * employee?.attendance
-                        )
-                      )}
+                      <div>
+                        {Math.round(
+                          Number(
+                            employee?.designation.basic * employee?.attendance
+                          )
+                        )}
+                      </div>
+                      <div>Incent</div>
+                      <div>{Number(employee?.incentiveAmount).toFixed(2)}</div>
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {(
@@ -430,7 +434,7 @@ const Page = ({
                     <TableCell className='border-black border-2 text-black'></TableCell>
                   </TableRow>
                 ))}
-                 <TableRow className='text-black font-mono h-28'>
+{/*                  <TableRow className='text-black font-mono h-28'>
                   <TableCell className='border-black border-2 text-black'></TableCell>
                   <TableCell className='border-black border-2 text-black'></TableCell>
                   <TableCell className='border-black border-2 text-black'></TableCell>
@@ -515,9 +519,120 @@ const Page = ({
                   <TableCell className='border-black border-2 text-black'></TableCell>
                   <TableCell className='border-black border-2 text-black'></TableCell>
                   <TableCell className='border-black border-2 text-black'></TableCell>
-                </TableRow>
+                </TableRow> */}
               </TableBody>
             </PDFTable>
+            <div className='w-[1650px] min-w-fit border-2 border-black mt-2 flex text-sm p-2 items-center justify-between gap-10'>
+              <div className='flex items-center justify-center gap-4'>
+                <span>Basic:</span>
+                <span>
+                  {Math.round(
+                    calculateTotal(
+                      attendanceData?.map((item) =>
+                        Number(item?.designation?.basic)
+                      )
+                    )
+                  ).toFixed(2)}
+                </span>
+              </div>
+              <div className='flex items-center justify-center gap-1'>
+                <span>DA:</span>
+                <span>
+                  {Math.round(
+                    calculateTotal(
+                      attendanceData?.map((item) =>
+                        Number(item?.designation.DA)
+                      )
+                    )
+                  ).toFixed(2)}
+                </span>
+              </div>
+              <div className='flex items-center justify-center gap-1'>
+                <span>Total Attn.:</span>
+                <span>
+                  {' '}
+                  {calculateTotal(
+                    attendanceData?.map((item) => item?.attendance)
+                  )}
+                </span>
+              </div>
+              <div className='flex items-center justify-center gap-1'>
+                <span>Gross Payment:</span>
+                <span>
+                  {Math.round(
+                    calculateTotal(
+                      attendanceData.map((item) => Number(item?.total))
+                    )
+                  ).toFixed(2)}
+                </span>
+              </div>
+              <div className='flex items-center justify-center gap-1'>
+                <span>P.F Amt.:</span>
+                <span>
+                  {Math.round(
+                    calculateTotal(
+                      attendanceData.map((item) => 0.12 * Number(item?.total))
+                    )
+                  ).toFixed(2)}
+                </span>
+              </div>
+              <div className='flex items-center justify-center gap-1'>
+                <span>ESI Amt.:</span>
+                <span>
+                  {Math.round(
+                    calculateTotal(
+                      attendanceData.map((item) => 0.0075 * Number(item?.total))
+                    )
+                  ).toFixed(2)}
+                </span>
+              </div>
+              <div className='flex items-center justify-center gap-1'>
+                <span>Net Payment:</span>
+                <span>
+                  {Math.round(
+                    calculateTotal(
+                      attendanceData.map((item) => Number(item?.netAmountPaid))
+                    )
+                  ).toFixed(2)}
+                </span>
+              </div>
+              <div className='flex items-center justify-center gap-1'>
+                <span>OT value:</span>
+                <span>0.00</span>
+              </div>
+              <div className='flex items-center justify-center gap-1'>
+                <span>Attn. Alw</span>
+                <span>
+                  {Math.round(
+                    calculateTotal(
+                      attendanceData.map((item) =>
+                        Number(item?.otherCashDescription?.eoc)
+                      )
+                    )
+                  ).toFixed(2)}
+                </span>
+              </div>
+              <div className='flex items-center justify-center gap-1'>
+                <span>Monthly Incent</span>
+                <span>
+                  {Math.round(
+                    calculateTotal(
+                      attendanceData.map((item) => item.incentiveAmount)
+                    )
+                  ).toFixed(2)}
+                </span>
+              </div>
+              <div className='flex items-center justify-center gap-1'>
+                <span>CA</span>
+                <span>
+                  {calculateTotal(
+                    attendanceData.map((item) =>
+                      Number(item?.otherCashDescription?.ca)
+                    )
+                  ).toFixed(2)}
+                </span>
+              </div>
+            </div>
           </div>
         )}
         {!attendanceData && (
