@@ -249,7 +249,7 @@ const Page = ({
                       <TableCell className='border-black border-2 text-black'>{employee?.employee?.pfNo}</TableCell>
                       <TableCell className='border-black border-2 text-black'>{employee?.employee?.name}</TableCell>
                       <TableCell className='border-black border-2 text-black'>{employee?.attendance}</TableCell>
-                      <TableCell className='border-black border-2 text-black'>{(employee?.total).toFixed(2)}</TableCell>
+                      <TableCell className='border-black border-2 text-black'>{Math.round(employee?.total).toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
