@@ -10,7 +10,7 @@ import NextTopLoader from 'nextjs-toploader';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'SHREE CONSTRUCTIONS',
+  title: 'SRI CONSTRUCTIONS',
   icons: '/assets/logo-bg.png',
 };
 

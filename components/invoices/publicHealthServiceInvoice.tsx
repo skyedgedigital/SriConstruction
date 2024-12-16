@@ -484,9 +484,7 @@ const PublicHealthServiceInvoice = ({
                   alt='sign image'
                 />{' '}
               </div>
-              <h1 className='font-bold text-sm uppercase'>
-                Shekhar Enterprises
-              </h1>
+              <h1 className='font-bold text-sm uppercase'>Sri Constructions</h1>
             </div>
             <div className=''>
               <p className=' border-b-2 border-b-black w-fit pr-2 pb-2'>

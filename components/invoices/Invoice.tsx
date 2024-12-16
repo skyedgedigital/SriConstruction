@@ -490,7 +490,7 @@ const Invoice = ({
                 />{' '}
               </div>
               <h1 className='font-bold text-sm uppercase'>
-                Shekhar Enterprises
+                Sri Constructions
               </h1>
             </div>
             <div className=''>

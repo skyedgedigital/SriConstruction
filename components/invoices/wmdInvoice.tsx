@@ -507,7 +507,7 @@ const WMDInvoice = ({
               </div>
               <div className='w-full flex gap-2'>
                 <span>3. Vendor&apos;s name:</span>
-                <span className='font-normal'>SHEKHAR ENTERPRISES</span>
+                <span className='font-normal uppercase'>Sri Constructions</span>
               </div>
               <div className='w-full flex gap-2'>
                 <span>4. Job Location:</span>
