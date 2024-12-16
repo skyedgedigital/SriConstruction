@@ -291,21 +291,27 @@ export const wagesColumns: ColumnDef<EmployeeData>[] = [
                         </TableCell>
 
                         <TableCell className='border-black border-2 text-black'>
-                          {payment.existingWage.total.toFixed(2)}
+                          {Math.round(payment.existingWage.total).toFixed(2)}
                         </TableCell>
                         <TableCell className='border-black border-2 text-black'>
                           {' '}
-                          {(0.12 * payment.existingWage.total).toFixed(2)}
+                          {Math.round(
+                            0.12 * payment.existingWage.total
+                          ).toFixed(2)}
                         </TableCell>
                         <TableCell className='border-black border-2 text-black'>
                           {' '}
-                          {(0.0075 * payment.existingWage.total).toFixed(2)}
+                          {Math.round(
+                            0.0075 * payment.existingWage.total
+                          ).toFixed(2)}
                         </TableCell>
                         <TableCell className='border-black border-2 text-black'>
                           0
                         </TableCell>
                         <TableCell className='border-black border-2 text-black'>
-                          {Math.ceil(payment.existingWage.netAmountPaid)}
+                          {Math.ceil(
+                            payment.existingWage.netAmountPaid
+                          ).toFixed(2)}
                         </TableCell>
                       </TableRow>
                     </TableBody>
