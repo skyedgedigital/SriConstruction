@@ -64,7 +64,7 @@ const schema = z.object({
   FromDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format'),
   ToDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format'),
   workOrder: z.string().trim().min(0, 'Required'),
-  Designation: z.string().trim().min(0, 'Required'),
+  // Designation: z.string().trim().min(0, "Required"),
   DA: z.boolean().optional(),
 });
 
@@ -196,15 +196,14 @@ const Arrear = () => {
           if (wageresponse.success) {
             toast.success('Succesfully retrived');
             const wagedata = JSON.parse(wageresponse.data);
-            const wageDataArray = wagedata.filter((employee) => {
-              return (
-                employee.employee.designation_details[0].designation ===
-                designationState
-              );
-            });
-            setWagesData(wageDataArray);
+            //changed as demand
+            // const wageDataArray = wagedata.filter((employee) => {
+            //   return employee.employee.designation_details[0].designation ===
+            //     designationState;
+            // });
+            setWagesData(wagedata); //changed
 
-            console.log('wow kya wage hai', wagedata, wageDataArray);
+            console.log('wow kya wage hai', wagedata);
           } else {
             toast.error('Internal Server Error');
           }
@@ -214,7 +213,7 @@ const Arrear = () => {
             startDate: data.FromDate,
             endDate: data.ToDate,
             workOrder: data.workOrder,
-            Designation: data.Designation,
+            // Designation: data.Designation,
             DA: data.DA ? data.DA : false,
           });
         } else {
@@ -244,7 +243,7 @@ const Arrear = () => {
             Arrear Generator
           </h2>
 
-          <div className=' p-4 flex flex-col justify-center items-center md:justify-start md:flex-row gap-6'>
+          <div className='p-4 flex flex-col justify-center items-center md:justify-start md:flex-row gap-6'>
             <FormField
               control={form.control}
               name='FromDate'
@@ -287,7 +286,7 @@ const Arrear = () => {
               control={form.control}
               name='workOrder'
               render={({ field }) => (
-                <FormItem className=' flex-col flex gap-1 '>
+                <FormItem>
                   <FormLabel>Work Order</FormLabel>
                   <Select
                     onValueChange={(e) => {
@@ -296,7 +295,7 @@ const Arrear = () => {
                     }}
                     value={field.value}
                   >
-                    <FormControl className='px-2 border border-gray-400'>
+                    <FormControl>
                       <SelectTrigger>
                         {field.value ? (
                           <SelectValue placeholder='' />
@@ -305,7 +304,11 @@ const Arrear = () => {
                         )}
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className='max-w-80 max-h-72 '>
+                    <SelectContent className='max-w-80 max-h-72'>
+                      <SelectItem value='Default' key='Default'>
+                        Default
+                      </SelectItem>
+
                       {allWorkOrderNumbers?.map((option, index) => (
                         <SelectItem value={option._id.toString()} key={option}>
                           {option.workOrderNumber}
@@ -317,58 +320,58 @@ const Arrear = () => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name='Designation'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Designation</FormLabel>
-                  <Select
-                    onValueChange={(e) => {
-                      field.onChange(e);
-                      setDesignationState(e);
-                    }}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        {field.value ? (
-                          <SelectValue placeholder='' />
-                        ) : (
-                          'Select Designation'
-                        )}
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className='max-w-80 max-h-72'>
-                      {designationData?.map((option, index) => (
-                        <SelectItem value={option} key={index}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='DA'
-              render={({ field }) => (
-                <FormItem className='flex items-center gap-2 py-2'>
-                  <input
-                    type='radio'
-                    checked={field.value}
-                    onChange={() => {
-                      field.onChange(true);
-                      setDaAllow((prev) => !prev);
-                    }}
-                  />
-                  <FormLabel>DA</FormLabel>
-                </FormItem>
-              )}
-            />
           </div>
+          {/* <FormField
+            control={form.control}
+            name="Designation"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Designation</FormLabel>
+                <Select
+                  onValueChange={(e) => {
+                    field.onChange(e);
+                    setDesignationState(e);
+                  }}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      {field.value ? (
+                        <SelectValue placeholder="" />
+                      ) : (
+                        "Select Designation"
+                      )}
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="max-w-80 max-h-72">
+                    {designationData?.map((option, index) => (
+                      <SelectItem value={option} key={index}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          /> */}
+          <FormField
+            control={form.control}
+            name='DA'
+            render={({ field }) => (
+              <FormItem className='flex items-center gap-2 py-2'>
+                <input
+                  type='radio'
+                  checked={field.value}
+                  onChange={() => {
+                    field.onChange(true);
+                    setDaAllow((prev) => !prev);
+                  }}
+                />
+                <FormLabel>DA</FormLabel>
+              </FormItem>
+            )}
+          />
           <div className='py-4 '>
             <Button
               type='submit'
