@@ -31,8 +31,8 @@ const Page = () => {
   const [selectedTab, setSelectedTab] = useState('compliance'); // New state for tabs
   const [year, setYear] = useState(null);
   const [month, setMonth] = useState(null);
-  const [workOrderNumber, setWorkOrderNumber] = useState<any>(null);  
-  const [workOrderName, setWorkOrderName] = useState<any>(null);  
+  const [workOrderNumber, setWorkOrderNumber] = useState<any>(null);
+  const [workOrderName, setWorkOrderName] = useState<any>(null);
   const [allWorkOrderNumbers, setAllWorkOrderNumbers] = useState([]);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ const Page = () => {
         setAllWorkOrderNumbers(workOrderNumbers);
         console.log('yeraaaa wowowowwoncjd', workOrderNumbers);
       } else {
-        toast.error("Can not fetch work order numbers!");
+        toast.error('Can not fetch work order numbers!');
       }
     };
     fetch();
@@ -98,6 +98,16 @@ const Page = () => {
       '_blank'
     );
   };
+
+  useEffect(() => {
+    console.log('XXX', allWorkOrderNumbers);
+    const name = allWorkOrderNumbers.find(
+      (won) => won._id === workOrderNumber
+    )?.workOrderNumber;
+    if (name) {
+      setWorkOrderName(name);
+    }
+  }, [workOrderNumber]);
 
   return (
     <div>
@@ -239,17 +249,20 @@ const Page = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className='max-w-80 max-h-72 '>
-                        {allWorkOrderNumbers?.map((option, index) => (
-                          <SelectItem value={option._id.toString()} key={option}>
-                            {option.workOrderNumber}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                          {allWorkOrderNumbers?.map((option, index) => (
+                            <SelectItem
+                              value={option._id.toString()}
+                              key={option}
+                            >
+                              {option.workOrderNumber}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
               <div className='py-4 flex flex-col md:flex-row justify-center items-center'>
                 <Button
