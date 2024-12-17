@@ -220,7 +220,7 @@ const Page = ({
                     Name and Address of Contractor:
                   </div>
                   <div className='flex flex-col mb-4'>
-                    <div>PANCH SHEEL UDYOG</div>
+                    <div>Sri Construction and Co.</div>
                     <span>Office Add. -C-4,Brindawan Garden,Sonari,Jsr.</span>
                     <span>Corresponding Add.-C/69,B-Block,Sonari,Jsr.</span>
                   </div>
