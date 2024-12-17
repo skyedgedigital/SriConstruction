@@ -167,7 +167,9 @@ const Page = ({
                 <div className='font-bold text-blue-600 max-w-64 '>
                   Name and Address of Contractor:
                 </div>
-                <div>Sri construction and Co.</div>
+                <div>
+                  SRI CONSTRUCTION & CO., H. NO. 78 KAPLI NEAR HARI MANDIR, .PO KAPALI SARAIKEA
+                </div>
               </div>
               <div className='flex gap-3 mb-4'>
                 <div className='font-bold text-blue-600  '>
