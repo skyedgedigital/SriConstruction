@@ -166,31 +166,31 @@ const Page = ({
       return {
         UAN: employee?.employee?.UAN || '',
         'Employee Name': employee?.employee?.name || '',
-        'EPF Wages 1': (employee?.total >= 15000
-          ? 15000
-          : employee?.total
+        'EPF Wages 1': Math.round(
+          employee?.total >= 15000 ? 15000 : employee?.total
         ).toFixed(2),
-        'EPF Wages 2': (employee?.total >= 15000
-          ? 15000
-          : employee.total
+        'EPF Wages 2': Math.round(
+          employee?.total >= 15000 ? 15000 : employee.total
         ).toFixed(2),
         'EPS Wages':
           calculateAge(employee?.employee?.dob) > 60
-            ? 0
+            ? Math.round(0).toFixed(2)
             : employee?.total >= 15000
-            ? 15000
-            : employee.total.toFixed(2),
+            ? Math.round(15000).toFixed(2)
+            : Math.round(employee.total).toFixed(2),
         'EDLI Wages':
-          employee?.total >= 15000 ? 15000 : employee.total.toFixed(2),
-        PF: (0.12 * employee?.total).toFixed(2),
+          employee?.total >= 15000
+            ? Math.round(15000).toFixed(2)
+            : Math.round(employee.total).toFixed(2),
+        PF: Math.round(0.12 * employee?.total).toFixed(2),
         'EPF Amount':
           calculateAge(employee?.employee?.dob) > 60
-            ? 0
-            : (0.0833 * employee?.total).toFixed(2),
+            ? Math.round(0).toFixed(2)
+            : Math.round(0.0833 * employee?.total).toFixed(2),
         'PPF Amount':
           calculateAge(employee?.employee?.dob) > 60
-            ? (0.12 * employee?.total).toFixed(2)
-            : (0.0367 * employee?.total).toFixed(2),
+            ? Math.round(0.12 * employee?.total).toFixed(2)
+            : Math.round(0.0367 * employee?.total).toFixed(2),
       };
     });
 
