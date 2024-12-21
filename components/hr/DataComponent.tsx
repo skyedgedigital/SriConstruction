@@ -133,7 +133,7 @@ const DataComponent = ({eleId}) => {
                                   <DialogHeader>
                                       <DialogTitle>Edit Information for {data.name}</DialogTitle>
                                       <DialogDescription>
-                                          <Create name={data.name} />
+                                          <Create name={data.name} docId={eleId} />
                                       </DialogDescription>
                                   </DialogHeader>
                               </LargeDialogContent>
