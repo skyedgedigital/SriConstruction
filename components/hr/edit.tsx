@@ -5,10 +5,10 @@ import EsiLocationAction from "@/lib/actions/HR/EsiLocation/EsiLocationAction";
 import siteMasterAction from "@/lib/actions/HR/siteMaster/siteMasterAction";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { fetchEmployeeByName } from "@/lib/actions/HR/EmployeeData/fetch";
+import {fetchEmployeeById, fetchEmployeeByName } from "@/lib/actions/HR/EmployeeData/fetch";
 import BankAction from "@/lib/actions/HR/Bank/bankAction";
 
-const Create = (name ) => {
+const Create = ({ name, docId }) => {
   const [formData, setFormData] = useState({
     code: "",
     workManNo: "",
@@ -94,20 +94,21 @@ const Create = (name ) => {
       }
     };
     const FetchEmployee = async () => {
-        const resp = await fetchEmployeeByName(name)
-        console.log("wowoowowowowowowow",resp)
-        if (resp.status === 200) {
-            const details=await JSON.parse(resp.data)
-
-          console.log(details._id)
-          setEmployeeDetails(details)
-          setFormData((prevData) => ({
-            ...prevData,
-            ...details
-          }));
-          console.log("yeh hogya formdata", formData)
-        }
-      };
+          // const resp = await fetchEmployeeByName(name)
+      // console.log('LAWDE', name, docId);
+      const resp = await fetchEmployeeById(docId);
+      console.log('wowoowowowowowowow', resp);
+      if (resp.status === 200) {
+        const details = await JSON.parse(resp.data);
+        console.log(details._id);
+        setEmployeeDetails(details);
+        setFormData((prevData) => ({
+          ...prevData,
+          ...details,
+        }));
+        console.log('yeh hogya formdata', formData);
+      }
+    };
     const fn = async () => {
       depFn();
       siteFn();
