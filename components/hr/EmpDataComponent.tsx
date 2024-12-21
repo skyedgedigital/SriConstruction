@@ -22,7 +22,7 @@ const EmpDataComponent = (props) => {
         <span>{name}</span>
         <div className="flex gap-2" >
             <button className="text-blue-500" onClick={()=>{
-                window.open(`/hr/editEmpData?name=${name}`)
+                window.open(`/hr/editEmpData?docId=${docId}&name=${name}`);
             }} >
                 Edit
             </button>
