@@ -180,7 +180,9 @@ const Page = ({
           employee?.total >= 15000
             ? Math.round(15000).toFixed(2)
             : Math.round(employee.total).toFixed(2),
-        PF: Math.round(0.12 * employee?.total).toFixed(2),
+        PF: Math.round((employee?.attendance * employee?.designation.PayRate +
+                          employee?.otherCash) *
+                        0.12).toFixed(2),
         'EPF Amount':
           calculateAge(employee?.employee?.dob) > 60
             ? Math.round(0).toFixed(2)
@@ -330,7 +332,12 @@ const Page = ({
                         : employee.total.toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {(0.12 * employee?.total).toFixed(2)}
+                      {/* {(0.12 * employee?.total).toFixed(2)} */}
+                      {(
+                        (employee?.attendance * employee?.designation.PayRate +
+                          employee?.otherCash) *
+                        0.12
+                      ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {calculateAge(employee?.employee?.dob) > 60
