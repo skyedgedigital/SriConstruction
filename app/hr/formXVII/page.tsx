@@ -407,7 +407,11 @@ const Page = ({
                       {Math.round(employee?.total).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {Math.round(0.12 * employee?.total).toFixed(2)}
+                      {Math.round(
+                        (employee?.attendance * employee?.designation.PayRate +
+                          employee?.otherCash) *
+                          0.12
+                      ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {Math.round(0.0075 * employee?.total).toFixed(2)}
@@ -420,7 +424,6 @@ const Page = ({
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {Number(employee?.otherCashDescription?.ca) +
-                        Number(employee?.otherCashDescription?.eoc) +
                         Number(employee?.otherCashDescription?.hra) +
                         Number(employee?.otherCashDescription?.incumb) +
                         Number(employee?.otherCashDescription?.ma) +
