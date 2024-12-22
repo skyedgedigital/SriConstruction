@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Calendar as CalendarIcon, CircleX } from 'lucide-react';
+import { Calendar as CalendarIcon, CircleX, Trash } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import vehicleAction from '@/lib/actions/vehicle/vehicleAction';
 import {
@@ -62,7 +62,8 @@ const schema = z.object({
         message: issue.code === 'invalid_date' ? 'Required' : defaultError,
       }),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   gatePassNumber: z.string().optional(),
   gatePassExpiry: z.coerce
     .date({
@@ -70,7 +71,8 @@ const schema = z.object({
         message: issue.code === 'invalid_date' ? 'Required' : defaultError,
       }),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   tax: z.string().optional(),
   taxExpiryDate: z.coerce
     .date({
@@ -78,7 +80,8 @@ const schema = z.object({
         message: issue.code === 'invalid_date' ? 'Required' : defaultError,
       }),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   fitness: z.string().optional(),
   fitnessExpiry: z.coerce
     .date({
@@ -86,7 +89,8 @@ const schema = z.object({
         message: issue.code === 'invalid_date' ? 'Required' : defaultError,
       }),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   loadTest: z.string().optional(),
   loadTestExpiry: z.coerce
     .date({
@@ -94,7 +98,8 @@ const schema = z.object({
         message: issue.code === 'invalid_date' ? 'Required' : defaultError,
       }),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   safety: z.string().optional(),
   safetyExpiryDate: z.coerce
     .date({
@@ -102,7 +107,8 @@ const schema = z.object({
         message: issue.code === 'invalid_date' ? 'Required' : defaultError,
       }),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   puc: z.string().optional(),
   pucExpiryDate: z.coerce
     .date({
@@ -110,12 +116,18 @@ const schema = z.object({
         message: issue.code === 'invalid_date' ? 'Required' : defaultError,
       }),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   fuelType: z.enum(['Diesel', 'Petrol']),
   // fuelCost: zodInputStringPipe(
   //   z.number().nonnegative('Price must be non-negative')
   // ),
-  emi: zodInputStringPipe(z.number().nonnegative('Price must be non-negative')),
+  // In the schema definition
+  emi: z.coerce
+    .number()
+    .nonnegative('EMI cannot be negative.')
+    .default(0)
+    .optional(),
   emiStatus: z.enum(['Open', 'Close']),
 });
 
@@ -201,6 +213,7 @@ const EditVehicle: React.FC<{}> = () => {
         form.setValue('gatePassNumber', vehicleDetails?.gatePassNumber);
         form.setValue('gatePassExpiry', vehicleDetails?.gatePassExpiry);
         form.setValue('tax', vehicleDetails?.tax);
+        form.setValue('taxExpiryDate', vehicleDetails?.taxExpiryDate);
         form.setValue('fitness', vehicleDetails?.fitness);
         form.setValue('fitnessExpiry', vehicleDetails?.fitnessExpiry);
         form.setValue('loadTest', vehicleDetails?.loadTest);
@@ -244,7 +257,7 @@ const EditVehicle: React.FC<{}> = () => {
 
   const onSubmit: SubmitHandler<FormFields> = async (data: FormFields) => {
     try {
-      console.log(data);
+      console.log('SUBMITTED DATA', data);
 
       const { vehicleNumber, ...updatedData } = data;
 
@@ -340,7 +353,6 @@ const EditVehicle: React.FC<{}> = () => {
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name='vehicleType'
@@ -363,7 +375,6 @@ const EditVehicle: React.FC<{}> = () => {
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name='fuelType'
@@ -389,515 +400,654 @@ const EditVehicle: React.FC<{}> = () => {
                 <FormMessage />
               </FormItem>
             )}
-          />
+          />{' '}
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='vendor'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 flex-1'>
+                  <FormLabel>Vendor</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input placeholder='' {...field} className=' bg-white ' />
+                    ) : (
+                      <Input
+                        placeholder='Enter Vendor'
+                        {...field}
+                        className=' bg-white '
+                      />
+                    )}
+                  </FormControl>
 
-          {/* <FormField
-            control={form.control}
-            name='fuelCost'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Fuel Consumption</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input
-                      type='number'
-                      placeholder=''
-                      {...field}
-                      className=' bg-white '
-                    />
-                  ) : (
-                    <Input
-                      placeholder='Enter Fuel Consumption'
-                      {...field}
-                      className=' bg-white '
-                    />
-                  )}
-                </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />{' '}
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('vendor', '');
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='location'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 flex-1'>
+                  <FormLabel>Location</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input placeholder='' {...field} className=' bg-white ' />
+                    ) : (
+                      <Input
+                        placeholder='Enter Location'
+                        {...field}
+                        className=' bg-white '
+                      />
+                    )}
+                  </FormControl>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('location', '');
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='insuranceNumber'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 flex-1'>
+                  <FormLabel>Insurance Number</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input placeholder='' {...field} className=' bg-white ' />
+                    ) : (
+                      <Input
+                        placeholder='Enter Insurance Number'
+                        {...field}
+                        className=' bg-white '
+                      />
+                    )}
+                  </FormControl>
 
-          <FormField
-            control={form.control}
-            name='location'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Location</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input placeholder='' {...field} className=' bg-white ' />
-                  ) : (
-                    <Input
-                      placeholder='Enter Location'
-                      {...field}
-                      className=' bg-white '
-                    />
-                  )}
-                </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('insuranceNumber', '');
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='insuranceExpiryDate'
+              render={({ field }) => (
+                <FormItem className='flex flex-col pt-2 justify-center'>
+                  <FormLabel>Insurance Expiry</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild className=''>
+                      <FormControl>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-[240px] pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, 'PPP')
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-auto p-0'>
+                      <Calendar
+                        mode='single'
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('insuranceExpiryDate', null);
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='gatePassNumber'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 flex-1'>
+                  <FormLabel>Gate Pass Number</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input placeholder='' {...field} className=' bg-white ' />
+                    ) : (
+                      <Input
+                        placeholder='Enter Gate Pass Number'
+                        {...field}
+                        className=' bg-white '
+                      />
+                    )}
+                  </FormControl>
 
-          <FormField
-            control={form.control}
-            name='vendor'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Vendor</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input placeholder='' {...field} className=' bg-white ' />
-                  ) : (
-                    <Input
-                      placeholder='Enter Vendor'
-                      {...field}
-                      className=' bg-white '
-                    />
-                  )}
-                </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('gatePassNumber', '');
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='gatePassExpiry'
+              render={({ field }) => (
+                <FormItem className='flex flex-col pt-2 justify-center'>
+                  <FormLabel>Gate Pass Expiry</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild className=''>
+                      <FormControl>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-[240px] pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, 'PPP')
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-auto p-0'>
+                      <Calendar
+                        mode='single'
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='insuranceNumber'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Insurance Number</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input placeholder='' {...field} className=' bg-white ' />
-                  ) : (
-                    <Input
-                      placeholder='Enter Insurance Number'
-                      {...field}
-                      className=' bg-white '
-                    />
-                  )}
-                </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('gatePassExpiry', null);
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='tax'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 flex-1'>
+                  <FormLabel>Tax Number</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input placeholder='' {...field} className=' bg-white ' />
+                    ) : (
+                      <Input
+                        placeholder='Enter Tax Number'
+                        {...field}
+                        className=' bg-white '
+                      />
+                    )}
+                  </FormControl>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='insuranceExpiryDate'
-            render={({ field }) => (
-              <FormItem className='flex flex-col pt-2 justify-center'>
-                <FormLabel>Insurance Expiry</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild className=''>
-                    <FormControl>
-                      <Button
-                        variant={'outline'}
-                        className={cn(
-                          'w-[240px] pl-3 text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, 'PPP')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-auto p-0'>
-                    <Calendar
-                      mode='single'
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('tax', '');
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='taxExpiryDate'
+              render={({ field }) => (
+                <FormItem className='flex flex-col pt-2 justify-center'>
+                  <FormLabel>Tax Expiry</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild className=''>
+                      <FormControl>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-[240px] pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, 'PPP')
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-auto p-0'>
+                      <Calendar
+                        mode='single'
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('taxExpiryDate', null);
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='fitness'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 flex-1'>
+                  <FormLabel>Fitness Number</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input placeholder='' {...field} className=' bg-white ' />
+                    ) : (
+                      <Input
+                        placeholder='Enter Fitness Number'
+                        {...field}
+                        className=' bg-white '
+                      />
+                    )}
+                  </FormControl>
 
-          <FormField
-            control={form.control}
-            name='gatePassNumber'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Gate Pass Number</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input placeholder='' {...field} className=' bg-white ' />
-                  ) : (
-                    <Input
-                      placeholder='Enter Gate Pass Number'
-                      {...field}
-                      className=' bg-white '
-                    />
-                  )}
-                </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('fitness', '');
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='fitnessExpiry'
+              render={({ field }) => (
+                <FormItem className='flex flex-col pt-2 justify-center'>
+                  <FormLabel>Fitness Expiry</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild className=''>
+                      <FormControl>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-[240px] pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, 'PPP')
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-auto p-0'>
+                      <Calendar
+                        mode='single'
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='gatePassExpiry'
-            render={({ field }) => (
-              <FormItem className='flex flex-col pt-2 justify-center'>
-                <FormLabel>Gate Pass Expiry</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild className=''>
-                    <FormControl>
-                      <Button
-                        variant={'outline'}
-                        className={cn(
-                          'w-[240px] pl-3 text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, 'PPP')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-auto p-0'>
-                    <Calendar
-                      mode='single'
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('fitnessExpiry', null);
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='loadTest'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 flex-1'>
+                  <FormLabel>Load Test</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input placeholder='' {...field} className=' bg-white ' />
+                    ) : (
+                      <Input
+                        placeholder='Enter Load Test Number'
+                        {...field}
+                        className=' bg-white '
+                      />
+                    )}
+                  </FormControl>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('loadTest', '');
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='loadTestExpiry'
+              render={({ field }) => (
+                <FormItem className='flex flex-col pt-2 justify-center'>
+                  <FormLabel>Load Test Expiry</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild className=''>
+                      <FormControl>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-[240px] pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, 'PPP')
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-auto p-0'>
+                      <Calendar
+                        mode='single'
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
 
-          <FormField
-            control={form.control}
-            name='tax'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Tax Number</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input placeholder='' {...field} className=' bg-white ' />
-                  ) : (
-                    <Input
-                      placeholder='Enter Tax Number'
-                      {...field}
-                      className=' bg-white '
-                    />
-                  )}
-                </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('loadTestExpiry', null);
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='safety'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 flex-1'>
+                  <FormLabel> Safety Number</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input placeholder='' {...field} className=' bg-white ' />
+                    ) : (
+                      <Input
+                        placeholder='Enter Safety Number'
+                        {...field}
+                        className=' bg-white '
+                      />
+                    )}
+                  </FormControl>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='taxExpiryDate'
-            render={({ field }) => (
-              <FormItem className='flex flex-col pt-2 justify-center'>
-                <FormLabel>Tax Expiry</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild className=''>
-                    <FormControl>
-                      <Button
-                        variant={'outline'}
-                        className={cn(
-                          'w-[240px] pl-3 text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, 'PPP')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-auto p-0'>
-                    <Calendar
-                      mode='single'
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('safety', '');
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='safetyExpiryDate'
+              render={({ field }) => (
+                <FormItem className='flex flex-col pt-2 justify-center'>
+                  <FormLabel>Safety Expiry</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild className=''>
+                      <FormControl>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-[240px] pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, 'PPP')
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-auto p-0'>
+                      <Calendar
+                        mode='single'
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('safetyExpiryDate', null);
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='puc'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 flex-1'>
+                  <FormLabel>PUC</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input placeholder='' {...field} className=' bg-white ' />
+                    ) : (
+                      <Input
+                        placeholder='Enter PUC'
+                        {...field}
+                        className=' bg-white '
+                      />
+                    )}
+                  </FormControl>
 
-          <FormField
-            control={form.control}
-            name='fitness'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Fitness Number</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input placeholder='' {...field} className=' bg-white ' />
-                  ) : (
-                    <Input
-                      placeholder='Enter Fitness Number'
-                      {...field}
-                      className=' bg-white '
-                    />
-                  )}
-                </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('puc', '');
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='pucExpiryDate'
+              render={({ field }) => (
+                <FormItem className='flex flex-col pt-2 justify-center'>
+                  <FormLabel>PUC Expiry</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild className=''>
+                      <FormControl>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-[240px] pl-3 text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, 'PPP')
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className='w-auto p-0'>
+                      <Calendar
+                        mode='single'
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='fitnessExpiry'
-            render={({ field }) => (
-              <FormItem className='flex flex-col pt-2 justify-center'>
-                <FormLabel>Fitness Expiry</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild className=''>
-                    <FormControl>
-                      <Button
-                        variant={'outline'}
-                        className={cn(
-                          'w-[240px] pl-3 text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, 'PPP')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-auto p-0'>
-                    <Calendar
-                      mode='single'
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name='loadTest'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Load Test</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input placeholder='' {...field} className=' bg-white ' />
-                  ) : (
-                    <Input
-                      placeholder='Enter Load Test Number'
-                      {...field}
-                      className=' bg-white '
-                    />
-                  )}
-                </FormControl>
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='loadTestExpiry'
-            render={({ field }) => (
-              <FormItem className='flex flex-col pt-2 justify-center'>
-                <FormLabel>Load Test Expiry</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild className=''>
-                    <FormControl>
-                      <Button
-                        variant={'outline'}
-                        className={cn(
-                          'w-[240px] pl-3 text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, 'PPP')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-auto p-0'>
-                    <Calendar
-                      mode='single'
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name='safety'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel> Safety Number</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input placeholder='' {...field} className=' bg-white ' />
-                  ) : (
-                    <Input
-                      placeholder='Enter Safety Number'
-                      {...field}
-                      className=' bg-white '
-                    />
-                  )}
-                </FormControl>
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='safetyExpiryDate'
-            render={({ field }) => (
-              <FormItem className='flex flex-col pt-2 justify-center'>
-                <FormLabel>Safety Expiry</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild className=''>
-                    <FormControl>
-                      <Button
-                        variant={'outline'}
-                        className={cn(
-                          'w-[240px] pl-3 text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, 'PPP')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-auto p-0'>
-                    <Calendar
-                      mode='single'
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name='puc'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>PUC</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input placeholder='' {...field} className=' bg-white ' />
-                  ) : (
-                    <Input
-                      placeholder='Enter PUC'
-                      {...field}
-                      className=' bg-white '
-                    />
-                  )}
-                </FormControl>
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='pucExpiryDate'
-            render={({ field }) => (
-              <FormItem className='flex flex-col pt-2 justify-center'>
-                <FormLabel>PUC Expiry</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild className=''>
-                    <FormControl>
-                      <Button
-                        variant={'outline'}
-                        className={cn(
-                          'w-[240px] pl-3 text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, 'PPP')
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-auto p-0'>
-                    <Calendar
-                      mode='single'
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('pucExpiryDate', null);
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
           <FormField
             control={form.control}
             name='emiStatus'
@@ -924,34 +1074,37 @@ const EditVehicle: React.FC<{}> = () => {
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name='emi'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Emi</FormLabel>
-                <FormControl>
-                  {field.value ? (
+          <div className='flex justify-center items-end gap-1'>
+            <FormField
+              control={form.control}
+              name='emi'
+              render={({ field }) => (
+                <FormItem className='flex-col flex gap-1 flex-1'>
+                  <FormLabel>EMI</FormLabel>
+                  <FormControl>
                     <Input
                       type='number'
-                      placeholder=''
+                      placeholder='Enter EMI'
                       {...field}
-                      className=' bg-white '
+                      value={field.value || ''}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      className='bg-white'
                     />
-                  ) : (
-                    <Input
-                      placeholder='Enter Emi'
-                      {...field}
-                      className=' bg-white '
-                    />
-                  )}
-                </FormControl>
-
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              className='border-[1px] border-red-200 bg-white'
+              onClick={(e) => {
+                e.preventDefault();
+                form.setValue('emi', 0);
+              }}
+            >
+              <Trash size={20} className='text-red-500' />
+            </Button>
+          </div>
         </div>
 
         <div className='p-4 flex flex-col md:flex-row gap-1 justify-end items-center'>

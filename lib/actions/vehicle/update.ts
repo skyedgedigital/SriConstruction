@@ -10,7 +10,7 @@ const updateVehicleFields = async (vehicleNumber: string, updatedData: any) => {
     const filter = {
       vehicleNumber: vehicleNumber,
     };
-    let update = updatedData;
+
     const ifExists = await Vehicle.findOne({
       vehicleNumber: vehicleNumber,
     });
@@ -21,7 +21,7 @@ const updateVehicleFields = async (vehicleNumber: string, updatedData: any) => {
         status: 404,
       };
     }
-    const resp = await Vehicle.findOneAndUpdate(filter, update, {
+    const resp = await Vehicle.findOneAndUpdate(filter, updatedData, {
       new: true,
     });
     return {
