@@ -88,10 +88,10 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
       return (
         <Button
           variant='ghost'
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          // onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Number
-          <ArrowUpDown className='ml-2 h-4 w-4' />
+          {/* <ArrowUpDown className='ml-2 h-4 w-4' /> */}
         </Button>
       );
     },
@@ -172,7 +172,14 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
   },
   {
     accessorKey: 'gatePassExpiry',
-    header: ({ column }) => <Button variant='ghost'>Gate Pass Expiry</Button>,
+    header: ({ column }) => (
+      <Button
+        variant='ghost'
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Gate Pass Expiry <ArrowUpDown className='ml-2 h-4 w-4' />
+      </Button>
+    ),
     cell: ({ row }) => {
       const date = row.original.gatePassExpiry;
       const nearExpiry = isDateNearExpiry(date);
@@ -186,7 +193,12 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
   {
     accessorKey: 'insuranceExpiryDate',
     header: ({ column }) => (
-      <Button variant='ghost'>Insurance Expiry Date</Button>
+      <Button
+        variant='ghost'
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Insurance Expiry Date <ArrowUpDown className='ml-2 h-4 w-4' />
+      </Button>
     ),
     cell: ({ row }) => {
       const date = row.original.insuranceExpiryDate;
@@ -200,7 +212,14 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
   },
   {
     accessorKey: 'taxExpiryDate',
-    header: ({ column }) => <Button variant='ghost'>Tax Expiry Date</Button>,
+    header: ({ column }) => (
+      <Button
+        variant='ghost'
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Tax Expiry Date <ArrowUpDown className='ml-2 h-4 w-4' />
+      </Button>
+    ),
     cell: ({ row }) => {
       const date = row.original.taxExpiryDate;
       const nearExpiry = isDateNearExpiry(date);
@@ -213,7 +232,14 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
   },
   {
     accessorKey: 'fitnessExpiry',
-    header: ({ column }) => <Button variant='ghost'>Fitness Expiry</Button>,
+    header: ({ column }) => (
+      <Button
+        variant='ghost'
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Fitness Expiry <ArrowUpDown className='ml-2 h-4 w-4' />
+      </Button>
+    ),
     cell: ({ row }) => {
       const date = row.original.fitnessExpiry;
       const nearExpiry = isDateNearExpiry(date);
@@ -226,7 +252,14 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
   },
   {
     accessorKey: 'loadTestExpiry',
-    header: ({ column }) => <Button variant='ghost'>Load Test Expiry</Button>,
+    header: ({ column }) => (
+      <Button
+        variant='ghost'
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Load Test Expiry <ArrowUpDown className='ml-2 h-4 w-4' />
+      </Button>
+    ),
     cell: ({ row }) => {
       const date = row.original.loadTestExpiry;
       const nearExpiry = isDateNearExpiry(date);
@@ -239,7 +272,14 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
   },
   {
     accessorKey: 'safetyExpiryDate',
-    header: ({ column }) => <Button variant='ghost'>Safety Expiry Date</Button>,
+    header: ({ column }) => (
+      <Button
+        variant='ghost'
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Safety Expiry Date <ArrowUpDown className='ml-2 h-4 w-4' />
+      </Button>
+    ),
     cell: ({ row }) => {
       const date = row.original.safetyExpiryDate;
       const nearExpiry = isDateNearExpiry(date);
@@ -252,7 +292,14 @@ export const vehicleColumns: ColumnDef<Vehicle>[] = [
   },
   {
     accessorKey: 'pucExpiryDate',
-    header: ({ column }) => <Button variant='ghost'>PUC Expiry Date</Button>,
+    header: ({ column }) => (
+      <Button
+        variant='ghost'
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        PUC Expiry Date <ArrowUpDown className='ml-2 h-4 w-4' />
+      </Button>
+    ),
     cell: ({ row }) => {
       const date = row.original.pucExpiryDate;
       const nearExpiry = isDateNearExpiry(date);
