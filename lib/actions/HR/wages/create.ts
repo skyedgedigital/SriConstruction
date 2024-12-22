@@ -21,8 +21,8 @@ const EsiLocationModel =
   mongoose.model('EsiLocation', EsiLocationSchema);
 
 const createWageForAnEmployee = async (dataString: string) => {
-        const dbConnection = await handleDBConnection();
-        if (!dbConnection.success) return dbConnection;
+  const dbConnection = await handleDBConnection();
+  if (!dbConnection.success) return dbConnection;
   try {
     const data = JSON.parse(dataString);
     const {
@@ -125,6 +125,14 @@ const createWageForAnEmployee = async (dataString: string) => {
     }
 
     const attendanceRecordsData = JSON.parse(attendanceRecords.data);
+    console.log(
+      '_________________________________________________________________________'
+    );
+    console.log(
+      '------------------------------',
+      attendanceRecordsData,
+      '---------------------------------------'
+    );
     const presentDays = attendanceRecordsData.Present;
 
     // console.log(empData)
@@ -137,18 +145,39 @@ const createWageForAnEmployee = async (dataString: string) => {
     const da = convert_to_number(designationaData.DA);
     const payRate = convert_to_number(designationaData.PayRate);
     const perDayPay = basicWage / totalWorkingDays;
+    // totalPay = (basic + da) * presentDays
     let totalPay: number = (basicWage + da) * presentDays;
+    // totalPay = totalPay + otherCashTotal; // otherCashTotal is eoc(+)
     totalPay = totalPay + otherCashTotal;
     let allowances = 0;
+    // gross_2 is only (basic + da) * presentDays + otherCashTotal(eoc)
+    let gross_2 = totalPay;
 
     let otherDeductionTotal = 0;
+    //totalPay = totalPay + allowances;
+    // allowances = allowances + otherCashTotal - eoc field in otherCash;
     for (let value in otherCash) {
+      // in case of eoc , it won't be added to the total pay and allowances
+      if (value === 'eoc') continue;
       totalPay = totalPay + convert_to_number(otherCash[value]);
       allowances = allowances + convert_to_number(otherCash[value]);
     }
+
+    if (incentiveApplicable && incentiveDays > 0) {
+      incentiveAmount = 1000 + designationaData.basic * incentiveDays;
+      // adding incentive amount in the total pay (gross pay)
+      // totalPay = totalPay + incentiveAmount;
+      totalPay += incentiveAmount;
+      console.log('incentive added and the incentive days is greater then 0');
+    } else {
+      incentiveAmount = 0;
+    }
+
     let netAmountPaid = totalPay;
 
-    const pf = 0.12 * totalPay;
+    // pf should not be calculated based on the total pay, only esic should be calculated on the total pay
+    //pf is being calculated on the gross_2 and not on the total pay, and gross_2 is (basic + da) * presentDays + otherCashTotal(eoc)
+    const pf = 0.12 * gross_2;
     const esi = 0.0075 * totalPay;
     if (empData.pfApplicable) {
       console.log('Subtracting PF');
@@ -165,16 +194,16 @@ const createWageForAnEmployee = async (dataString: string) => {
     console.log('previous amount', netAmountPaid);
 
     // add the incentive amount
-    if (incentiveApplicable && incentiveDays > 0) {
-      incentiveAmount = 1000 + designationaData.basic * incentiveDays;
-      console.log('incentive added and the incentive days is greater then 0');
-    } else {
-      incentiveAmount = 0;
-    }
-    netAmountPaid = netAmountPaid + incentiveAmount;
 
+    //removed the incentive amount from the net amount paid since it is already being added to total
+    // netAmountPaid = netAmountPaid + incentiveAmount;
+
+    // console.log(
+    //   'Net amount here after incentive added: updated',
+    //   netAmountPaid
+    // );
     console.log(
-      'Net amount here after incentive added: updated',
+      'Net amount here after not adding the incentive: updated',
       netAmountPaid
     );
 
