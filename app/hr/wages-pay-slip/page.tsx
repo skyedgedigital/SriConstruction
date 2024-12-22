@@ -289,7 +289,12 @@ const Page = ({
               </span>{' '}
               <span className='ml-6'>PF:</span>{' '}
               <span className='font-bold ml-6'>
-                {(0.12 * wagesData?.existingWage?.total).toFixed(2)}
+                {(
+                  0.12 *
+                  (wagesData?.existingWage?.attendance *
+                    wagesData?.designation?.PayRate +
+                    wagesData?.existingWage?.otherCash)
+                ).toFixed(2)}
               </span>
               <span className='ml-6'>ESI:</span>
               <span className='font-bold ml-6'>
