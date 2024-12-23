@@ -575,7 +575,13 @@ const Page = ({
                 <span>
                   {Math.round(
                     calculateTotal(
-                      attendanceData.map((item) => 0.12 * Number(item?.total))
+                      attendanceData.map(
+                        (item) =>
+                          (Number(item?.attendance) *
+                            Number(item?.designation.PayRate) +
+                            Number(item?.otherCash)) *
+                          0.12
+                      )
                     )
                   ).toFixed(2)}
                 </span>
