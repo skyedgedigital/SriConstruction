@@ -90,6 +90,17 @@ const schema = z.object({
 type FormFields = z.infer<typeof schema>;
 const AddWage = ({ employeee }) => {
   console.log('mast employee bhai', employeee);
+  let parsed_otherCashDescription = undefined;
+  let parsed_otherDeductionDescription = undefined;
+  if (employeee?.existingWage) {
+    // return;
+    parsed_otherCashDescription = JSON.parse(
+      employeee.existingWage?.otherCashDescription
+    );
+    parsed_otherDeductionDescription = JSON.parse(
+      employeee.existingWage?.otherDeductionDescription
+    );
+  }
   const form = useForm<FormFields>({
     defaultValues: {
       employee: employeee.name,
@@ -99,21 +110,21 @@ const AddWage = ({ employeee }) => {
       vda: employeee?.designation?.DA,
       des: employeee?.designation?.designation,
 
-      hra: '',
-      mob: '',
-      incumb: '',
+      hra: parsed_otherCashDescription?.hra?.toFixed(2) || '',
+      mob: parsed_otherCashDescription?.mob?.toFixed(2) || '',
+      incumb: parsed_otherCashDescription?.incumb?.toFixed(2) || '',
       eoc: employeee?.existingWage?.otherCash?.toFixed(2) || '',
-      pb: '',
-      wa: '',
-      ca: '',
-      ma: '',
-      ssa: '',
-      fine: '',
-      ad: '',
-      da: '',
-      oa: '',
-      dppe: '',
-      od: '',
+      pb: parsed_otherCashDescription?.pb?.toFixed(2) || '',
+      wa: parsed_otherCashDescription?.wa?.toFixed(2) || '',
+      ca: parsed_otherCashDescription?.ca?.toFixed(2) || '',
+      ma: parsed_otherCashDescription?.ma?.toFixed(2) || '',
+      ssa: parsed_otherCashDescription?.ssa?.toFixed(2) || '',
+      fine: parsed_otherDeductionDescription?.fine?.toFixed(2) || '',
+      ad: employeee?.existingWage?.advanceDeduction?.toFixed(2) || '', //this
+      da: employeee.existingWage?.damageDeduction?.toFixed(2) || '', //this
+      oa: parsed_otherCashDescription?.oa?.toFixed(2) || '',
+      dppe: parsed_otherDeductionDescription?.dppe?.toFixed(2) || '',
+      od: parsed_otherDeductionDescription?.od?.toFixed(2) || '',
     },
     resolver: zodResolver(schema),
   });
