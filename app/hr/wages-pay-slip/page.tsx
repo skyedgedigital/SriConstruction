@@ -235,13 +235,13 @@ const Page = ({
               <span>Rate of Daily Wages @ Piece Rate : </span>{' '}
               <span className='font-bold'>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {wagesData?.designation.basic}
+                {Number(wagesData?.designation.basic).toFixed(2)}
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {wagesData?.designation.DA}
+                {Number(wagesData?.designation.DA).toFixed(2)}
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {wagesData?.designation?.PayRate}
+                {Number(wagesData?.designation?.PayRate).toFixed(2)}
               </span>
             </li>
             <li>
@@ -321,7 +321,7 @@ const Page = ({
               <span>Net Amount of Wages Paid : </span>{' '}
               <span className='font-bold'>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {wagesData?.existingWage?.netAmountPaid.toFixed(2)}
+                {Math.round(wagesData?.existingWage?.netAmountPaid).toFixed(2)}
               </span>
             </li>
           </ol>
