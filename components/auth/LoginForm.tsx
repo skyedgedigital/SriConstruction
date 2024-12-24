@@ -26,6 +26,8 @@ import { Button } from '../ui/button';
 import truck_crane from '@/public/assets/vehicles/truck-crane.jpg';
 import excavator from '@/public/assets/vehicles/excavator.jpg';
 import useConnectionStatus from '@/hooks/onlineandDatabaseConnection';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
 
 const schema = z.object({
   phoneNo: z
@@ -42,6 +44,7 @@ const schema = z.object({
 type FormFields = z.infer<typeof schema>;
 
 const LoginForm: React.FC<{}> = () => {
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
   const { dbConnectionStatus, isOnline } = useConnectionStatus();
   const form = useForm<FormFields>({
     defaultValues: {
@@ -58,7 +61,23 @@ const LoginForm: React.FC<{}> = () => {
       redirect(`/${session?.data?.user?.access.toLowerCase()}/profile`);
     }
   }, [session]);
-
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
   const onSubmit: SubmitHandler<FormFields> = async (data: FormFields) => {
     try {
       console.warn(data);
@@ -124,9 +143,15 @@ const LoginForm: React.FC<{}> = () => {
             height={50}
             alt='sign image'
           />{' '}
-          <h1 className=' text-3xl font-bold leading-tight tracking-tight text-blue-500 md:text-2xl font-mono'>
-            Sri Constructions
-          </h1>
+          {ent?.name ? (
+            <h1 className='text-3xl font-bold leading-tight tracking-tight text-blue-500 md:text-2xl font-mono'>
+              {ent?.name}
+            </h1>
+          ) : (
+            <h1 className='text-sm font-bold leading-tight tracking-tight text-red-500 font-mono'>
+              No Company Name found. Try by Reloading
+            </h1>
+          )}
         </div>
         <Form {...form}>
           <form
