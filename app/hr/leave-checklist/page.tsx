@@ -18,6 +18,8 @@ import {
 import wagesAction from '@/lib/actions/HR/wages/wagesAction';
 
 import React, { useEffect, useState } from 'react';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
 
 const Page = ({
   searchParams,
@@ -30,14 +32,33 @@ const Page = ({
   const [totalCL, setTotalCL] = useState(0);
   const [totalFL, setTotalFL] = useState(0);
   const [total, setTotal] = useState(0);
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
 
   const contentRef = React.useRef(null);
- const reactToPrintFn = useReactToPrint({ contentRef,
-  documentTitle:`BonusStatement/${searchParams.year}`, })
- const handleOnClick = React.useCallback(() => {
-  reactToPrintFn();
-}, [reactToPrintFn]);
-
+  const reactToPrintFn = useReactToPrint({
+    contentRef,
+    documentTitle: `BonusStatement/${searchParams.year}`,
+  });
+  const handleOnClick = React.useCallback(() => {
+    reactToPrintFn();
+  }, [reactToPrintFn]);
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
   const handleDownloadPDF = async () => {
     if (!leaveData) {
       toast.error('Attendance data not available for PDF generation.');
@@ -47,31 +68,27 @@ const Page = ({
     await generatePDF(leaveData);
   };
 
-
   useEffect(() => {
     if (leaveData && leaveData.length > 0) {
       // Step 2: Calculate sums using reduce
       const totalAttendance = leaveData.reduce(
-        (acc, employee) => acc + employee.EL, 
+        (acc, employee) => acc + employee.EL,
         0
       );
       const totalNetAmountPaid = leaveData.reduce(
-        (acc, employee) => acc + employee.CL, 
+        (acc, employee) => acc + employee.CL,
         0
       );
       const totalBonus = leaveData.reduce(
-        (acc, employee) => acc + employee.FL, 
+        (acc, employee) => acc + employee.FL,
         0
       );
-      const totall = leaveData.reduce(
-        (acc, employee) => acc + employee.tot, 
-        0
-      );
+      const totall = leaveData.reduce((acc, employee) => acc + employee.tot, 0);
       // Step 3: Update state with the calculated sums
       setTotalEL(totalAttendance);
       setTotalCL(totalNetAmountPaid);
       setTotalFL(totalBonus);
-      setTotal(totall)
+      setTotal(totall);
     }
   }, [leaveData]);
 
@@ -108,8 +125,7 @@ const Page = ({
         const data = {
           // @ts-ignore
           year: parseInt(searchParams.year),
-          workOrder:searchParams.wo
-
+          workOrder: searchParams.wo,
         };
         console.log('shaiaiijsjs', data);
         const filter = await JSON.stringify(data);
@@ -146,14 +162,13 @@ const Page = ({
     'nov',
     'dec',
   ];
-  const months2 = [1,2,3,4,5,6,7,8,9,10,11,12]
+  const months2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
   return (
     <div className='ml-[80px]'>
-     
-     <div className='flex gap-2 mb-2'>
-      <Button onClick={handleDownloadPDF}>Download PDF</Button>
-      <Button onClick={handleOnClick}>Print</Button>
+      <div className='flex gap-2 mb-2'>
+        <Button onClick={handleDownloadPDF}>Download PDF</Button>
+        <Button onClick={handleOnClick}>Print</Button>
       </div>
 
       <div
@@ -161,25 +176,36 @@ const Page = ({
         className='flex flex-col gap-4'
         ref={contentRef}
       >
-        
         <div
           className='container left-0 right-0  overflow-hidden font-mono w-full border-[1px] border-gray-900 pb-4'
           id='container-id'
         >
-
           <div className='px-2 py-6 text-center  '>
-            <h1 className='text-xl  underline  uppercase font-bold'>muster roll</h1>
+            <h1 className='text-xl  underline  uppercase font-bold'>
+              muster roll
+            </h1>
           </div>
           <div className='flex justify-between w-full gap-6 text-sm ml-0 mr-20  '>
             <div className='flex flex-col flex-1'>
               <div className='flex gap-3 mb-4 '>
                 <div className=' max-w-64 uppercase'>
-                  Sri construction and co. House No 78 kapli near hari mandir,
-                  po kapali saraikea, kharsawn jharkhand
+                  {ent?.name ? (
+                    ent?.name
+                  ) : (
+                    <span className='text-red-500'>
+                      No company found. Try by Reloading
+                    </span>
+                  )}
+                  ,&nbsp;
+                  {ent?.address ? (
+                    ent?.address
+                  ) : (
+                    <span className='text-red-500'>
+                      No address found. Try by Reloading
+                    </span>
+                  )}
                 </div>
-                <div></div>
               </div>
-            
             </div>
             <div className='flex flex-1 gap-4'>
               <div className='flex gap-3 mb-4'>
@@ -194,16 +220,15 @@ const Page = ({
               </div>
             </div>
             <div className='flex flex-col flex-1'>
-                <div className=' text-right mb-2'>
-                  Name and Address of the Contractor In under which Establishment
-                  is carried on
-                </div>
-                <div className='text-right'>Tata Steel UISL</div>
-             
-                <div className='text-right'>
-                  Name and Address of Principal Employer
-                </div>
-           
+              <div className=' text-right mb-2'>
+                Name and Address of the Contractor In under which Establishment
+                is carried on
+              </div>
+              <div className='text-right'>Tata Steel UISL</div>
+
+              <div className='text-right'>
+                Name and Address of Principal Employer
+              </div>
             </div>
           </div>
           <div className='flex justify-between '>
@@ -303,121 +328,88 @@ const Page = ({
                   }
                   return acc;
                 }, {});
-                return(
-                <TableRow key={employee._id} className='h-16'>
-                  <TableCell className='border-black border-[1px] text-black'>
-                    {index + 1}
-                  </TableCell>
-                  <TableCell className='border-black border-[1px] text-black'>
-                    {employee.employee.name}
-                  </TableCell>
-                  <TableCell className='border-black border-[1px] text-black'>
-                    {employee.employee.fathersName}
-                  </TableCell>
-                  <TableCell className='border-black border-[1px] text-black'>
-                    {employee.employee.sex}
-                  </TableCell>
+                return (
+                  <TableRow key={employee._id} className='h-16'>
+                    <TableCell className='border-black border-[1px] text-black'>
+                      {index + 1}
+                    </TableCell>
+                    <TableCell className='border-black border-[1px] text-black'>
+                      {employee.employee.name}
+                    </TableCell>
+                    <TableCell className='border-black border-[1px] text-black'>
+                      {employee.employee.fathersName}
+                    </TableCell>
+                    <TableCell className='border-black border-[1px] text-black'>
+                      {employee.employee.sex}
+                    </TableCell>
+                    {/* Table data for each day (status) */}
+                    {months2.map((month, monthIndex) => {
+                      console.log(aggregatedWages, 'I am aggregatedWages');
+                      const aggregatedWage = aggregatedWages[month];
+                      return (
+                        <TableCell
+                          key={monthIndex}
+                          className='border-black border text-black'
+                        >
+                          {aggregatedWage?.attendance || 0}
+                        </TableCell>
+                      );
+                    })}
+
+                    <TableCell className='border-black border-[1px] text-black'>
+                      {employee.totalAttendance}
+                    </TableCell>
+                    <TableCell className='border-black border-[1px] text-black'>
+                      {employee.EL}
+                    </TableCell>
+                    <TableCell className='border-black border-[1px] text-black'>
+                      {employee.CL}
+                    </TableCell>
+                    <TableCell className='border-black border-[1px] text-black'>
+                      {employee.FL}
+                    </TableCell>
+                    <TableCell className='border-black border-[1px] text-black'>
+                      {employee.tot}
+                    </TableCell>
+                    <TableCell className='border-black border-[1px] text-black'></TableCell>
+                  </TableRow>
+                );
+              })}
+              {leaveData?.length > 0 && (
+                <TableRow className='h-16'>
+                  <TableCell className='border-black border-[1px] text-black'></TableCell>
+                  <TableCell className='border-black border-[1px] text-black'></TableCell>
+                  <TableCell className='border-black border-[1px] text-black'></TableCell>
+                  <TableCell className='border-black border-[1px] text-black'></TableCell>
                   {/* Table data for each day (status) */}
-                  {months2.map((month, monthIndex) => {
-                        console.log(aggregatedWages, "I am aggregatedWages");
-                        const aggregatedWage = aggregatedWages[month];
-                        return (
-                          <TableCell
-                            key={monthIndex}
-                            className="border-black border text-black"
-                          >
-                           {aggregatedWage?.attendance || 0}
-                          </TableCell>
-                          
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
+                  <TableCell className='border-black border-[1px] text-black '></TableCell>
 
-                        );
-                      })}
-
+                  <TableCell className='border-black border-[1px] text-black'></TableCell>
                   <TableCell className='border-black border-[1px] text-black'>
-                    {employee.totalAttendance}
+                    {totalEL}
                   </TableCell>
                   <TableCell className='border-black border-[1px] text-black'>
-                    {employee.EL}
+                    {totalCL}
                   </TableCell>
                   <TableCell className='border-black border-[1px] text-black'>
-                    {employee.CL}
+                    {totalFL}
                   </TableCell>
                   <TableCell className='border-black border-[1px] text-black'>
-                    {employee.FL}
-                  </TableCell>
-                  <TableCell className='border-black border-[1px] text-black'>
-                    {employee.tot}
+                    {total}
                   </TableCell>
                   <TableCell className='border-black border-[1px] text-black'></TableCell>
                 </TableRow>
-                )
-              })}
-              {leaveData?.length>0 && (
-                <TableRow  className='h-16'>
-                <TableCell className='border-black border-[1px] text-black'>
-                </TableCell>
-                <TableCell className='border-black border-[1px] text-black'>
-                </TableCell>
-                <TableCell className='border-black border-[1px] text-black'>
-                </TableCell>
-                <TableCell className='border-black border-[1px] text-black'>
-                </TableCell>
-                {/* Table data for each day (status) */}
-                  <TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell>
-                  <TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell><TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell><TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell><TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell><TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell><TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell><TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell><TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell><TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell><TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell><TableCell
-                    className='border-black border-[1px] text-black '
-                  >
-                  </TableCell>
-
-                <TableCell className='border-black border-[1px] text-black'>
-                </TableCell>
-                <TableCell className='border-black border-[1px] text-black'>
-                  {totalEL}
-                </TableCell>
-                <TableCell className='border-black border-[1px] text-black'>
-                  {totalCL}
-                </TableCell>
-                <TableCell className='border-black border-[1px] text-black'>
-                  {totalFL}
-                </TableCell>
-                <TableCell className='border-black border-[1px] text-black'>
-                  {total}
-                </TableCell>
-                <TableCell className='border-black border-[1px] text-black'></TableCell>
-              </TableRow>
               )}
             </TableBody>
           </PDFTable>

@@ -25,6 +25,8 @@ import { storage } from '@/utils/fireBase/config';
 import itemAction from '@/lib/actions/item/itemAction';
 import chalanAction from '@/lib/actions/chalan/chalanAction';
 import { useReactToPrint } from 'react-to-print';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
 
 const todayDate = () => {
   let date = new Date().toLocaleDateString();
@@ -56,6 +58,7 @@ const WMDInvoice = ({
   const [totalCgst, setTotalCgst] = useState(0);
   const [totalSgst, setTotalSgst] = useState(0);
   const [totalHours, setTotalHours] = useState(0);
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
 
   const [itemsList, setItemsList] = useState([]);
   const [dateMapping, setDateMapping] = useState({});
@@ -67,6 +70,23 @@ const WMDInvoice = ({
   const reactToPrintFnSummary = useReactToPrint({
     contentRef: contentRefSummary,
   });
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
 
   useEffect(() => {
     const fn = async () => {
@@ -457,7 +477,7 @@ const WMDInvoice = ({
           }}
         >
           Print WMD Invoice
-        </Button>
+        </Button>{' '}
         <Button
           onClick={(e) => {
             e.preventDefault();
@@ -507,7 +527,13 @@ const WMDInvoice = ({
               </div>
               <div className='w-full flex gap-2'>
                 <span>3. Vendor&apos;s name:</span>
-                <span className='font-normal uppercase'>Sri Constructions</span>
+                {ent?.name ? (
+                  <span className='font-normal uppercase'>{ent?.name}</span>
+                ) : (
+                  <span className='font-normal text-red-500 uppercase'>
+                    No vendor name found. Try by Reloading
+                  </span>
+                )}
               </div>
               <div className='w-full flex gap-2'>
                 <span>4. Job Location:</span>

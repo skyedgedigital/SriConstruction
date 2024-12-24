@@ -21,6 +21,8 @@ import wagesAction from '@/lib/actions/HR/wages/wagesAction';
 import React, { useEffect, useState } from 'react';
 import { FaWindows } from 'react-icons/fa6';
 import WorkOrderHr from '@/lib/models/HR/workOrderHr.model';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
 
 interface Attendance {
   day: number;
@@ -39,12 +41,30 @@ const Page = ({
 }) => {
   const [wagesData, setWagesData] = useState(null);
   const [attendance, setAttendance] = useState<EmployeeIdAndAttendance[]>([]);
-
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
   const contentRef = React.useRef(null);
   const reactToPrintFn = useReactToPrint({
     contentRef,
     documentTitle: `FormXVI/${searchParams.year}`,
   });
+
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
   const handleOnClick = async () => {
     if (!wagesData) {
       toast.error('Attendance data not available for Print generation.');
@@ -203,9 +223,21 @@ const Page = ({
                   Name and Address of Contractor:
                 </div>
                 <div>
-                  {' '}
-                  Shekhar Enterprises, Shekhar C-1,Brindawan Garden, Sonari,
-                  Jamshedpur 831011.
+                  {ent?.name ? (
+                    ent?.name
+                  ) : (
+                    <span className='text-red-500'>
+                      No company found. Try by Reloading
+                    </span>
+                  )}
+                  ,&nbsp;
+                  {ent?.address ? (
+                    ent?.address
+                  ) : (
+                    <span className='text-red-500'>
+                      No address found. Try by Reloading
+                    </span>
+                  )}
                 </div>
               </div>
               <div className='flex gap-3 mb-4'>

@@ -20,6 +20,8 @@ import { fetchAllAttendance } from '@/lib/actions/attendance/fetch';
 
 import React, { useEffect, useState } from 'react';
 import { set } from 'mongoose';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
 
 const Page = ({
   searchParams,
@@ -30,6 +32,7 @@ const Page = ({
   const [finalSettlementData, setFinalSettlementData] = useState(null);
   const [settle, setSettle] = useState(0);
   const [reverse, setReverse] = useState(false);
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
 
   const months = [
     'Jan',
@@ -47,14 +50,31 @@ const Page = ({
   ];
 
   const contentRef = React.useRef(null);
-  const reactToPrintFn = useReactToPrint({ contentRef, })
+  const reactToPrintFn = useReactToPrint({ contentRef });
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
   const handleOnClick = async () => {
-   if(!finalSettlementData){
-     toast.error('Attendance data not available for Print generation.');
-     return;
-   }
-     reactToPrintFn();
- };
+    if (!finalSettlementData) {
+      toast.error('Attendance data not available for Print generation.');
+      return;
+    }
+    reactToPrintFn();
+  };
   const handleDownloadPDF = async () => {
     if (!finalSettlementData) {
       toast.error('Attendance data not available for PDF generation.');
@@ -210,37 +230,37 @@ const Page = ({
     <div className='ml-[80px]'>
       <div className='pr-16 flex justify-between items-center'>
         <div className='flex gap-2 mb-2'>
-      <Button onClick={handleDownloadPDF}>Download PDF</Button>
-        {/* <Button onClick={() => setReverse(!reverse)}>
+          <Button onClick={handleDownloadPDF}>Download PDF</Button>
+          {/* <Button onClick={() => setReverse(!reverse)}>
           See &nbsp;
           {reverse ? 'Reverse' : 'Normal'}&nbsp; Order
         </Button> */}
-        <div className='flex gap-2 flex-col'>
-          <div className='flex gap-2'>
-            <input
-              type='radio'
-              id='normal'
-              name='order'
-              value='normal'
-              checked={!reverse}
-              onChange={() => setReverse(false)}
-            />
-            <label htmlFor='normal'>Normal Order</label>
-          </div>
-          <div className='flex gap-2'>
-            <input
-              type='radio'
-              id='reverse'
-              name='order'
-              value='reverse'
-              checked={reverse}
-              onChange={() => setReverse(true)}
-            />
-            <label htmlFor='reverse'>Reverse Order</label>
+          <div className='flex gap-2 flex-col'>
+            <div className='flex gap-2'>
+              <input
+                type='radio'
+                id='normal'
+                name='order'
+                value='normal'
+                checked={!reverse}
+                onChange={() => setReverse(false)}
+              />
+              <label htmlFor='normal'>Normal Order</label>
+            </div>
+            <div className='flex gap-2'>
+              <input
+                type='radio'
+                id='reverse'
+                name='order'
+                value='reverse'
+                checked={reverse}
+                onChange={() => setReverse(true)}
+              />
+              <label htmlFor='reverse'>Reverse Order</label>
+            </div>
           </div>
         </div>
-      </div>
-      <Button onClick={handleOnClick}>Print</Button> 
+        <Button onClick={handleOnClick}>Print</Button>
       </div>
 
       <div id={`${searchParams.month}/${searchParams.year}`} ref={contentRef}>
@@ -256,7 +276,13 @@ const Page = ({
           <div className='flex flex-col gap-3 mb-4 '>
             <div className='font-semibold flex gap-2  mb-6 '>
               <span>Vendor&apos;s Name =</span>
-              <span className='uppercase'> Sri construction and Co. </span>
+              {ent?.name ? (
+                ent?.name
+              ) : (
+                <span className='text-red-500'>
+                  No company found. Try by Reloading
+                </span>
+              )}
             </div>
 
             <div className='flex gap-52'>
@@ -362,7 +388,11 @@ const Page = ({
                     <React.Fragment key={idx}>
                       <td className='border-[1px] border-black font-bold'>
                         <div className='flex'>
-                          <div className=' flex-1'>{searchParams.Retrenchment_benefit?att?.totalAttendance+15:att?.totalAttendance}</div>
+                          <div className=' flex-1'>
+                            {searchParams.Retrenchment_benefit
+                              ? att?.totalAttendance + 15
+                              : att?.totalAttendance}
+                          </div>
                           <div className=' flex-1 '>
                             {att?.totalNetAmountPaid.toFixed(2)}
                           </div>
@@ -583,7 +613,9 @@ const Page = ({
               <span className='uppercase'>Retrenchment benefit :</span>
               <span>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {searchParams.Retrenchment_benefit ? finalSettlementData?.designation?.PayRate*15:"N/A"}
+                {searchParams.Retrenchment_benefit
+                  ? finalSettlementData?.designation?.PayRate * 15
+                  : 'N/A'}
               </span>
             </div>
             <div>

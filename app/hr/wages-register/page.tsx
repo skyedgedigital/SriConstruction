@@ -18,6 +18,8 @@ import {
 import wagesAction from '@/lib/actions/HR/wages/wagesAction';
 
 import React, { useEffect, useState } from 'react';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
 
 const Page = ({
   searchParams,
@@ -25,7 +27,25 @@ const Page = ({
   searchParams: { [key: string]: string };
 }) => {
   const [wagesData, setWagesData] = useState([]);
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
 
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
   // useEffect(() => {
   //   const fn = async () => {
   //     try {
@@ -173,8 +193,21 @@ const Page = ({
             <div className='flex gap-4 my-4'>
               <span>Name & Address of Contractor :- </span>
               <span className='uppercase'>
-                Shekhar Enterprises .H.NO 78 KAPLI NEAR HARI MANDIR, .PO KAPALI
-                SARAIKEA,
+                {ent?.name ? (
+                  ent?.name
+                ) : (
+                  <span className='text-red-500'>
+                    No company found. Try by Reloading
+                  </span>
+                )}
+                ,&nbsp;
+                {ent?.address ? (
+                  ent?.address
+                ) : (
+                  <span className='text-red-500'>
+                    No address found. Try by Reloading
+                  </span>
+                )}
               </span>
             </div>
             <div>

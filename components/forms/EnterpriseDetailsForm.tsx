@@ -26,11 +26,14 @@ import toast from 'react-hot-toast';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { MdEdit } from 'react-icons/md';
 import { RxCrossCircled } from 'react-icons/rx';
+import { Textarea } from '../ui/textarea';
 const schema = z.object({
   name: z.string().trim().min(1, 'Required'), // Make name required with minimum length
   pan: z.string().trim().min(1, 'Required'),
   gstin: z.string().trim().min(1, 'Required'),
   vendorCode: z.string().trim().min(1, 'Required'),
+  address: z.string().trim().optional(),
+  email: z.string().email('Invalid email address').optional(),
 });
 
 type FormFields = z.infer<typeof schema>;
@@ -45,6 +48,8 @@ const EnterpriseDetailsForm: React.FC<{}> = () => {
       gstin: ent?.gstin || '',
       pan: ent?.pan || '',
       vendorCode: ent?.vendorCode || '',
+      address: ent?.address || '',
+      email: ent?.email || '',
     },
     resolver: zodResolver(schema),
   });
@@ -52,7 +57,7 @@ const EnterpriseDetailsForm: React.FC<{}> = () => {
   useEffect(() => {
     const fn = async () => {
       const resp = await fetchEnterpriseInfo();
-      console.log(resp);
+      console.log('response we got ', resp);
       if (resp.data) {
         const inf = await JSON.parse(resp.data);
         setEnt(inf);
@@ -67,6 +72,8 @@ const EnterpriseDetailsForm: React.FC<{}> = () => {
       form.setValue('pan', ent.pan);
       form.setValue('name', ent.name);
       form.setValue('vendorCode', ent.vendorCode);
+      form.setValue('address', ent.address);
+      form.setValue('email', ent.email);
     };
     if (ent != null) fn();
   }, [ent]);
@@ -134,119 +141,184 @@ const EnterpriseDetailsForm: React.FC<{}> = () => {
         <h2 className='bg-blue-50 font-semibold p-1 text-base py-2 text-center'>
           Enterprise Details
         </h2>
-        <div className='flex flex-col md:flex-row p-3 gap-4'>
-          <FormField
-            control={form.control}
-            name='name'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Company Name</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input
-                      disabled={editNotAllowed}
-                      placeholder=''
-                      {...field}
-                      className=' bg-white w-80'
-                    />
-                  ) : (
-                    <Input
-                      disabled={editNotAllowed}
-                      placeholder='Enter Company Name'
-                      {...field}
-                      className=' bg-white w-80'
-                    />
-                  )}
-                </FormControl>
+        <div className='flex flex-col gap-5 p-3'>
+          <div className='flex flex-col md:flex-row gap-2 '>
+            <FormField
+              control={form.control}
+              name='name'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex flex-1 gap-1 '>
+                  <FormLabel>Company Name</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input
+                        disabled={editNotAllowed}
+                        placeholder=''
+                        {...field}
+                        className=' bg-white w-80'
+                      />
+                    ) : (
+                      <Input
+                        disabled={editNotAllowed}
+                        placeholder='Enter Company Name'
+                        {...field}
+                        className=' bg-white w-80'
+                      />
+                    )}
+                  </FormControl>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='pan'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>PAN</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input
-                      disabled={editNotAllowed}
-                      placeholder=''
-                      {...field}
-                      className=' bg-white w-80'
-                    />
-                  ) : (
-                    <Input
-                      disabled={editNotAllowed}
-                      placeholder='Enter PAN'
-                      {...field}
-                      className=' bg-white w-80'
-                    />
-                  )}
-                </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='pan'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex flex-1 gap-1 '>
+                  <FormLabel>PAN</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input
+                        disabled={editNotAllowed}
+                        placeholder=''
+                        {...field}
+                        className=' bg-white w-80'
+                      />
+                    ) : (
+                      <Input
+                        disabled={editNotAllowed}
+                        placeholder='Enter PAN'
+                        {...field}
+                        className=' bg-white w-80'
+                      />
+                    )}
+                  </FormControl>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='gstin'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>GSTIN</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input
-                      disabled={editNotAllowed}
-                      placeholder=''
-                      {...field}
-                      className=' bg-white w-80'
-                    />
-                  ) : (
-                    <Input
-                      disabled={editNotAllowed}
-                      placeholder='Enter GSTIN'
-                      {...field}
-                      className=' bg-white w-80'
-                    />
-                  )}
-                </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='gstin'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 flex-1 '>
+                  <FormLabel>GSTIN</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input
+                        disabled={editNotAllowed}
+                        placeholder=''
+                        {...field}
+                        className=' bg-white w-80'
+                      />
+                    ) : (
+                      <Input
+                        disabled={editNotAllowed}
+                        placeholder='Enter GSTIN'
+                        {...field}
+                        className=' bg-white w-80'
+                      />
+                    )}
+                  </FormControl>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='vendorCode'
-            render={({ field }) => (
-              <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Vendor Code</FormLabel>
-                <FormControl>
-                  {field.value ? (
-                    <Input
-                      disabled={editNotAllowed}
-                      placeholder=''
-                      {...field}
-                      className=' bg-white w-80'
-                    />
-                  ) : (
-                    <Input
-                      disabled={editNotAllowed}
-                      placeholder='Enter Vendor Code'
-                      {...field}
-                      className=' bg-white w-80'
-                    />
-                  )}
-                </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='vendorCode'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 flex-1'>
+                  <FormLabel>Vendor Code</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input
+                        disabled={editNotAllowed}
+                        placeholder=''
+                        {...field}
+                        className=' bg-white w-80'
+                      />
+                    ) : (
+                      <Input
+                        disabled={editNotAllowed}
+                        placeholder='Enter Vendor Code'
+                        {...field}
+                        className=' bg-white w-80'
+                      />
+                    )}
+                  </FormControl>
 
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />{' '}
+          </div>
+          <div className='flex flex-col md:flex-row gap-2 justify-start items-start'>
+            <FormField
+              control={form.control}
+              name='email'
+              render={({ field }) => (
+                <FormItem className=' flex-col flex gap-1 '>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    {field.value ? (
+                      <Input
+                        disabled={editNotAllowed}
+                        placeholder=''
+                        {...field}
+                        className=' bg-white w-80'
+                      />
+                    ) : (
+                      <Input
+                        disabled={editNotAllowed}
+                        placeholder='email'
+                        {...field}
+                        className=' bg-white w-80'
+                      />
+                    )}
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />{' '}
+            <div className=' flex-col flex gap-1 flex-1'>
+              <FormField
+                control={form.control}
+                name='address'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address</FormLabel>
+                    <FormControl className=' min-w-[100%]'>
+                      {field.value ? (
+                        <Textarea
+                          disabled={editNotAllowed}
+                          placeholder=''
+                          {...field}
+                          className=' bg-white w-80'
+                        />
+                      ) : (
+                        <Textarea
+                          disabled={editNotAllowed}
+                          placeholder='Enterprise Address'
+                          {...field}
+                          className=' bg-white w-80'
+                        />
+                      )}
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+          <p className='text-gray-500 text-sm'>
+            Note: These details will be shown in invoices & other tables.
+          </p>
         </div>
         <div className='p-4 gap-1 flex flex-col md:flex-row justify-center items-center'>
           {!editNotAllowed && (

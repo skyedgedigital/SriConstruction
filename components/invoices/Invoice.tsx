@@ -14,7 +14,7 @@ import {
 } from '@/lib/actions/chalan/invoice';
 import { useParams, useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
-import { parseISO, format } from 'date-fns';
+import { parseISO, format, addDays } from 'date-fns';
 import {
   getDownloadURL,
   getStorage,
@@ -25,6 +25,8 @@ import { storage } from '@/utils/fireBase/config';
 import itemAction from '@/lib/actions/item/itemAction';
 import chalanAction from '@/lib/actions/chalan/chalanAction';
 import { useReactToPrint } from 'react-to-print';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
 
 const todayDate = () => {
   let date = new Date().toLocaleDateString();
@@ -56,6 +58,7 @@ const Invoice = ({
   const [totalCgst, setTotalCgst] = useState(0);
   const [totalSgst, setTotalSgst] = useState(0);
   const [totalHours, setTotalHours] = useState(0);
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
 
   const [itemsList, setItemsList] = useState([]);
   const [dateMapping, setDateMapping] = useState({});
@@ -68,6 +71,23 @@ const Invoice = ({
     contentRef: contentSummaryRef,
   });
 
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
   console.log('ITEMS', items);
 
   useEffect(() => {
@@ -461,6 +481,7 @@ const Invoice = ({
         >
           Print Invoice
         </Button>
+
         <Button
           onClick={(e) => {
             e.preventDefault();
@@ -489,20 +510,34 @@ const Invoice = ({
                   alt='sign image'
                 />{' '}
               </div>
-              <h1 className='font-bold text-sm uppercase'>
-                Sri Constructions
-              </h1>
+              {ent?.name ? (
+                <h1 className='font-normal uppercase mb-2'>{ent?.name}</h1>
+              ) : (
+                <h1 className='font-normal text-red-500 uppercase mb-2'>
+                  No company found. Try by Reloading
+                </h1>
+              )}
             </div>
             <div className=''>
               <p className=' border-b-2 border-b-black w-fit pr-2 pb-2'>
                 Specialist in : Horticulture, Conservancy Services, Supply of
                 Equipments (F-15 Crane and JCB)
               </p>
-              <p className='uppercase pt-2'>
-                Address: C-1, BRINDAWAN GARDEN, SONARI, JAMSHEDPUR-831011
-              </p>
+              {ent?.address ? (
+                <p className='font-normal pt-2'>Address: {ent?.address}</p>
+              ) : (
+                <p className='font-normal text-red-500 uppercase pt-2'>
+                  Address: No address found. Try by Reloading
+                </p>
+              )}
               <p>Mobile : 9431133471, 9234973465</p>
-              <p>Email : shekharenter@gmail.com</p>
+              {ent?.email ? (
+                <p className='font-normal mb-2'>Email: {ent?.email}</p>
+              ) : (
+                <p className='font-normal text-red-500 uppercase mb-2'>
+                  Email: No email found. Try by Reloading
+                </p>
+              )}{' '}
             </div>
           </div>
           <div className='border-2 border-black w-full pb-10'>
@@ -512,11 +547,23 @@ const Invoice = ({
             <div className='w-full text-center border-t-2 border-b-2 my-1  border-gray-700 py-1 justify-around  flex '>
               <div className='font-bold flex gap-2 pb-1 items-center '>
                 <p> GST IN:</p>
-                <p>20AEMPK3908B1Z2</p>
+                {ent?.gstin ? (
+                  <p className='font-normal uppercase mb-2'> {ent?.gstin}</p>
+                ) : (
+                  <p className='font-normal text-red-500 uppercase mb-2'>
+                    No GSTIN found. Try by Reloading
+                  </p>
+                )}
               </div>
               <div className='font-bold flex gap-2 items-center pb-1'>
                 <p>PAN:</p>
-                <p>AEMPK3908B</p>
+                {ent?.pan ? (
+                  <p className='font-normal uppercase mb-2'>{ent?.pan}</p>
+                ) : (
+                  <p className='font-normal text-red-500 uppercase mb-2'>
+                    No PAN found. Try by Reloading
+                  </p>
+                )}
               </div>
             </div>
             <div className=' w-full flex flex-1 justify-around my-4 gap-3 overflow-x-scroll px-5 py-2'>
@@ -531,7 +578,13 @@ const Invoice = ({
                   </div>
                   <div className='font-bold flex gap-2 items-center'>
                     <p>GSTIN/UN</p>
-                    <p>: 20AEMPK3908B1Z2</p>
+                    {ent?.gstin ? (
+                      <p className='font-normal uppercase mb-2'>{ent?.gstin}</p>
+                    ) : (
+                      <p className='font-normal text-red-500 uppercase mb-2'>
+                        No GSTIN/UN found. Try by Reloading
+                      </p>
+                    )}
                   </div>
                   <div className='flex gap-4 items-center'>
                     <p>Place of Supply:</p> <p>{location}</p>
@@ -549,7 +602,14 @@ const Invoice = ({
                   <p> {todayDate()}</p>
                 </div>
                 <div className='flex gap-4 items-center'>
-                  <p>Vendor code</p> <p>10758</p>
+                  <p>Vendor code</p>
+                  {ent?.vendorCode ? (
+                    <p className='font-normal  mb-2'>{ent?.vendorCode}</p>
+                  ) : (
+                    <p className='font-normal text-red-500 uppercase mb-2'>
+                      No Vendor code found. Try by Reloading
+                    </p>
+                  )}
                 </div>
                 <div className='flex gap-4 items-center'>
                   <p>WO/PO No</p> <p>{workOrder?.workOrderNumber}</p>

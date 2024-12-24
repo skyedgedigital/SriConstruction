@@ -17,6 +17,8 @@ import {
 } from '@/components/ui/table';
 import React, { useEffect, useState } from 'react';
 import Designation from '@/lib/models/HR/designation.model';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
 
 //Expected Query Params -> start date, end date,workOrder.
 const Page = ({
@@ -32,6 +34,8 @@ const Page = ({
   const reactToPrintFn = useReactToPrint({
     contentRef,
   });
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
+
   const handleOnClick = async () => {
     if (!yearlywages) {
       toast.error('Attendance data not available for Print generation.');
@@ -39,7 +43,23 @@ const Page = ({
     }
     reactToPrintFn();
   };
-
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
   const handleDownloadPDF = async () => {
     if (!yearlywages) {
       toast.error('Attendance data not available for PDF generation.');
@@ -176,7 +196,23 @@ const Page = ({
                 <div className='font-bold text-blue-600 max-w-64 '>
                   Name and Address of Contractor:
                 </div>
-                <div>Sri construction and Co.</div>
+                <div>
+                  {ent?.name ? (
+                    ent?.name
+                  ) : (
+                    <span className='text-red-500'>
+                      No company found. Try by Reloading
+                    </span>
+                  )}
+                  ,&nbsp;
+                  {ent?.address ? (
+                    ent?.address
+                  ) : (
+                    <span className='text-red-500'>
+                      No address found. Try by Reloading
+                    </span>
+                  )}
+                </div>
               </div>
               <div className='flex gap-3 mb-4'>
                 <div className='font-bold text-blue-600  '>

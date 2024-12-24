@@ -22,6 +22,8 @@ import React, { useEffect, useState } from 'react';
 import { FaWindows } from 'react-icons/fa6';
 import WorkOrderHr from '@/lib/models/HR/workOrderHr.model';
 import wagesAction from '@/lib/actions/HR/wages/wagesAction';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
 
 const Page = ({
   searchParams,
@@ -34,9 +36,28 @@ const Page = ({
   const [atten, setTotalAtten] = useState(null);
   const [updateWageData, setUpdateWageData] = useState({});
   const [daStatus, setDAStatus] = useState(false);
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
 
   const contentRef = React.useRef(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
+
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
   const handleOnClick = async () => {
     if (!yearlywages) {
       toast.error('Attendance data not available for Print generation.');
@@ -261,8 +282,21 @@ const Page = ({
               <div className='flex gap-4 my-4'>
                 <span>Name & Address of Contractor :- </span>
                 <span className='uppercase'>
-                  SRI CONSTRUCTION & CO. .H.NO 78 KAPLI NEAR HARI MANDIR, .PO
-                  KAPALI SARAIKEA,
+                  {ent?.name ? (
+                    ent?.name
+                  ) : (
+                    <span className='text-red-500'>
+                      No company found. Try by Reloading
+                    </span>
+                  )}
+                  ,&nbsp;
+                  {ent?.address ? (
+                    ent?.address
+                  ) : (
+                    <span className='text-red-500'>
+                      No address found. Try by Reloading
+                    </span>
+                  )}
                 </span>
               </div>
 

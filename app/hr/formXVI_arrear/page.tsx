@@ -22,6 +22,8 @@ import React, { useEffect, useState } from 'react';
 import { FaWindows } from 'react-icons/fa6';
 import WorkOrderHr from '@/lib/models/HR/workOrderHr.model';
 import wagesAction from '@/lib/actions/HR/wages/wagesAction';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
 
 const Page = ({
   searchParams,
@@ -32,6 +34,7 @@ const Page = ({
   const [updatedWage, setUpdateWageData] = useState(null);
   const [yearlywages, setYearlywages] = useState(null);
   const [atten, setAtten] = useState(null);
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
 
   let col = 0; // for coulum decide
   const contentRef = React.useRef(null);
@@ -39,6 +42,23 @@ const Page = ({
     contentRef,
     documentTitle: `FormXVI/${searchParams.year}`,
   });
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
   const handleOnClick = async () => {
     if (!yearlywages) {
       toast.error('Attendance data not available for Print generation.');
@@ -234,7 +254,22 @@ const Page = ({
                 <div className='font-bold text-blue-600 max-w-64 '>
                   Name and Address of Contractor:
                 </div>
-                <div>Sri construction and Co.</div>
+                <div>
+                  {ent?.name ? (
+                    ent?.name
+                  ) : (
+                    <span className='text-red-500'>
+                      No company found. Try by Reloading
+                    </span>
+                  )}
+                  {ent?.address ? (
+                    ent?.address
+                  ) : (
+                    <span className='text-red-500'>
+                      No address found. Try by Reloading
+                    </span>
+                  )}
+                </div>
               </div>
               <div className='flex gap-3 mb-4'>
                 <div className='font-bold text-blue-600  '>

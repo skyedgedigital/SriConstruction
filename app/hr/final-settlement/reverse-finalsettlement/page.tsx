@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { Separator } from '@/components/ui/separator';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { useReactToPrint } from "react-to-print";
+import { useReactToPrint } from 'react-to-print';
 import {
   Table,
   TableBody,
@@ -20,6 +20,8 @@ import { fetchAllAttendance } from '@/lib/actions/attendance/fetch';
 
 import React, { useEffect, useState } from 'react';
 import { set } from 'mongoose';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
 
 const Page = ({
   searchParams,
@@ -46,9 +48,28 @@ const Page = ({
   ];
   const contentRef = React.useRef(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
+
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
   const handleOnClick = async () => {
     if (!finalSettlementData) {
-      toast.error("Attendance data not available for Print generation.");
+      toast.error('Attendance data not available for Print generation.');
       return;
     }
     reactToPrintFn();
@@ -151,11 +172,12 @@ const Page = ({
     const fn = async () => {
       try {
         if (!finalSettlementData) return;
-        const totalBonusPaid = finalSettlementData?.totalAttendancePerYear
-        ?.reduce(
-          (acc, e) => (e.status ? 0.0833*(acc + e.totalNetAmountPaid) : acc),
-          0
-        );
+        const totalBonusPaid =
+          finalSettlementData?.totalAttendancePerYear?.reduce(
+            (acc, e) =>
+              e.status ? 0.0833 * (acc + e.totalNetAmountPaid) : acc,
+            0
+          );
 
         const totalLeavePaid =
           finalSettlementData?.totalAttendancePerYear?.reduce(
@@ -189,7 +211,7 @@ const Page = ({
   return (
     <div className='ml-[80px]'>
       <div className='flex gap-4 items-center'>
-       <Button onClick={handleOnClick}>Print</Button>
+        <Button onClick={handleOnClick}>Print</Button>
         <Button onClick={handleDownloadPDF}>Download PDF</Button>
       </div>
 
@@ -206,7 +228,14 @@ const Page = ({
           <div className='flex flex-col gap-3 mb-4 '>
             <div className='font-semibold flex gap-2  mb-6 '>
               <span>Vendor&apos;s Name =</span>
-              <span className='uppercase'> Sri construction and Co. </span>
+              {ent?.name ? (
+                <span className='uppercase'>{ent?.name}</span>
+              ) : (
+                <span className='text-red-500'>
+                  {' '}
+                  No company found. Try by Reloading
+                </span>
+              )}{' '}
             </div>
 
             <div className='flex gap-52'>
@@ -446,10 +475,12 @@ const Page = ({
               </span>
             </div>
             <div>
-            <span className='uppercase'>Retrenchment benefit:</span>
+              <span className='uppercase'>Retrenchment benefit:</span>
               <span>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {searchParams.Retrenchment_benefit ? finalSettlementData?.designation?.PayRate*15:"N/A"}
+                {searchParams.Retrenchment_benefit
+                  ? finalSettlementData?.designation?.PayRate * 15
+                  : 'N/A'}
               </span>
             </div>
             <div>

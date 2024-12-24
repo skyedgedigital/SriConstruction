@@ -25,6 +25,8 @@ import { storage } from '@/utils/fireBase/config';
 import itemAction from '@/lib/actions/item/itemAction';
 import chalanAction from '@/lib/actions/chalan/chalanAction';
 import { useReactToPrint } from 'react-to-print';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
 
 const todayDate = () => {
   let date = new Date().toLocaleDateString();
@@ -56,6 +58,7 @@ const PublicHealthServiceInvoice = ({
   const [totalCgst, setTotalCgst] = useState(0);
   const [totalSgst, setTotalSgst] = useState(0);
   const [totalHours, setTotalHours] = useState(0);
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
 
   const [itemsList, setItemsList] = useState([]);
   const [dateMapping, setDateMapping] = useState({});
@@ -67,6 +70,23 @@ const PublicHealthServiceInvoice = ({
   const reactToPrintFnSummary = useReactToPrint({
     contentRef: contentSummaryRef,
   });
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
 
   useEffect(() => {
     const fn = async () => {
@@ -484,20 +504,48 @@ const PublicHealthServiceInvoice = ({
                   alt='sign image'
                 />{' '}
               </div>
-              <h1 className='font-bold text-sm uppercase'>Sri Constructions</h1>
+              {ent?.name ? (
+                <h1 className='font-normal uppercase'>{ent?.name}</h1>
+              ) : (
+                <h1 className='font-normal text-red-500 uppercase'>
+                  No company name. Try by Reloading
+                </h1>
+              )}
             </div>
             <div className=''>
               <p className=' border-b-2 border-b-black w-fit pr-2 pb-2'>
                 Specialist in : Horticulture, Conservancy Services, Supply of
                 Equipments (F-15 Crane and JCB)
               </p>
-              <p className='uppercase pt-2'>
-                Address: C-1, BRINDAWAN GARDEN, SONARI, JAMSHEDPUR-831011
-              </p>
+              {ent?.address ? (
+                <p className='font-normal pt-2'>Address: {ent?.address}</p>
+              ) : (
+                <p className='font-normal text-red-500 uppercase pt-2'>
+                  Address: No address found. Try by Reloading
+                </p>
+              )}
               <p>Mobile : 9431133471, 9234973465</p>
-              <p>Email : shekharenter@gmail.com</p>
-              <p className='mt-2'>GSTIN/UN : 20AEMPK3908B1Z2</p>
-              <p className='mb-2'>PAN : AEMPK3908B</p>
+              {ent?.email ? (
+                <p className='font-normal'>Email: {ent?.email}</p>
+              ) : (
+                <p className='font-normal text-red-500 uppercase'>
+                  Email: No email found. Try by Reloading
+                </p>
+              )}
+              {ent?.gstin ? (
+                <p className='font-normal uppercase'>GSTIN/UN: {ent?.gstin}</p>
+              ) : (
+                <p className='font-normal text-red-500 uppercase'>
+                  GSTIN/UN: No GSTIN/UN found. Try by Reloading
+                </p>
+              )}
+              {ent?.pan ? (
+                <p className='font-normal uppercase mb-2'>PAN: {ent?.pan}</p>
+              ) : (
+                <p className='font-normal text-red-500 uppercase mb-2'>
+                  PAN: No pan found. Try by Reloading
+                </p>
+              )}
             </div>
           </div>
           <div className='border-2 border-black w-full pb-10'>
@@ -516,7 +564,14 @@ const PublicHealthServiceInvoice = ({
                     Jamshedpur - 831001{' '}
                   </span>
                 </div>
-                <div>GSTIN/UIN: 20AABCJ3604P1ZR</div>
+
+                {ent?.gstin ? (
+                  <div>GSTIN/UIN: {ent?.gstin}</div>
+                ) : (
+                  <div className='font-normal text-red-500 uppercase'>
+                    GSTIN/UIN: No GSTIN/UIN found. Try by Reloading
+                  </div>
+                )}
                 <div className='flex items-start gap-1'>
                   <span>
                     Place of supply: <br></br> (Address of Delivery)
@@ -534,7 +589,14 @@ const PublicHealthServiceInvoice = ({
                   <p> {todayDate()}</p>
                 </div>
                 <div className='flex gap-4 items-center'>
-                  <p>Vendor code</p> <p>10758</p>
+                  <p>Vendor code</p>
+                  {ent?.vendorCode ? (
+                    <p> {ent?.vendorCode}</p>
+                  ) : (
+                    <p className='font-normal text-red-500'>
+                      No vendor code found. Try by Reloading
+                    </p>
+                  )}
                 </div>
                 <div className='flex gap-4 items-center'>
                   <p>WO/PO No</p> <p>{workOrder?.workOrderNumber}</p>

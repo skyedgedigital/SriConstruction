@@ -20,6 +20,8 @@ import {
 import { fetchAllAttendance } from '@/lib/actions/attendance/fetch';
 
 import React, { useEffect, useState } from 'react';
+import { IEnterprise } from '@/interfaces/enterprise.interface';
+import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
 interface Attendance {
   day: number;
   status: string;
@@ -39,6 +41,7 @@ const Page = ({
   const [attendanceArray, setAttendanceArray] = useState<
     EmployeeIdAndAttendance[]
   >([]);
+  const [ent, setEnt] = useState<IEnterprise | null>(null);
 
   const contentRef = React.useRef(null);
   const reactToPrintFn = useReactToPrint({
@@ -52,7 +55,23 @@ const Page = ({
     }
     reactToPrintFn();
   };
-
+  useEffect(() => {
+    const fn = async () => {
+      const resp = await fetchEnterpriseInfo();
+      console.log('response we got ', resp);
+      if (resp.data) {
+        const inf = await JSON.parse(resp.data);
+        setEnt(inf);
+        console.log(ent);
+      }
+      if (!resp.success) {
+        toast.error(
+          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+        );
+      }
+    };
+    fn();
+  }, []);
   const handleDownloadPDF = async () => {
     if (!attendanceData) {
       toast.error('Attendance data not available for PDF generation.');
@@ -134,6 +153,7 @@ const Page = ({
               });
             setAttendanceArray(updated_data);
           }
+
           console.log('aagya response', parsedData);
         } else {
           const errobj = await JSON.parse(response?.error);
@@ -160,6 +180,7 @@ const Page = ({
     let total = arr.reduce((sum, current) => sum + current, 0);
     return total;
   }
+
   function CalculateNationalHolidays(arr: Attendance[]) {
     let count_nh = 0;
     arr.forEach((item) => {
@@ -169,6 +190,7 @@ const Page = ({
     });
     return count_nh;
   }
+
   function findAttendanceByEmployeeId(id: string) {
     const employee = attendanceArray.find((item) => item.employeeId === id);
     if (!employee) {
@@ -203,8 +225,23 @@ const Page = ({
                 <div className='font-bold text-blue-600 max-w-64 '>
                   Name and Address of Contractor:
                 </div>
-                <div className='uppercase'>SRI CONSTRUCTION & CO. 
-                  H. NO. 78 KAPLI NEAR HARI MANDIR, .PO KAPALI SARAIKEA</div>
+                <div className='uppercase'>
+                  {ent?.name ? (
+                    ent?.name
+                  ) : (
+                    <span className='text-red-500'>
+                      No company found. Try by Reloading
+                    </span>
+                  )}
+                  ,&nbsp;
+                  {ent?.address ? (
+                    ent?.address
+                  ) : (
+                    <span className='text-red-500'>
+                      No address found. Try by Reloading
+                    </span>
+                  )}
+                </div>
               </div>
               <div className='flex gap-3 mb-4'>
                 <div className='font-bold text-blue-600  '>
@@ -407,6 +444,7 @@ const Page = ({
                       {Math.round(employee?.total).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
+                      {/* {Math.round(0.12 * employee?.total).toFixed(2)} */}
                       {Math.round(
                         (employee?.attendance * employee?.designation.PayRate +
                           employee?.otherCash) *
@@ -438,7 +476,8 @@ const Page = ({
                     <TableCell className='border-black border-2 text-black'></TableCell>
                   </TableRow>
                 ))}
-{/*                  <TableRow className='text-black font-mono h-28'>
+
+                {/* <TableRow className='text-black font-mono h-28'>
                   <TableCell className='border-black border-2 text-black'></TableCell>
                   <TableCell className='border-black border-2 text-black'></TableCell>
                   <TableCell className='border-black border-2 text-black'></TableCell>
