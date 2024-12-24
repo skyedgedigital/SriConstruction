@@ -248,8 +248,8 @@ const AddWage = ({ employeee }) => {
         },
         otherDeduction: {
           fine: parseInt(formData.fine),
-          od: parseInt(formData.oa),
-          dppe: parseInt(formData.oa),
+          od: parseInt(formData.od),
+          dppe: parseInt(formData.dppe),
         },
       };
 
