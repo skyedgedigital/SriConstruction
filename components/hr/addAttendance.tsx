@@ -43,6 +43,7 @@ import { Separator } from '@/components/ui/separator';
 import { Loader2 } from 'lucide-react';
 import vehicleAction from '@/lib/actions/vehicle/vehicleAction';
 import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
+import { deleteWorkorderFromEmployeeData } from '@/lib/actions/HR/EmployeeData/delete';
 
 
 
@@ -281,6 +282,32 @@ const AddAttendance=({employeee})=>{
           }
         };
 
+        const onDeleteHandler = async (
+      workOrderHr_Id: string,
+      employee_Id: string,
+      month: number,
+      year: number
+    ) => {
+      if (!workOrderHr_Id || !employee_Id || !month || !year) {
+        toast.error('Insufficient Data');
+        return;
+      }
+      try {
+        const resp = await deleteWorkorderFromEmployeeData(
+          workOrderHr_Id,
+          employee_Id,
+          month,
+          year
+        );
+        if (resp.success) {
+          toast.success(resp.message);
+        } else {
+          toast.error(resp.message);
+        }
+      } catch (error) {
+        toast.error(error?.message || 'Something went wrong');
+      }
+    };
 
         
           
@@ -403,6 +430,19 @@ const AddAttendance=({employeee})=>{
   ))}
 
 </select>)}
+            <Button
+            className='mt-2 ml-2'
+            onClick={() =>
+              onDeleteHandler(
+                selectedWorkOrder._id,
+                employeee.id,
+                parseInt(employeee.month),
+                parseInt(employeee.year)
+              )
+            }
+          >
+            Delete Selected. Work Order
+          </Button>
 
           {/* </div> */}
           </div>
