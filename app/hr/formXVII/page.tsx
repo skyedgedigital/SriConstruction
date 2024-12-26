@@ -408,28 +408,48 @@ const Page = ({
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'></TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      <div>
-                        {`${employee?.designation.basic} + ${employee?.designation.DA}`}
-                      </div>
-                      <div className='border-t-2 border-black text-left mt-1'>
-                        {Number(employee?.designation.PayRate).toFixed(2)}
-                      </div>
+                      {!employee?.basic && (
+                        <div className='text-red-500'>
+                          PLEASE SAVE WAGE AGAIN
+                        </div>
+                      )}
+                      {employee?.basic && (
+                        <div>{`${employee?.basic} + ${employee?.DA}`}</div>
+                      )}
+                      {employee.basic && (
+                        <div className='border-t-2 border-black text-left mt-1'>
+                          {Number(employee?.payRate).toFixed(2)}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      <div>
-                        {Math.round(
-                          Number(
-                            employee?.designation.basic * employee?.attendance
-                          )
-                        )}
-                      </div>
-                      <div>Incent</div>
-                      <div>{Number(employee?.incentiveAmount).toFixed(2)}</div>
+                     {!employee?.basic && (
+                        <div className='text-red-500'>
+                          PLEASE SAVE WAGE AGAIN
+                        </div>
+                      )}
+                      {employee?.basic && (
+                        <div>
+                          {Math.round(
+                            Number(employee?.basic * employee?.attendance)
+                          )}
+                        </div>
+                      )}
+                      {employee?.basic && <div>Incent</div>}
+                      {employee?.basic && (
+                        <div>
+                          {Number(employee?.incentiveAmount).toFixed(2)}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {(
-                        employee?.designation.DA * employee?.attendance
-                      ).toFixed(2)}
+                      {!employee?.DA && !(Number(employee?.DA) === 0) && (
+                        <div className='text-red-500'>
+                          PLEASE SAVE WAGE AGAIN
+                        </div>
+                      )}
+                      {employee?.DA &&
+                        (employee?.DA * employee?.attendance).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       0{' '}
@@ -446,7 +466,7 @@ const Page = ({
                     <TableCell className='border-black border-2 text-black'>
                       {/* {Math.round(0.12 * employee?.total).toFixed(2)} */}
                       {Math.round(
-                        (employee?.attendance * employee?.designation.PayRate +
+                        (employee?.attendance * employee?.payRate +
                           employee?.otherCash) *
                           0.12
                       ).toFixed(2)}
@@ -572,7 +592,7 @@ const Page = ({
                   {Math.round(
                     calculateTotal(
                       attendanceData?.map((item) =>
-                        Number(item?.designation.basic * item?.attendance)
+                        Number(item?.basic * item?.attendance)
                       )
                     )
                   ).toFixed(2)}
@@ -584,7 +604,7 @@ const Page = ({
                   {Math.round(
                     calculateTotal(
                       attendanceData?.map((item) =>
-                        Number(item?.designation.DA * item?.attendance)
+                        Number(item?.DA * item?.attendance)
                       )
                     )
                   ).toFixed(2)}
@@ -617,7 +637,7 @@ const Page = ({
                       attendanceData.map(
                         (item) =>
                           (Number(item?.attendance) *
-                            Number(item?.designation.PayRate) +
+                            Number(item?.payRate) +
                             Number(item?.otherCash)) *
                           0.12
                       )
