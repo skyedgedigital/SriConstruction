@@ -49,6 +49,13 @@ const WagesSchema: mongoose.Schema<any> = new mongoose.Schema({
         type: Number,
         required: true
     },
+    //added basic and DA for wages collection
+    basic: {
+      type: Number,
+    },
+    DA: {
+      type: Number,
+    },
     payRate: {
         type: Number,
     },
