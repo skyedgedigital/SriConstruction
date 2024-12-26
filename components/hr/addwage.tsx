@@ -106,8 +106,12 @@ const AddWage = ({ employeee }) => {
       employee: employeee.name,
       year: employeee.year,
       month: employeee.month,
-      basic: employeee?.designation?.basic,
-      vda: employeee?.designation?.DA,
+      basic: employeee.existingWage?.basic
+        ? employeee.existingWage?.basic
+        : employeee?.designation?.basic,
+      vda: employeee.existingWage?.DA
+        ? employeee.existingWage?.DA
+        : employeee?.designation?.DA,
       des: employeee?.designation?.designation,
 
       hra: parsed_otherCashDescription?.hra?.toFixed(2) || '',
@@ -224,6 +228,8 @@ const AddWage = ({ employeee }) => {
       setAttendanceData(null);
       console.log('employeee aato ra ha', employeee);
       const newData = {
+        basic: parseFloat(formData.basic),
+        DA: parseFloat(formData.vda),
         employee: employeee.id,
         month: parseInt(employeee.month),
         year: parseInt(employeee.year), // No explicit radix
