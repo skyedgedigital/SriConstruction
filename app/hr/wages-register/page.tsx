@@ -265,13 +265,13 @@ const Page = ({
               </li>
               <li>
                 <span>Rate of Daily Wages @ Piece Rate :- </span>{' '}
-                <span>{wage?.designation?.PayRate}</span>
+                <span>{wage?.payRate}</span>
               </li>
               <li>
                 <span>Amount of Wages :- </span>{' '}
                 <span>
-                  {(wage?.designation?.basic * wage?.attendance).toFixed(2)} +
-                  {(wage?.designation?.DA * wage?.attendance).toFixed(2)} +
+                  {(wage?.basic * wage?.attendance).toFixed(2)} +
+                  {(wage?.DA * wage?.attendance).toFixed(2)} +
                   {(wage?.otherCash).toFixed(2)}
                 </span>
               </li>
