@@ -26,6 +26,8 @@ const createWageForAnEmployee = async (dataString: string) => {
   try {
     const data = JSON.parse(dataString);
     const {
+      basic,
+      DA,
       employee,
       month,
       year,
@@ -141,10 +143,21 @@ const createWageForAnEmployee = async (dataString: string) => {
 
     const esiLocationData = empData.ESILocation;
     const departmentData = empData.department;
-    const basicWage = convert_to_number(designationaData.basic);
-    const da = convert_to_number(designationaData.DA);
-    const payRate = convert_to_number(designationaData.PayRate);
+    //changed the basic, da and payrate to be calculated from the designation data if not provided otherwise from the data coming from the frontend
+    const basicWage = basic || convert_to_number(designationaData.basic);
+    const da = DA || convert_to_number(designationaData.DA);
+    const payRate =
+      basicWage + da || convert_to_number(designationaData.PayRate);
     const perDayPay = basicWage / totalWorkingDays;
+    console.log(
+      'PAYRATE:____________________________________________________________',
+      payRate
+    );
+    console.log(
+      basicWage,
+      da,
+      'I am basic and da-----------------------------------------------------------'
+    );
     // totalPay = (basic + da) * presentDays
     let totalPay: number = (basicWage + da) * presentDays;
     // totalPay = totalPay + otherCashTotal; // otherCashTotal is eoc(+)
@@ -164,7 +177,9 @@ const createWageForAnEmployee = async (dataString: string) => {
     }
 
     if (incentiveApplicable && incentiveDays > 0) {
-      incentiveAmount = 1000 + designationaData.basic * incentiveDays;
+      // replaced the designationaData.basic with basicWage (same thing)
+      // incentiveAmount = 1000 + designationaData.basic * incentiveDays;
+      incentiveAmount = 1000 + basicWage * incentiveDays;
       // adding incentive amount in the total pay (gross pay)
       // totalPay = totalPay + incentiveAmount;
       totalPay += incentiveAmount;
@@ -243,6 +258,9 @@ const createWageForAnEmployee = async (dataString: string) => {
         isDamageDeduction
       );
       // Update existing wage record
+      existingWage.payRate = payRate;
+      existingWage.basic = basicWage;
+      existingWage.DA = da;
       existingWage.total = totalPay;
       existingWage.netAmountPaid = netAmountPaid; // Refactored for reuse
       existingWage.otherCash = otherCashTotal;
@@ -280,6 +298,8 @@ const createWageForAnEmployee = async (dataString: string) => {
       };
     } else {
       const obj = new Wages({
+        basic: basicWage,
+        DA: da,
         employee: employee,
         designation: designationaData._id,
         month: month,
