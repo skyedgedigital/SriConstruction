@@ -275,10 +275,10 @@ export const wagesColumns: ColumnDef<EmployeeData>[] = [
                           {payment.attendance}
                         </TableCell>
                         <TableCell className='border-black border-2 text-black'>
-                          {payment.existingWage.designation.basic}
+                          {payment.existingWage?.basic}
                         </TableCell>
                         <TableCell className='border-black border-2 text-black'>
-                          {payment.existingWage.designation.DA}
+                          {payment.existingWage?.DA}
                         </TableCell>
                         <TableCell className='border-black border-2 text-black'>
                           0
@@ -298,7 +298,7 @@ export const wagesColumns: ColumnDef<EmployeeData>[] = [
                           {Math.round(
                             0.12 *
                               (Number(payment?.existingWage.attendance) *
-                                Number(payment?.designation.PayRate) +
+                                Number(payment?.existingWage.payRate) +
                                 Number(payment?.existingWage.otherCash))
                           ).toFixed(2)}
                         </TableCell>
