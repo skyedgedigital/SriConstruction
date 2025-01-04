@@ -54,12 +54,13 @@ const createWageForAnEmployee = async (dataString: string) => {
         success: false,
       };
     }
+    console.log('FOUND EMPLOYEE', empData);
     const filter = {
       employee: employee,
       month: month,
       year: year,
     };
-    console.log('dddddd', empData.designation);
+    // console.log('dddddd', empData.designation);
     const attendanceRecords = await attendanceAction.FETCH.fetchStatus(
       JSON.stringify(filter)
     );
@@ -67,19 +68,19 @@ const createWageForAnEmployee = async (dataString: string) => {
       JSON.stringify(filter)
     );
 
-    console.log(
-      attendanceOfEmp,
-      attendanceRecords,
-      'I am attendance & record of employee'
-    );
+    // console.log(
+    //   attendanceOfEmp,
+    //   attendanceRecords,
+    //   'I am attendance & record of employee'
+    // );
 
     const responseData = await JSON.parse(attendanceOfEmp.data);
-    console.log('yerha wage mein work order', responseData.workOrderHr);
+    // console.log('yerha wage mein work order', responseData.workOrderHr);
     //@ts-ignore
     const days = responseData.days;
     const workOrder1 = responseData.workOrderHr._id.toString();
     const workOrder = workOrder1.trim();
-    console.log(workOrder, 'Mein work order hun');
+    // console.log(workOrder, 'Mein work order hun');
 
     let consecutiveDays = 0;
     let workedWeeks = 0;
@@ -89,8 +90,8 @@ const createWageForAnEmployee = async (dataString: string) => {
     for (let i = 0; i < days.length; i++) {
       const { status, day } = days[i];
 
-      console.log('fds date: ', day);
-      console.log(days[i]);
+      // console.log('fds date: ', day);
+      // console.log(days[i]);
 
       // Check for Sundays and if the employee was present
       if (sundayDates.includes(day) && status === 'Present') {
@@ -113,10 +114,10 @@ const createWageForAnEmployee = async (dataString: string) => {
       }
     }
 
-    console.log('&&&&fdjkshfkjdsh', incentiveDays);
-    console.log(JSON.stringify(sundayDates));
+    // console.log('&&&&fdjkshfkjdsh', incentiveDays);
+    // console.log(JSON.stringify(sundayDates));
 
-    const otherCashTotal = workedWeeks * 1.4;
+    const otherCashTotal = empData?.attendanceAllowance ? workedWeeks * 1.4 : 0;
 
     if (attendanceRecords.status !== 200) {
       return {
@@ -127,19 +128,19 @@ const createWageForAnEmployee = async (dataString: string) => {
     }
 
     const attendanceRecordsData = JSON.parse(attendanceRecords.data);
-    console.log(
-      '_________________________________________________________________________'
-    );
-    console.log(
-      '------------------------------',
-      attendanceRecordsData,
-      '---------------------------------------'
-    );
+    // console.log(
+    //   '_________________________________________________________________________'
+    // );
+    // console.log(
+    //   '------------------------------',
+    //   attendanceRecordsData,
+    //   '---------------------------------------'
+    // );
     const presentDays = attendanceRecordsData.Present;
 
     // console.log(empData)
     const designationaData = empData.designation;
-    console.log('fffffff', designationaData);
+    // console.log('fffffff', designationaData);
 
     const esiLocationData = empData.ESILocation;
     const departmentData = empData.department;
@@ -149,15 +150,15 @@ const createWageForAnEmployee = async (dataString: string) => {
     const payRate =
       basicWage + da || convert_to_number(designationaData.PayRate);
     const perDayPay = basicWage / totalWorkingDays;
-    console.log(
-      'PAYRATE:____________________________________________________________',
-      payRate
-    );
-    console.log(
-      basicWage,
-      da,
-      'I am basic and da-----------------------------------------------------------'
-    );
+    // console.log(
+    //   'PAYRATE:____________________________________________________________',
+    //   payRate
+    // );
+    // console.log(
+    //   basicWage,
+    //   da,
+    //   'I am basic and da-----------------------------------------------------------'
+    // );
     // totalPay = (basic + da) * presentDays
     let totalPay: number = (basicWage + da) * presentDays;
     // totalPay = totalPay + otherCashTotal; // otherCashTotal is eoc(+)
@@ -183,7 +184,7 @@ const createWageForAnEmployee = async (dataString: string) => {
       // adding incentive amount in the total pay (gross pay)
       // totalPay = totalPay + incentiveAmount;
       totalPay += incentiveAmount;
-      console.log('incentive added and the incentive days is greater then 0');
+      // console.log('incentive added and the incentive days is greater then 0');
     } else {
       incentiveAmount = 0;
     }
@@ -195,18 +196,18 @@ const createWageForAnEmployee = async (dataString: string) => {
     const pf = 0.12 * gross_2;
     const esi = 0.0075 * totalPay;
     if (empData.pfApplicable) {
-      console.log('Subtracting PF');
+      // console.log('Subtracting PF');
       netAmountPaid = netAmountPaid - pf;
     }
     // if(empData.ESICApplicable){
-    console.log('Subtracting ESI');
+    // console.log('Subtracting ESI');
     netAmountPaid = netAmountPaid - esi;
     // }
 
     // For incentive payment - Adding 1000+ no of days * designation.basic pay
     // const incentiveAmount = 4*360; // for example
 
-    console.log('previous amount', netAmountPaid);
+    // console.log('previous amount', netAmountPaid);
 
     // add the incentive amount
 
@@ -217,10 +218,10 @@ const createWageForAnEmployee = async (dataString: string) => {
     //   'Net amount here after incentive added: updated',
     //   netAmountPaid
     // );
-    console.log(
-      'Net amount here after not adding the incentive: updated',
-      netAmountPaid
-    );
+    // console.log(
+    //   'Net amount here after not adding the incentive: updated',
+    //   netAmountPaid
+    // );
 
     // advance and damage deduction here
 
@@ -232,17 +233,17 @@ const createWageForAnEmployee = async (dataString: string) => {
       netAmountPaid = netAmountPaid - damageDeduction;
     }
 
-    console.log(
-      'Net amount here after advance and damage deduction: updated',
-      netAmountPaid
-    );
+    // console.log(
+    //   'Net amount here after advance and damage deduction: updated',
+    //   netAmountPaid
+    // );
 
     for (let value in otherDeduction) {
       netAmountPaid = netAmountPaid - convert_to_number(otherDeduction[value]);
       otherDeductionTotal =
         otherDeductionTotal + convert_to_number(otherDeduction[value]);
     }
-    console.log('PayRate', typeof payRate);
+    // console.log('PayRate', typeof payRate);
     const existingWage = await Wages.findOne({
       employee,
       month,
@@ -250,35 +251,35 @@ const createWageForAnEmployee = async (dataString: string) => {
       workOrderHr: workOrder,
     });
     if (existingWage) {
-      console.log(
-        'wages exists and :',
-        advanceDeduction,
-        isAdvanceDeduction,
-        damageDeduction,
-        isDamageDeduction
-      );
+      // console.log(
+      //   'wages exists and :',
+      //   advanceDeduction,
+      //   isAdvanceDeduction,
+      //   damageDeduction,
+      //   isDamageDeduction
+      // );
       // Update existing wage record
-      existingWage.payRate = payRate;
-      existingWage.basic = basicWage;
-      existingWage.DA = da;
-      existingWage.total = totalPay;
-      existingWage.netAmountPaid = netAmountPaid; // Refactored for reuse
-      existingWage.otherCash = otherCashTotal;
-      existingWage.allowances = allowances;
+      existingWage.payRate = parseFloat(payRate).toFixed(2);
+      existingWage.basic = parseFloat(basicWage).toFixed(2);
+      existingWage.DA = parseFloat(da).toFixed(2);
+      existingWage.total = totalPay.toFixed(2);
+      existingWage.netAmountPaid = netAmountPaid.toFixed(2); // Refactored for reuse
+      existingWage.otherCash = otherCashTotal.toFixed(2);
+      existingWage.allowances = allowances.toFixed(2);
 
       existingWage.otherCashDescription = JSON.stringify(otherCash);
-      existingWage.otherDeduction = otherDeductionTotal;
+      existingWage.otherDeduction = otherDeductionTotal.toFixed(2);
       existingWage.otherDeductionDescription = JSON.stringify(otherDeduction);
       existingWage.workOrderHr = responseData.workOrderHr._id;
       existingWage.incentiveApplicable = incentiveApplicable;
       existingWage.incentiveDays = incentiveDays; // Update incentive days
-      existingWage.incentiveAmount = incentiveAmount; // Update incentive days
-      existingWage.damageDeduction = damageDeduction;
-      existingWage.advanceDeduction = advanceDeduction;
+      existingWage.incentiveAmount = incentiveAmount.toFixed(2); // Update incentive days
+      existingWage.damageDeduction = parseFloat(damageDeduction).toFixed(2);
+      existingWage.advanceDeduction = parseFloat(advanceDeduction).toFixed(2);
       existingWage.isAdvanceDeduction = isAdvanceDeduction;
       existingWage.isDamageDeduction = isDamageDeduction;
       existingWage.attendance = presentDays; // Update Attendance workOrderwise
-      console.log('fdsfds', incentiveDays);
+      // console.log('fdsfds', incentiveDays);
       const updatedWage = await existingWage.save();
       console.log('obj is Updated and saved', updatedWage);
 
@@ -298,27 +299,27 @@ const createWageForAnEmployee = async (dataString: string) => {
       };
     } else {
       const obj = new Wages({
-        basic: basicWage,
-        DA: da,
+        basic: parseFloat(basicWage).toFixed(2),
+        DA: parseFloat(da).toFixed(2),
         employee: employee,
         designation: designationaData._id,
         month: month,
         year: year,
         totalWorkingDays: totalWorkingDays,
         attendance: presentDays,
-        total: totalPay,
-        netAmountPaid: netAmountPaid,
-        otherCash: otherCashTotal,
-        allowances: allowances,
+        total: totalPay.toFixed(2),
+        netAmountPaid: netAmountPaid.toFixed(2),
+        otherCash: otherCashTotal.toFixed(2),
+        allowances: allowances.toFixed(2),
         otherCashDescription: JSON.stringify(otherCash),
-        otherDeduction: otherDeductionTotal,
+        otherDeduction: otherDeductionTotal.toFixed(2),
         otherDeductionDescription: JSON.stringify(otherDeduction),
-        payRate: payRate,
+        payRate: parseFloat(payRate).toFixed(2),
         incentiveApplicable: incentiveApplicable,
-        incentiveDays: incentiveDays, // Add incentive days
-        incentiveAmount: incentiveAmount, // Add incentive amount
-        damageDeduction: damageDeduction,
-        advanceDeduction: advanceDeduction,
+        incentiveDays: incentiveDays.toFixed(2), // Add incentive days
+        incentiveAmount: incentiveAmount.toFixed(2), // Add incentive amount
+        damageDeduction: parseFloat(damageDeduction).toFixed(2),
+        advanceDeduction: parseFloat(advanceDeduction).toFixed(2),
         isAdvanceDeduction: isAdvanceDeduction,
         isDamageDeduction: isDamageDeduction,
         workOrderHr: responseData.workOrderHr._id,

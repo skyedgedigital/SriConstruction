@@ -173,14 +173,15 @@ const Page = ({
             <span>Name & Address of Contractor : </span>
             <div className='flex flex-col'>
               {ent?.name ? (
-                ent?.name
+                <span>{ent?.name},&nbsp;</span>
               ) : (
                 <span className='text-red-500'>
                   No company found. Try by Reloading
                 </span>
               )}
+
               {ent?.address ? (
-                ent?.address
+                <span>{ent?.address}</span>
               ) : (
                 <span className='text-red-500'>
                   No address found. Try by Reloading
@@ -266,7 +267,7 @@ const Page = ({
                 {Number(wagesData?.existingWage?.basic).toFixed(2)}
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {Number(wagesData?.existingWage?.DA).toFixed(2)}
+                {Number(wagesData?.existingWage.DA).toFixed(2)}
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 {Number(wagesData?.existingWage?.payRate).toFixed(2)}
@@ -281,7 +282,7 @@ const Page = ({
                 ).toFixed(2)}
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                {(wagesData?.existingWage?.DA * wagesData?.attendance)?.toFixed(
+                {(wagesData?.existingWage.DA * wagesData?.attendance)?.toFixed(
                   2
                 )}
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; +
