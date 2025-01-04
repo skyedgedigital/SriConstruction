@@ -658,7 +658,11 @@ const Page = ({
                 <span>
                   {Math.round(
                     calculateTotal(
-                      attendanceData.map((item) => 0.0075 * Number(item?.total))
+                      attendanceData.map((item) => {
+                        return item?.employee?.ESICApplicable
+                          ? 0.0075 * Number(item?.total)
+                          : 0;
+                      })
                     )
                   ).toFixed(2)}
                 </span>
@@ -682,9 +686,11 @@ const Page = ({
                 <span>
                   {Math.round(
                     calculateTotal(
-                      attendanceData.map((item) =>
-                        Number(item?.otherCashDescription?.eoc)
-                      )
+                      attendanceData.map((item) => {
+                        return item?.employee?.attendanceAllowance
+                          ? parseFloat(item?.otherCashDescription?.eoc)
+                          : 0;
+                      })
                     )
                   ).toFixed(2)}
                 </span>
