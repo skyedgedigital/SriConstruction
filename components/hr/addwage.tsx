@@ -137,60 +137,88 @@ const AddWage = ({ employeee }) => {
   const [attendanceData, setAttendanceData] = useState(null);
   const [employeeData, setEmployeeData] = useState(null);
 
-  const [incentiveCheckboxStatus, setIncentiveCheckboxStatus] = useState(employeee?.existingWage?.incentiveApplicable);
+  const [incentiveCheckboxStatus, setIncentiveCheckboxStatus] = useState(
+    employeee?.existingWage?.incentiveApplicable
+  );
 
   const [isDamageDeduction, setIsDamageDeduction] = useState(false);
-  const [alreadyDamageDeduction, setAlreadyDamageDeduction] = useState(employeee?.existingWage?.isDamageDeduction);
+  const [alreadyDamageDeduction, setAlreadyDamageDeduction] = useState(
+    employeee?.existingWage?.isDamageDeduction
+  );
   const [isAdvanceDeduction, setIsAdvanceDeduction] = useState(false);
-  const [alreadyAdvanceDeduction, setAlreadyAdvanceDeduction] = useState(employeee?.existingWage?.isAdvanceDeduction);
+  const [alreadyAdvanceDeduction, setAlreadyAdvanceDeduction] = useState(
+    employeee?.existingWage?.isAdvanceDeduction
+  );
 
-  // advance and damage deduction calulaitnos 
+  // advance and damage deduction calulaitnos
 
   const [pendingAdvanceDeduction, setPendingAdvanceDeduction] = useState(null);
   const [pendingDamageDeduction, setPendingDamageDeduction] = useState(null);
 
-  const [selectedAdvanceId, setSelectedAdvanceId] = useState<string | null>(null);
-  const [advanceDeductionAmount, setAdvanceDeductionAmount] = useState(employeee?.existingWage?.advanceDeduction || 0);
+  const [selectedAdvanceId, setSelectedAdvanceId] = useState<string | null>(
+    null
+  );
+  const [advanceDeductionAmount, setAdvanceDeductionAmount] = useState(
+    employeee?.existingWage?.advanceDeduction || 0
+  );
 
   const [selectedDamageId, setSelectedDamageId] = useState<string | null>(null);
-  const [damageDeductionAmount, setDamageDeductionAmount] = useState(employeee?.existingWage?.damageDeduction || 0);
+  const [damageDeductionAmount, setDamageDeductionAmount] = useState(
+    employeee?.existingWage?.damageDeduction || 0
+  );
 
   const handleAdvanceSelection = (advanceId: string) => {
-    const selectedAdvance = employeee.employee.advanceRegister?.find((adv: any) => adv?._id === advanceId);
-  
-    if (selectedAdvance && selectedAdvance.installmentsLeft > 0 && !employeee.existingWage?.isAdvanceDeduction) {
-      const deductionAmount = selectedAdvance.amountOfAdvanceGiven / selectedAdvance.numberOfInstallments;
+    const selectedAdvance = employeee.employee.advanceRegister?.find(
+      (adv: any) => adv?._id === advanceId
+    );
+
+    if (
+      selectedAdvance &&
+      selectedAdvance.installmentsLeft > 0 &&
+      !employeee.existingWage?.isAdvanceDeduction
+    ) {
+      const deductionAmount =
+        selectedAdvance.amountOfAdvanceGiven /
+        selectedAdvance.numberOfInstallments;
       setAdvanceDeductionAmount(deductionAmount);
       setSelectedAdvanceId(advanceId);
       setPendingAdvanceDeduction(advanceId); // Store selection as pending
       setIsAdvanceDeduction(true);
-      console.log("setIsAdvanceDeduction", isAdvanceDeduction);
+      console.log('setIsAdvanceDeduction', isAdvanceDeduction);
     } else {
       toast.error('Advance deduction already applied or invalid selection.');
       setAdvanceDeductionAmount(0);
     }
   };
-  
+
   const handleDamageSelection = (damageId: string) => {
-    const selectedDamage = employeee.employee.damageRegister?.find((dam: any) => dam._id === damageId);
-  
-    if (selectedDamage && selectedDamage.installmentsLeft > 0 && !employeee.existingWage?.isDamageDeduction) {
-      const deductionAmount = selectedDamage.amountOfDeductionImposed / selectedDamage.numberOfInstallments;
+    const selectedDamage = employeee.employee.damageRegister?.find(
+      (dam: any) => dam._id === damageId
+    );
+
+    if (
+      selectedDamage &&
+      selectedDamage.installmentsLeft > 0 &&
+      !employeee.existingWage?.isDamageDeduction
+    ) {
+      const deductionAmount =
+        selectedDamage.amountOfDeductionImposed /
+        selectedDamage.numberOfInstallments;
       setDamageDeductionAmount(deductionAmount);
       setSelectedDamageId(damageId);
       setPendingDamageDeduction(damageId); // Store selection as pending
       setIsDamageDeduction(true);
-      console.log("setIsDamageDeduction", isDamageDeduction)
+      console.log('setIsDamageDeduction', isDamageDeduction);
     } else {
       toast.error('Damage deduction already applied or invalid selection.');
       setDamageDeductionAmount(0);
     }
   };
-  
-  const handleToggle = (e) =>{
+
+  const handleToggle = (e) => {
     const status = e.target.checked;
-    setIncentiveCheckboxStatus(status)
-  }
+    setIncentiveCheckboxStatus(status);
+  };
 
   useEffect(() => {
     const fn = async () => {
@@ -204,21 +232,29 @@ const AddWage = ({ employeee }) => {
       if (resp.data) {
         const data = await JSON.parse(resp.data);
         setEmployees(data);
-        console.log("data **", data);
+        console.log('data **', data);
       }
     };
     fn();
   }, []);
 
   useEffect(() => {
-    console.log("USER ID: ", employeee.employee.advanceRegister);
-    console.log("IS APPLICABLE gfd: ", employeee?.existingWage?.isAdvanceDeduction, employeee?.existingWage?.isDamageDeduction);
-    console.log("AMOUNT *****", employeee?.existingWage?.advanceDeduction, employeee?.existingWage?.damageDeduction)
-  }, [])
+    console.log('USER ID: ', employeee.employee.advanceRegister);
+    console.log(
+      'IS APPLICABLE gfd: ',
+      employeee?.existingWage?.isAdvanceDeduction,
+      employeee?.existingWage?.isDamageDeduction
+    );
+    console.log(
+      'AMOUNT *****',
+      employeee?.existingWage?.advanceDeduction,
+      employeee?.existingWage?.damageDeduction
+    );
+  }, []);
 
   useEffect(() => {
-    console.log("IS APPLICABLE NEW: ", isAdvanceDeduction, isDamageDeduction);
-  }, [isAdvanceDeduction, isDamageDeduction])
+    console.log('IS APPLICABLE NEW: ', isAdvanceDeduction, isDamageDeduction);
+  }, [isAdvanceDeduction, isDamageDeduction]);
 
   const years = Array.from({ length: 2024 - 2010 + 1 }, (_, i) => 2010 + i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -231,81 +267,89 @@ const AddWage = ({ employeee }) => {
         basic: parseFloat(formData.basic),
         DA: parseFloat(formData.vda),
         employee: employeee.id,
-        month: parseInt(employeee.month),
-        year: parseInt(employeee.year), // No explicit radix
+        month: parseFloat(employeee.month),
+        year: parseFloat(employeee.year), // No explicit radix
         incentiveApplicable: incentiveCheckboxStatus,
         damageDeduction: damageDeductionAmount,
         advanceDeduction: advanceDeductionAmount,
         isAdvanceDeduction: isAdvanceDeduction,
         isDamageDeduction: isDamageDeduction,
         otherCash: {
-          // basic: parseInt(formData.basic),
-          // vda: parseInt(formData.vda),
-          hra: parseInt(formData.hra),
-          mob: parseInt(formData.mob),
-          incumb: parseInt(formData.incumb),
-          eoc: parseInt(formData.eoc),
-          pb: parseInt(formData.pb),
-          wa: parseInt(formData.wa),
-          ca: parseInt(formData.ca),
-          ma: parseInt(formData.ma),
-          ssa: parseInt(formData.ssa),
-          oa: parseInt(formData.oa),
+          // basic: parseFloat(formData.basic),
+          // vda: parseFloat(formData.vda),
+          hra: parseFloat(formData.hra),
+          mob: parseFloat(formData.mob),
+          incumb: parseFloat(formData.incumb),
+          eoc: parseFloat(formData.eoc),
+          pb: parseFloat(formData.pb),
+          wa: parseFloat(formData.wa),
+          ca: parseFloat(formData.ca),
+          ma: parseFloat(formData.ma),
+          ssa: parseFloat(formData.ssa),
+          oa: parseFloat(formData.oa),
         },
         otherDeduction: {
-          fine: parseInt(formData.fine),
-          od: parseInt(formData.od),
-          dppe: parseInt(formData.dppe),
+          fine: parseFloat(formData.fine),
+          od: parseFloat(formData.od),
+          dppe: parseFloat(formData.dppe),
         },
       };
 
-      console.log("NOTICE: ", isDamageDeduction, isDamageDeduction);
+      console.log('NOTICE: ', isDamageDeduction, isDamageDeduction);
 
       const filter = await JSON.stringify(newData);
       setEmployeeData(filter);
-      
+
       // Update installments for advance if selected
       try {
-        if (pendingAdvanceDeduction && !employeee?.existingWage?.isAdvaceDeduction) {
-          console.warn(employeee?.id, pendingAdvanceDeduction);        
-          const resp = await ComplianceRegisterAction.UPDATE.updateAdvanceInstallment(
-            employeee.id,
-            pendingAdvanceDeduction
-          );
+        if (
+          pendingAdvanceDeduction &&
+          !employeee?.existingWage?.isAdvaceDeduction
+        ) {
+          console.warn(employeee?.id, pendingAdvanceDeduction);
+          const resp =
+            await ComplianceRegisterAction.UPDATE.updateAdvanceInstallment(
+              employeee.id,
+              pendingAdvanceDeduction
+            );
           if (resp.success) {
             toast.success(resp.message);
-            console.log("updated register", resp.data);
+            console.log('updated register', resp.data);
           } else {
-            toast.error("Advance Installment Deduction Failed!!");
-            console.log("ERROR of INSTALLMENT", resp.message);
+            toast.error('Advance Installment Deduction Failed!!');
+            console.log('ERROR of INSTALLMENT', resp.message);
           }
           setPendingAdvanceDeduction(null); // Reset state after update
         }
       } catch (error) {
         console.error('Error updating advance installment:', error);
       }
-      
+
       // Update installments for damage if selected
       try {
-        if (pendingDamageDeduction && !employeee?.existingWage?.isDamageDeduction) {
-          console.warn(employeee?.id, pendingDamageDeduction);  
-          const resp = await ComplianceRegisterAction.UPDATE.updateDamageInstallment(
-            employeee.id,
-            pendingDamageDeduction
-          );
+        if (
+          pendingDamageDeduction &&
+          !employeee?.existingWage?.isDamageDeduction
+        ) {
+          console.warn(employeee?.id, pendingDamageDeduction);
+          const resp =
+            await ComplianceRegisterAction.UPDATE.updateDamageInstallment(
+              employeee.id,
+              pendingDamageDeduction
+            );
           if (resp.success) {
             toast.success(resp.message);
-            console.log("updated register", resp.data);
+            console.log('updated register', resp.data);
           } else {
-              toast.error(resp.message);
-              console.log("ERROR of INSTALLMENT", resp.message);
+            toast.error(resp.message);
+            console.log('ERROR of INSTALLMENT', resp.message);
           }
           setPendingDamageDeduction(null); // Reset state after update
         }
       } catch (error) {
         console.error('Error updating damage installment:', error);
-      }     
-      
+      }
+
       const response = await wagesAction.CREATE.createWage(filter);
 
       if (response.success) {
@@ -761,29 +805,48 @@ const AddWage = ({ employeee }) => {
                   <FormItem>
                     <FormLabel>Advance Deduction</FormLabel>
                     <FormControl>
-                        {!employeee?.existingWage?.isAdvaceDeduction && <Select
-                          value={selectedAdvanceId || ""}
-                          disabled={employeee?.existingWage?.isAdvanceDeduction || alreadyAdvanceDeduction}
+                      {!employeee?.existingWage?.isAdvaceDeduction && (
+                        <Select
+                          value={selectedAdvanceId || ''}
+                          disabled={
+                            employeee?.existingWage?.isAdvanceDeduction ||
+                            alreadyAdvanceDeduction
+                          }
                           onValueChange={(value) => {
                             field.onChange(value);
-                            handleAdvanceSelection(value)
+                            handleAdvanceSelection(value);
                           }}
-                      >
-                        <SelectTrigger className="w-full bg-white">
-                          <SelectValue placeholder={employeee?.existingWage?.isAdvanceDeduction ? "Already Deducted" : "Select the amount given"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {employeee
-                          .employee.advanceRegister?.filter((adv: any) => (adv != null && adv.installmentsLeft > 0)).map((adv: any) => (
-                            <SelectItem key={adv._id} value={adv._id}>
-                              {adv.amountOfAdvanceGiven + " - " + adv.purposeOfAdvanceGiven}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>}
+                        >
+                          <SelectTrigger className='w-full bg-white'>
+                            <SelectValue
+                              placeholder={
+                                employeee?.existingWage?.isAdvanceDeduction
+                                  ? 'Already Deducted'
+                                  : 'Select the amount given'
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {employeee.employee.advanceRegister
+                              ?.filter(
+                                (adv: any) =>
+                                  adv != null && adv.installmentsLeft > 0
+                              )
+                              .map((adv: any) => (
+                                <SelectItem key={adv._id} value={adv._id}>
+                                  {adv.amountOfAdvanceGiven +
+                                    ' - ' +
+                                    adv.purposeOfAdvanceGiven}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </FormControl>
                     <FormLabel className='text-red-700'>
-                    {advanceDeductionAmount > 0 ? `Installment: -${advanceDeductionAmount}` : ""}
+                      {advanceDeductionAmount > 0
+                        ? `Installment: -${advanceDeductionAmount}`
+                        : ''}
                     </FormLabel>
 
                     <FormMessage />
@@ -797,29 +860,46 @@ const AddWage = ({ employeee }) => {
                   <FormItem>
                     <FormLabel>Damage Deduction</FormLabel>
                     <FormControl>
-                    <Select
-                          value={selectedDamageId || ""}
-                          disabled={employeee?.existingWage?.isDamageDeduction || alreadyDamageDeduction}
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            handleDamageSelection(value)
-                          }}
+                      <Select
+                        value={selectedDamageId || ''}
+                        disabled={
+                          employeee?.existingWage?.isDamageDeduction ||
+                          alreadyDamageDeduction
+                        }
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          handleDamageSelection(value);
+                        }}
                       >
-                        <SelectTrigger className="w-full bg-white">
-                          <SelectValue placeholder={employeee?.existingWage?.isDamageDeduction ? "Already Deducted" : "Select the amount given"} />
+                        <SelectTrigger className='w-full bg-white'>
+                          <SelectValue
+                            placeholder={
+                              employeee?.existingWage?.isDamageDeduction
+                                ? 'Already Deducted'
+                                : 'Select the amount given'
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          {employeee
-                          .employee.damageRegister?.filter((adv: any) => (adv != null && adv.installmentsLeft > 0)).map((adv: any) => (
-                            <SelectItem key={adv._id} value={adv._id}>
-                              {adv.amountOfDeductionImposed + " - " + adv.particularsOfDamageOrLoss}
-                            </SelectItem>
-                          ))}
+                          {employeee.employee.damageRegister
+                            ?.filter(
+                              (adv: any) =>
+                                adv != null && adv.installmentsLeft > 0
+                            )
+                            .map((adv: any) => (
+                              <SelectItem key={adv._id} value={adv._id}>
+                                {adv.amountOfDeductionImposed +
+                                  ' - ' +
+                                  adv.particularsOfDamageOrLoss}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </FormControl>
                     <FormLabel className='text-red-700'>
-                      {damageDeductionAmount > 0 ? `Installment: -${damageDeductionAmount}` : ""}
+                      {damageDeductionAmount > 0
+                        ? `Installment: -${damageDeductionAmount}`
+                        : ''}
                     </FormLabel>
 
                     <FormMessage />
@@ -881,21 +961,26 @@ const AddWage = ({ employeee }) => {
                 )}
               />
 
-              <div className="py-0 flex items-center justify-center">
-                <label className="inline-flex items-center cursor-pointer gap-2">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={incentiveCheckboxStatus}
-                  onChange={handleToggle}              
-                />
-                <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300 mr-2">
-                Incentive Applicable: 
-                </span>
-                <div className={`relative w-11 h-6 bg-gray-200  dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  after:content-[''] after:absolute after:top-[1px] after:start-[2px]  after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 ${!incentiveCheckboxStatus? "border-[0.5px] border-gray-600":""}` }></div>
+              <div className='py-0 flex items-center justify-center'>
+                <label className='inline-flex items-center cursor-pointer gap-2'>
+                  <input
+                    type='checkbox'
+                    className='sr-only peer'
+                    checked={incentiveCheckboxStatus}
+                    onChange={handleToggle}
+                  />
+                  <span className='ms-3 text-sm font-medium text-gray-900 dark:text-gray-300 mr-2'>
+                    Incentive Applicable:
+                  </span>
+                  <div
+                    className={`relative w-11 h-6 bg-gray-200  dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full  after:content-[''] after:absolute after:top-[1px] after:start-[2px]  after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600 ${
+                      !incentiveCheckboxStatus
+                        ? 'border-[0.5px] border-gray-600'
+                        : ''
+                    }`}
+                  ></div>
                 </label>
               </div>
-
             </div>
           </div>
 

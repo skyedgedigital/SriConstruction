@@ -39,6 +39,7 @@ const createWageForAnEmployee = async (dataString: string) => {
       isAdvanceDeduction,
       isDamageDeduction,
     } = data;
+    const otherCashDescription = otherCash;
     const { sundays, totalDays, sundayDates } = calcSundays(month, year);
     const totalWorkingDays = totalDays - sundays;
     const empData = await EmployeeData.findOne({
@@ -117,7 +118,11 @@ const createWageForAnEmployee = async (dataString: string) => {
     // console.log('&&&&fdjkshfkjdsh', incentiveDays);
     // console.log(JSON.stringify(sundayDates));
 
+    // OtherCash should not contain only eoc calculation
     const otherCashTotal = empData?.attendanceAllowance ? workedWeeks * 1.4 : 0;
+    otherCashDescription.eoc = (
+      empData?.attendanceAllowance ? workedWeeks * 1.4 : 0
+    ).toFixed(2);
 
     if (attendanceRecords.status !== 200) {
       return {
@@ -267,7 +272,7 @@ const createWageForAnEmployee = async (dataString: string) => {
       existingWage.otherCash = otherCashTotal.toFixed(2);
       existingWage.allowances = allowances.toFixed(2);
 
-      existingWage.otherCashDescription = JSON.stringify(otherCash);
+      existingWage.otherCashDescription = JSON.stringify(otherCashDescription);
       existingWage.otherDeduction = otherDeductionTotal.toFixed(2);
       existingWage.otherDeductionDescription = JSON.stringify(otherDeduction);
       existingWage.workOrderHr = responseData.workOrderHr._id;
@@ -311,7 +316,7 @@ const createWageForAnEmployee = async (dataString: string) => {
         netAmountPaid: netAmountPaid.toFixed(2),
         otherCash: otherCashTotal.toFixed(2),
         allowances: allowances.toFixed(2),
-        otherCashDescription: JSON.stringify(otherCash),
+        otherCashDescription: JSON.stringify(otherCashDescription),
         otherDeduction: otherDeductionTotal.toFixed(2),
         otherDeductionDescription: JSON.stringify(otherDeduction),
         payRate: parseFloat(payRate).toFixed(2),

@@ -44,7 +44,7 @@ const Page = ({
     };
     fn();
   }, []);
-
+  console.log('yyyyyyy wages data', wagesData);
   // Array of days (1 to 31)
 
   const months = [
@@ -327,7 +327,9 @@ const Page = ({
               </span>
               <span className='ml-6'>ESI:</span>
               <span className='font-bold ml-6'>
-                {(0.0075 * wagesData?.existingWage?.total).toFixed(2)}
+                {wagesData?.employee?.ESICApplicable
+                  ? (0.0075 * wagesData?.existingWage?.total).toFixed(2)
+                  : 0}
               </span>
             </li>
             {wagesData?.existingWage?.incentiveApplicable ? (

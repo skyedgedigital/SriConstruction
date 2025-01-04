@@ -40,6 +40,7 @@ const Page = ({
   searchParams: { [key: string]: string };
 }) => {
   const [wagesData, setWagesData] = useState(null);
+  console.log('allowances wages data', wagesData);
   const [attendance, setAttendance] = useState<EmployeeIdAndAttendance[]>([]);
   const [ent, setEnt] = useState<IEnterprise | null>(null);
   const contentRef = React.useRef(null);
@@ -195,8 +196,8 @@ const Page = ({
   }
 
   return (
-    <div className='ml-[80px]'>
-      <div className='flex gap-2 mb-2'>
+    <div className='py-3'>
+      <div className='flex gap-2 mb-2 ml-5'>
         <Button onClick={handleDownloadPDF}>Download PDF</Button>
         <Button onClick={handleOnClick}>Print</Button>
       </div>
@@ -370,7 +371,9 @@ const Page = ({
                   {(employee.otherCashDescription?.incumb).toFixed(2)}
                 </TableCell>
                 <TableCell className='border-black border-2 text-black'>
-                  {(employee.otherCashDescription?.eoc).toFixed(2)}
+                  {employee?.employee?.attendanceAllowance
+                    ? employee.otherCashDescription?.eoc
+                    : 0}
                 </TableCell>
                 <TableCell className='border-black border-2 text-black'>
                   {(employee.otherCashDescription?.pb).toFixed(2)}
@@ -393,16 +396,18 @@ const Page = ({
 
                 <TableCell className='border-black border-2 text-black'>
                   {(
-                    employee.otherCashDescription?.hra +
-                    employee.otherCashDescription?.mob +
-                    employee.otherCashDescription?.incumb +
-                    employee.otherCashDescription?.eoc +
-                    employee.otherCashDescription?.pb +
-                    employee.otherCashDescription?.wa +
-                    employee.otherCashDescription?.ca +
-                    employee.otherCashDescription?.ma +
-                    employee.otherCashDescription?.ssa +
-                    employee.otherCashDescription?.oa
+                    parseFloat(employee.otherCashDescription?.hra) +
+                    parseFloat(employee.otherCashDescription?.mob) +
+                    parseFloat(employee.otherCashDescription?.incumb) +
+                    (employee?.employee?.attendanceAllowance
+                      ? parseFloat(employee.otherCashDescription?.eoc)
+                      : 0) +
+                    parseFloat(employee.otherCashDescription?.pb) +
+                    parseFloat(employee.otherCashDescription?.wa) +
+                    parseFloat(employee.otherCashDescription?.ca) +
+                    parseFloat(employee.otherCashDescription?.ma) +
+                    parseFloat(employee.otherCashDescription?.ssa) +
+                    parseFloat(employee.otherCashDescription?.oa)
                   ).toFixed(2)}
                 </TableCell>
               </TableRow>
@@ -421,88 +426,8 @@ const Page = ({
                 {wagesData
                   .reduce(
                     (sum, employee) =>
-                      sum + (employee.otherCashDescription?.hra || 0),
-                    0
-                  )
-                  .toFixed(2)}
-              </TableCell>
-              <TableCell className='border-black border-2 text-black'>
-                {wagesData
-                  .reduce(
-                    (sum, employee) =>
-                      sum + (employee.otherCashDescription?.mob || 0),
-                    0
-                  )
-                  .toFixed(2)}
-              </TableCell>
-              <TableCell className='border-black border-2 text-black'>
-                {wagesData
-                  .reduce(
-                    (sum, employee) =>
-                      sum + (employee.otherCashDescription?.incumb || 0),
-                    0
-                  )
-                  .toFixed(2)}
-              </TableCell>
-              <TableCell className='border-black border-2 text-black'>
-                {wagesData
-                  .reduce(
-                    (sum, employee) =>
-                      sum + (employee.otherCashDescription?.eoc || 0),
-                    0
-                  )
-                  .toFixed(2)}
-              </TableCell>
-              <TableCell className='border-black border-2 text-black'>
-                {wagesData
-                  .reduce(
-                    (sum, employee) =>
-                      sum + (employee.otherCashDescription?.pb || 0),
-                    0
-                  )
-                  .toFixed(2)}
-              </TableCell>
-              <TableCell className='border-black border-2 text-black'>
-                {wagesData
-                  .reduce(
-                    (sum, employee) =>
-                      sum + (employee.otherCashDescription?.wa || 0),
-                    0
-                  )
-                  .toFixed(2)}
-              </TableCell>
-              <TableCell className='border-black border-2 text-black'>
-                {wagesData
-                  .reduce(
-                    (sum, employee) =>
-                      sum + (employee.otherCashDescription?.ca || 0),
-                    0
-                  )
-                  .toFixed(2)}
-              </TableCell>
-              <TableCell className='border-black border-2 text-black'>
-                {wagesData
-                  .reduce(
-                    (sum, employee) =>
-                      sum + (employee.otherCashDescription?.ma || 0),
-                    0
-                  )
-                  .toFixed(2)}
-              </TableCell>
-              <TableCell className='border-black border-2 text-black'>
-                {wagesData
-                  .reduce(
-                    (sum, employee) =>
-                      sum + (employee.otherCashDescription?.ssa || 0),
-                    0
-                  )
-                  .toFixed(2)}
-              </TableCell>
-              <TableCell className='border-black border-2 text-black'>
-                {wagesData
-                  .reduce(
-                    (sum, employee) =>
-                      sum + (employee.otherCashDescription?.oa || 0),
+                      sum +
+                      (parseFloat(employee.otherCashDescription?.hra) || 0),
                     0
                   )
                   .toFixed(2)}
@@ -512,19 +437,113 @@ const Page = ({
                   .reduce(
                     (sum, employee) =>
                       sum +
-                      (employee.otherCashDescription?.hra +
-                        employee.otherCashDescription?.mob +
-                        employee.otherCashDescription?.incumb +
-                        employee.otherCashDescription?.eoc +
-                        employee.otherCashDescription?.pb +
-                        employee.otherCashDescription?.wa +
-                        employee.otherCashDescription?.ca +
-                        employee.otherCashDescription?.ma +
-                        employee.otherCashDescription?.ssa +
-                        employee.otherCashDescription?.oa),
+                      (parseFloat(employee.otherCashDescription?.mob) || 0),
                     0
                   )
                   .toFixed(2)}
+              </TableCell>
+              <TableCell className='border-black border-2 text-black'>
+                {wagesData
+                  .reduce(
+                    (sum, employee) =>
+                      sum +
+                      (parseFloat(employee.otherCashDescription?.incumb) || 0),
+                    0
+                  )
+                  .toFixed(2)}
+              </TableCell>
+              <TableCell className='border-black border-2 text-black'>
+                {wagesData
+                  .reduce(
+                    (sum, employee) =>
+                      sum +
+                      (employee?.employee?.attendanceAllowance
+                        ? parseFloat(employee.otherCashDescription?.eoc)
+                        : 0 || 0),
+                    0
+                  )
+                  .toFixed(2)}
+              </TableCell>
+              <TableCell className='border-black border-2 text-black'>
+                {wagesData
+                  .reduce(
+                    (sum, employee) =>
+                      sum +
+                      (parseFloat(employee.otherCashDescription?.pb) || 0),
+                    0
+                  )
+                  .toFixed(2)}
+              </TableCell>
+              <TableCell className='border-black border-2 text-black'>
+                {wagesData
+                  .reduce(
+                    (sum, employee) =>
+                      sum +
+                      (parseFloat(employee.otherCashDescription?.wa) || 0),
+                    0
+                  )
+                  .toFixed(2)}
+              </TableCell>
+              <TableCell className='border-black border-2 text-black'>
+                {wagesData
+                  .reduce(
+                    (sum, employee) =>
+                      sum +
+                      (parseFloat(employee.otherCashDescription?.ca) || 0),
+                    0
+                  )
+                  .toFixed(2)}
+              </TableCell>
+              <TableCell className='border-black border-2 text-black'>
+                {wagesData
+                  .reduce(
+                    (sum, employee) =>
+                      sum +
+                      (parseFloat(employee.otherCashDescription?.ma) || 0),
+                    0
+                  )
+                  .toFixed(2)}
+              </TableCell>
+              <TableCell className='border-black border-2 text-black'>
+                {wagesData
+                  .reduce(
+                    (sum, employee) =>
+                      sum +
+                      (parseFloat(employee.otherCashDescription?.ssa) || 0),
+                    0
+                  )
+                  .toFixed(2)}
+              </TableCell>
+              <TableCell className='border-black border-2 text-black'>
+                {wagesData
+                  .reduce(
+                    (sum, employee) =>
+                      sum +
+                      (parseFloat(employee.otherCashDescription?.oa) || 0),
+                    0
+                  )
+                  .toFixed(2)}
+              </TableCell>
+              <TableCell className='border-black border-2 text-black'>
+                {parseFloat(
+                  wagesData.reduce(
+                    (sum, employee) =>
+                      sum +
+                      (parseFloat(employee.otherCashDescription?.hra) +
+                        parseFloat(employee.otherCashDescription?.mob) +
+                        parseFloat(employee.otherCashDescription?.incumb) +
+                        (employee?.employee?.attendanceAllowance
+                          ? parseFloat(employee.otherCashDescription?.eoc)
+                          : 0) +
+                        parseFloat(employee.otherCashDescription?.pb) +
+                        parseFloat(employee.otherCashDescription?.wa) +
+                        parseFloat(employee.otherCashDescription?.ca) +
+                        parseFloat(employee.otherCashDescription?.ma) +
+                        parseFloat(employee.otherCashDescription?.ssa) +
+                        parseFloat(employee.otherCashDescription?.oa)),
+                    0
+                  )
+                ).toFixed(2)}
               </TableCell>
             </TableRow>
           </TableFooter>

@@ -38,6 +38,7 @@ const Page = ({
   searchParams: { [key: string]: string | undefined };
 }) => {
   const [attendanceData, setAttendanceData] = useState(null);
+  console.log('FORM17 ATt DTA', attendanceData);
   const [attendanceArray, setAttendanceArray] = useState<
     EmployeeIdAndAttendance[]
   >([]);
@@ -423,11 +424,12 @@ const Page = ({
                       )}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                     {!employee?.basic && (
+                      {!employee?.basic && (
                         <div className='text-red-500'>
                           PLEASE SAVE WAGE AGAIN
                         </div>
                       )}
+
                       {employee?.basic && (
                         <div>
                           {Math.round(
@@ -455,7 +457,10 @@ const Page = ({
                       0{' '}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {(employee?.otherCash).toFixed(2)}
+                      {(employee?.employee?.attendanceAllowance
+                        ? parseFloat(employee?.otherCashDescription?.eoc)
+                        : 0
+                      ).toFixed(2)}
                     </TableCell>
                     {/* <TableCell className='border-black border-2 text-black'>
                   {employee.allowances}
@@ -472,7 +477,9 @@ const Page = ({
                       ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {Math.round(0.0075 * employee?.total).toFixed(2)}
+                      {employee?.employee?.ESICApplicable
+                        ? Math.round(0.0075 * employee?.total).toFixed(2)
+                        : 0}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {employee?.otherDeduction}
@@ -481,15 +488,17 @@ const Page = ({
                       {Math.round(employee?.netAmountPaid).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {Number(employee?.otherCashDescription?.ca) +
-                        Number(employee?.otherCashDescription?.hra) +
-                        Number(employee?.otherCashDescription?.incumb) +
-                        Number(employee?.otherCashDescription?.ma) +
-                        Number(employee?.otherCashDescription?.mob) +
-                        Number(employee?.otherCashDescription?.oa) +
-                        Number(employee?.otherCashDescription?.pb) +
-                        Number(employee?.otherCashDescription?.ssa) +
-                        Number(employee?.otherCashDescription?.wa)}
+                      {(
+                        parseFloat(employee.otherCashDescription?.hra) +
+                        parseFloat(employee.otherCashDescription?.mob) +
+                        parseFloat(employee.otherCashDescription?.incumb) +
+                        parseFloat(employee.otherCashDescription?.pb) +
+                        parseFloat(employee.otherCashDescription?.wa) +
+                        parseFloat(employee.otherCashDescription?.ca) +
+                        parseFloat(employee.otherCashDescription?.ma) +
+                        parseFloat(employee.otherCashDescription?.ssa) +
+                        parseFloat(employee.otherCashDescription?.oa)
+                      ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'></TableCell>
                     <TableCell className='border-black border-2 text-black'></TableCell>
@@ -636,8 +645,7 @@ const Page = ({
                     calculateTotal(
                       attendanceData.map(
                         (item) =>
-                          (Number(item?.attendance) *
-                            Number(item?.payRate) +
+                          (Number(item?.attendance) * Number(item?.payRate) +
                             Number(item?.otherCash)) *
                           0.12
                       )

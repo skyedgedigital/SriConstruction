@@ -28,7 +28,7 @@ const Page = ({
 }) => {
   const [wagesData, setWagesData] = useState([]);
   const [ent, setEnt] = useState<IEnterprise | null>(null);
-
+  console.log('wages register', wagesData);
   useEffect(() => {
     const fn = async () => {
       const resp = await fetchEnterpriseInfo();
@@ -272,7 +272,7 @@ const Page = ({
                 <span>
                   {(wage?.basic * wage?.attendance).toFixed(2)} +
                   {(wage?.DA * wage?.attendance).toFixed(2)} +
-                  {(wage?.otherCash).toFixed(2)}
+                  {parseFloat(wage?.otherCashDescription?.eoc).toFixed(2)}
                 </span>
               </li>
               <li>
@@ -304,7 +304,9 @@ const Page = ({
                 </span>
                 <span className='ml-6'>ESI:</span>
                 <span className='font-bold ml-6'>
-                  {(0.0075 * wage?.total).toFixed(2)}
+                  {wage?.employee?.ESICApplicable
+                    ? (0.0075 * wage?.total).toFixed(2)
+                    : 0}
                 </span>
               </li>
               {wage?.incentiveApplicable ? (
