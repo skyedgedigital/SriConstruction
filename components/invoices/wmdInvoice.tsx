@@ -167,7 +167,7 @@ const WMDInvoice = ({
               (parseFloat(filtered[i]?.used.toString()) / 60).toFixed(2)}
             {filtered[i]?.unit === 'hour' &&
               parseFloat(filtered[i]?.used.toString()).toFixed(2)} */}
-            {item.workingHour}
+            {item.workingHour.toFixed(2)}
           </td>
         </tr>
       );
@@ -185,7 +185,7 @@ const WMDInvoice = ({
         </td>
         <td className='border-[1px] border-black py-2  text-center '>
           {/* {totalHourObject[key]} */}
-          {total}
+          {total.toFixed(2)}
         </td>
       </tr>
     );
@@ -201,7 +201,7 @@ const WMDInvoice = ({
       </td>
       <td className='border-[1px] border-black py-2  text-center '>
         {/* {totalHourObject[key]} */}
-        {new_total_hours}
+        {new_total_hours.toFixed(2)}
       </td>
     </tr>
   );
@@ -614,15 +614,15 @@ const WMDInvoice = ({
                       {`${item?.itemCost.unit}`}
                     </td>
                     <td className='border-[1px] border-black pl-2 pb-3 '>
-                      {`${item?.itemCost.hours}`}
+                      {`${(item?.itemCost.hours).toFixed(2)}`}
                     </td>
                     <td className='border-[1px] border-black pl-2 pb-3 '>
                       {' '}
-                      {`${item?.itemPrice}`}
+                      {`${(item?.itemPrice).toFixed(2)}`}
                     </td>
                     <td className='border-[1px] border-black pl-2 pb-3 '>
                       {' '}
-                      {`${item?.itemCost.itemCost}`}
+                      {`${(item?.itemCost.itemCost).toFixed(2)}`}
                     </td>
                   </tr>
                 ))}
@@ -643,7 +643,9 @@ const WMDInvoice = ({
                   <td className='border-[1px] border-black pl-2 pb-3 '>
                     Total
                   </td>
-                  <td className='border-[1px] border-black pl-2 pb-3 '>{`${total} `}</td>
+                  <td className='border-[1px] border-black pl-2 pb-3 '>{`${total.toFixed(
+                    2
+                  )} `}</td>
                 </tr>
 
                 {/* total CGST Row */}
@@ -662,7 +664,9 @@ const WMDInvoice = ({
                   <td className='border-[1px] border-black pl-2 pb-3 '>
                     Add CGST @
                   </td>
-                  <td className='border-[1px] border-black pl-2 pb-3 '>{`${totalCgst} `}</td>
+                  <td className='border-[1px] border-black pl-2 pb-3 '>{`${totalCgst.toFixed(
+                    2
+                  )} `}</td>
                 </tr>
                 {/* total SGST Row */}
                 <tr className='border-t-2 border-t-gray-600'>
@@ -680,7 +684,9 @@ const WMDInvoice = ({
                   <td className='border-[1px] border-black pl-2 pb-3 '>
                     Add SGST @
                   </td>
-                  <td className='border-[1px] border-black pl-2 pb-3 '>{`${totalSgst} `}</td>
+                  <td className='border-[1px] border-black pl-2 pb-3 '>{`${totalSgst.toFixed(
+                    2
+                  )} `}</td>
                 </tr>
                 {/* grand total row */}
                 <tr className='border-t-2 border-gray-600'>
@@ -699,7 +705,7 @@ const WMDInvoice = ({
                     Grand Total
                   </td>
                   <td className='border-[1px] border-black pl-2 pb-3 font-bold'>
-                    {`${parseFloat(grandTotal.toFixed(2))} INR`}
+                    {`${parseFloat(grandTotal).toFixed(2)} INR`}
                   </td>
                 </tr>
               </tbody>
@@ -838,40 +844,10 @@ const WMDInvoice = ({
                   location
                 </th>
                 <th className='border-[1px] border-black capitalize py-1 pb-2  text-center '>
-                  working hour
+                  working Duration
                 </th>
               </thead>
-              <tbody>
-                {/* {allItemsSummaryArray.map((item, index) => (
-                <tr
-                  key={index}
-                  className={`${index % 2 === 0 ? '' : 'bg-gray-200'}`}
-                >
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {index + 1}
-                  </td>{' '}
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {item?.itemType}
-                  </td>{' '}
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {item?.chalanNo}
-                  </td>{' '}
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {formatDate(item?.date.toString())}
-                  </td>{' '}
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {item?.location}
-                  </td>
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {item?.unit === 'minute' &&
-                      (parseFloat(item?.used.toString()) / 60).toFixed(2)}
-                    {item?.unit === 'hour' &&
-                      parseFloat(item?.used.toString()).toFixed(2)}
-                  </td>
-                </tr>
-              ))} */}
-                {contentArray}
-              </tbody>
+              <tbody>{contentArray}</tbody>
             </table>
           </div>
         </div>
@@ -881,254 +857,3 @@ const WMDInvoice = ({
 };
 
 export default WMDInvoice;
-
-//  <div
-//    className=' border-[1px] border-red-700  tracking-wider w-full  text-[0.75rem] font-semibold'
-//    id={`${invoice?.invoiceId}`}
-//  >
-//    <div className='w-full   flex flex-col gap-3 my-3 ml-4'>
-//      <div className='flex items-center gap-2'>
-//        <div className='h-[50] w-[50]'>
-//          <Image
-//            src={'/assets/stamp.jpg'}
-//            width={100}
-//            height={100}
-//            alt='sign image'
-//          />{' '}
-//        </div>
-//        <h1 className='font-bold text-sm uppercase'>Shekhar Enterprises</h1>
-//      </div>
-//      <div className=''>
-//        <p className=' border-b-2 border-b-black w-fit pr-2 pb-2'>
-//          Specialist in : Horticulture, Conservancy Services, Supply of
-//          Equipments (F-15 Crane and JCB)
-//        </p>
-//        <p className='uppercase pt-2'>
-//          C-1, BRINDAWAN GARDEN, SONARI, JAMSHEDPUR-831011
-//        </p>
-//        <p>Mobile : 9431133471, 9234973465</p>
-//        <p>Email : shekharenter@gmail.com</p>
-//      </div>
-//    </div>
-//    <div className='border-2 border-black w-full pb-10'>
-//      <h1 className='font-bold text-center w-full py-1'>PROFOMA INVOICE</h1>
-//      <div className='w-full text-center border-t-2 border-b-2 my-1  border-gray-700 py-1 justify-around  flex '>
-//        <div className='font-bold flex gap-2 pb-1 items-center '>
-//          <p> GST IN:</p>
-//          <p>20AEMPK3908B1Z2</p>
-//        </div>
-//        <div className='font-bold flex gap-2 items-center pb-1'>
-//          <p>PAN:</p>
-//          <p>AEMPK3908B</p>
-//        </div>
-//      </div>
-//      <div className=' w-full flex flex-1 justify-around my-4 gap-3 overflow-x-scroll px-5 py-2'>
-//        <div className='flex flex-col gap-1 min-w-52'>
-//          <h1 className='uppercase'>CUSTOMER NAME & ADDRESS</h1>
-//          <div>
-//            <div>To</div>
-//            <div>The CFO</div>
-//            <div>Tata Steel UISL</div>
-//            <div className='flex gap-4 items-center'>
-//              <p>Through :-</p> <p>{department}</p>
-//            </div>
-//            <div className='font-bold flex gap-2 items-center'>
-//              <p>GSTIN/UN</p>
-//              <p>: 20AEMPK3908B1Z2</p>
-//            </div>
-//            <div className='flex gap-4 items-center'>
-//              <p>Place of Supply:</p> <p>Ranchi</p>
-//            </div>
-//            <div className='mt-2'>STATE CODE : Jharkhand - 20</div>
-//          </div>
-//        </div>
-//        <div className='flex flex-col gap-1 min-w-52'>
-//          <div className='flex gap-4 items-center '>
-//            <p>Invoice no:</p>
-//            <p>{invoice?.invoiceNumber}</p>
-//          </div>
-//          <div className='flex gap-4 items-center'>
-//            <p>Date of Issue :</p>
-//            <p> {todayDate()}</p>
-//          </div>
-//          <div className='flex gap-4 items-center'>
-//            <p>Vendor code</p> <p>10758</p>
-//          </div>
-//          <div className='flex gap-4 items-center'>
-//            <p>WO/PO No</p> <p>{workOrder?.workOrderNumber}</p>
-//          </div>
-//          {/* <div className='flex gap-4 items-center'>
-//                   <p>WO/PO Date:</p>
-//                   <p>{formatDate(workOrder?.workOrderValidity)}</p>
-//                 </div> */}
-//          <div className='flex gap-4 items-center'>
-//            <p>Do No:</p>
-//            <p></p>
-//          </div>
-//          <div className='flex gap-4 items-center'>
-//            <p>SES No.</p>
-//            <p></p>
-//          </div>
-//          <div className='flex gap-4 items-center'>
-//            <p>Location:</p> <p>{location}</p>
-//          </div>
-//          <div className='flex gap-4 items-center'>
-//            <p>Period of service:</p>
-//            <span className='flex gap-1'>{service}</span>
-//          </div>
-//        </div>
-//      </div>
-//      <div className='flex flex-col gap-0 '>
-//        <p className='font-semibold text-center w-full p-1 pb-2  border-[1px]  border-gray-600 border-b-transparent'>
-//          {workOrder?.workDescription}
-//        </p>
-//        <div className='overflow-x-scroll w-full'>
-//          {' '}
-//          <table className='w-full  text-[0.75rem] font-semibold border-collapse '>
-//            <thead className='font-semibold  w-full text-[0.75rem]'>
-//              <th className='border-[1px] border-black pl-2 pb-3 '>Item No:</th>
-//              <th className='border-[1px] border-black pl-2 pb-3 '>HSN/SAC</th>
-//              <th className='border-[1px] border-black pl-2 pb-3 '>
-//                Description of Goods Service
-//              </th>
-//              {/* <th className='border-[1px] border-black pl-2 pb-3 '>Qty.</th>
-//                   <th className='border-[1px] border-black pl-2 pb-3 '>UOM</th> */}
-//              <th className='border-[1px] border-black pl-2 pb-3 '>
-//                {/* Rate. (INR) */}
-//                Quantity
-//              </th>
-//              <th className='border-[1px] border-black pl-2 pb-3 '>UOM</th>
-//              <th className='border-[1px] border-black pl-2 pb-3 '>
-//                {/* Quantity */}
-//                Rate. (INR)
-//              </th>
-//              <th className='border-[1px] border-black pl-2 pb-3 '>Value</th>
-//              <th className='border-[1px] border-black pl-2 pb-3 '>
-//                C GST rate
-//              </th>
-//              <th className='border-[1px] border-black pl-2 pb-3 '>
-//                S GST rate
-//              </th>
-//              <th className='border-[1px] border-black pl-2 pb-3 '>
-//                C GST Amount(INR)
-//              </th>
-//              <th className='border-[1px] border-black pl-2 pb-3 '>
-//                S GST Amount(INR)
-//              </th>
-//            </thead>
-//            <tbody>
-//              {itemsList?.map((item: any, index: any) => (
-//                <tr key={index}>
-//                  <td className='border-[1px] border-black pl-2 pb-3 '>
-//                    {item?.itemNumber}
-//                  </td>
-//                  <td className='border-[1px] border-black pl-2 pb-3 '>
-//                    {item?.hsnNo}
-//                    {console.warn(item.hsnNo)}
-//                  </td>
-//                  <td className='border-[1px] border-black pl-2 pb-3 '>
-//                    {item?.itemName}
-//                  </td>
-//                  <td className='border-[1px] border-black pl-2 pb-3 '>
-//                    {/* {`${item?.itemPrice}`} */}
-//                    {`${item?.itemCost.hours}`}
-//                  </td>
-//                  <td className='border-[1px] border-black pl-2 pb-3 '>
-//                    {`${item?.itemCost.unit}`}
-//                  </td>
-//                  <td className='border-[1px] border-black pl-2 pb-3 '>
-//                    {`${item?.itemPrice}`}
-//                  </td>
-//                  <td className='border-[1px] border-black pl-2 pb-3 '>
-//                    {`${item?.itemCost.itemCost}`}
-//                  </td>
-//                  <td className='border-[1px] border-black pl-2 pb-3 '>9%</td>
-//                  <td className='border-[1px] border-black pl-2 pb-3 '>9%</td>
-//                  <td className='border-[1px] border-black pl-2 pb-3 '>
-//                    {0.09 * item?.itemCost.itemCost}{' '}
-//                  </td>
-//                  <td className='border-[1px] border-black pl-2 pb-3 '>
-//                    {0.09 * item?.itemCost.itemCost}{' '}
-//                  </td>
-//                </tr>
-//              ))}
-
-//              {/* total row */}
-//              <tr className='border-t-2 border-t-gray-600'>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-
-//                {/* <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                     <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                     <td className='border-[1px] border-black pl-2 pb-3 '></td> */}
-
-//                <td className='border-[1px] border-black pl-2 pb-3 '>Total</td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '>{`${total} `}</td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '>
-//                  {totalCgst}
-//                </td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '>
-//                  {totalSgst}
-//                </td>
-//              </tr>
-//              {/* grand total row */}
-//              <tr className='border-t-2 border-gray-600'>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-
-//                {/* <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                     <td className='border-[1px] border-black pl-2 pb-3 '></td>
-//                     <td className='border-[1px] border-black pl-2 pb-3 '></td> */}
-//                <td className='border-[1px] border-black pl-2 pb-3 '></td>
-
-//                <td className='border-[1px] border-black pl-2 pb-3 font-bold'>
-//                  Grand Total
-//                </td>
-//                <td className='border-[1px] border-black pl-2 pb-3 font-bold'>
-//                  {`${parseFloat(grandTotal.toFixed(2))} INR`}
-//                </td>
-//              </tr>
-//            </tbody>
-//          </table>
-//        </div>
-//      </div>
-//      <div className=' flex justify-between mt-2 gap-2'>
-//        <div className='flex flex-col gap-3 mt-3 ml-2'>
-//          <span className='w-full flex items-center gap-2 '>
-//            <p className='font-semibold'>Rupees in word: </p>
-//            <p>
-//              {/* {number2text(
-//                       totalCGSTPrice + totalItemsPrice + totalSGSTPrice
-//                     )} */}
-//              {`${numberToWords(grandTotal)} only`}
-//            </p>
-//          </span>
-//          <div className='font-semibold w-fit flex justify-center items-end gap-5'>
-//            <p>Whether tax is payable under Reverse charge Mechanism or not:</p>
-//            <p>No</p>
-//          </div>
-//        </div>
-//        <div className='ml-auto mr-10 flex items-center  font-bold flex-col gap-6 '>
-//          <p className=' font-mono '>M/s SHEKHAR ENTERPRISES</p>
-//          <Image
-//            src={'/assets/stamp.jpg'}
-//            width={'100'}
-//            height={'100'}
-//            alt='sign image'
-//            style={{ display: 'block', maxWidth: '100%' }}
-//          />
-//        </div>
-//      </div>
-//    </div>
-//  </div>;

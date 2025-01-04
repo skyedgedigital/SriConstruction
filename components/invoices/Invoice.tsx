@@ -170,7 +170,7 @@ const Invoice = ({
               (parseFloat(filtered[i]?.used.toString()) / 60).toFixed(2)}
             {filtered[i]?.unit === 'hour' &&
               parseFloat(filtered[i]?.used.toString()).toFixed(2)} */}
-            {item.workingHour}
+            {item.workingHour.toFixed(2)}
           </td>
         </tr>
       );
@@ -184,11 +184,11 @@ const Invoice = ({
         <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
         <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
         <td className='border-[1px] bg-300 border-black py-2 font-bold  text-center '>
-          Item total hours
+          Item total Duration
         </td>
         <td className='border-[1px] border-black py-2  text-center '>
           {/* {totalHourObject[key]} */}
-          {total}
+          {total.toFixed(2)}
         </td>
       </tr>
     );
@@ -201,11 +201,11 @@ const Invoice = ({
       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
       <td className='border-[1px] border-black py-2  text-center '>-</td>{' '}
       <td className='border-[1px] bg-300 border-black py-2 font-bold  text-center '>
-        Total Hours
+        Total Duration
       </td>
       <td className='border-[1px] border-black py-2  text-center '>
         {/* {totalHourObject[key]} */}
-        {new_total_hours}
+        {new_total_hours.toFixed(2)}
       </td>
     </tr>
   );
@@ -689,14 +689,14 @@ const Invoice = ({
                         </td>
                         <td className='border-[1px] border-black pl-2 pb-3 '>
                           {item?.hsnNo}
-                          {console.warn(item.hsnNo)}
+                          {/* {console.warn(item.hsnNo)} */}
                         </td>
                         <td className='border-[1px] border-black pl-2 pb-3 '>
                           {item?.itemName}
                         </td>
                         <td className='border-[1px] border-black pl-2 pb-3 '>
                           {/* {`${item?.itemPrice}`} */}
-                          {`${item?.itemCost.hours}`}
+                          {`${(item?.itemCost.hours).toFixed(2)}`}
                         </td>
                         <td className='border-[1px] border-black pl-2 pb-3 '>
                           {`${item?.itemCost.unit}`}
@@ -743,10 +743,10 @@ const Invoice = ({
                       <td className='border-[1px] border-black pl-2 pb-3 '></td>
                       <td className='border-[1px] border-black pl-2 pb-3 '></td>
                       <td className='border-[1px] border-black pl-2 pb-3 '>
-                        {totalCgst}
+                        {totalCgst.toFixed(2)}
                       </td>
                       <td className='border-[1px] border-black pl-2 pb-3 '>
-                        {totalSgst}
+                        {totalSgst.toFixed(2)}
                       </td>
                     </tr>
                     {/* grand total row */}
@@ -868,40 +868,10 @@ const Invoice = ({
                   location
                 </th>
                 <th className='border-[1px] border-black capitalize py-1 pb-2  text-center '>
-                  working hour
+                  working Duration
                 </th>
               </thead>
-              <tbody>
-                {/* {allItemsSummaryArray.map((item, index) => (
-                <tr
-                  key={index}
-                  className={`${index % 2 === 0 ? '' : 'bg-gray-200'}`}
-                >
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {index + 1}
-                  </td>{' '}
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {item?.itemType}
-                  </td>{' '}
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {item?.chalanNo}
-                  </td>{' '}
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {formatDate(item?.date.toString())}
-                  </td>{' '}
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {item?.location}
-                  </td>
-                  <td className='border-[1px] border-black py-2  text-center '>
-                    {item?.unit === 'minute' &&
-                      (parseFloat(item?.used.toString()) / 60).toFixed(2)}
-                    {item?.unit === 'hour' &&
-                      parseFloat(item?.used.toString()).toFixed(2)}
-                  </td>
-                </tr>
-              ))} */}
-                {contentArray}
-              </tbody>
+              <tbody>{contentArray}</tbody>
             </table>
           </div>
         </div>
