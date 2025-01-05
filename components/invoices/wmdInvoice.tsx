@@ -507,71 +507,112 @@ const WMDInvoice = ({
                 <p>(For making DO & Service Entry Sheet for service job) </p>
               </div>
             </div>
-            <div className='w-[30%] flex flex-col gap-1 justify-center items-center'>
+            <div className='w-fit text-nowrap flex flex-col gap-1 justify-center items-center'>
               <p>From No:- WMD/Bill/01</p>
               <p>Effective Dt: 16.12.2018</p>
             </div>
           </div>
 
-          <div className='flex gap-4 p-4 my-2'>
-            <div className='w-[50%] pl-10 flex flex-col gap-1'>
-              <div className='w-full flex gap-2'>
-                <span>1. Job Statement No:</span>
-                <span className='font-normal'>{invoice?.invoiceNumber}</span>
+          <div className='flex justify-between gap-4 my-6'>
+            <div className='w-[50%] flex border-[1px] border-black'>
+              <div className='h-full flex flex-col justify-between '>
+                <span className='border-[1px] border-black p-1 pl-2'>1.</span>
+                <span className='border-[1px] border-black p-1 pl-2'>2.</span>
+                <span className='border-[1px] border-black p-1 pl-2'>3.</span>
+                <span className='border-[1px] border-black p-1 pl-2'>4.</span>
+                <span className='border-[1px] border-black p-1 pl-2'>5.</span>
+                <span className='border-[1px] border-black p-1 pl-2'>6.</span>
+                <span className='border-[1px] border-black p-1 pl-2'>7.</span>
               </div>
-              <div className='w-full flex gap-2'>
-                <span>2. WO/PO no:</span>
-                <span className='font-normal'>
-                  {workOrder?.workOrderNumber}
+              <div className='h-full flex flex-col justify-between  w-fit'>
+                <span className='border-[1px] border-black p-1 pl-2 font-bold'>
+                  {' '}
+                  Job Statement No:
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2 font-bold'>
+                  WO/PO no:
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2 font-bold'>
+                  Vendor&apos;s name:
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2 font-bold'>
+                  Job Location:
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2 font-bold'>
+                  Service Period:
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2 font-bold'>
+                  IO NO:
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2 font-bold'>
+                  Billing Details:
                 </span>
               </div>
-              <div className='w-full flex gap-2'>
-                <span>3. Vendor&apos;s name:</span>
-                {ent?.name ? (
-                  <span className='font-normal uppercase'>{ent?.name}</span>
-                ) : (
-                  <span className='font-normal text-red-500 uppercase'>
-                    No vendor name found. Try by Reloading
-                  </span>
-                )}
-              </div>
-              <div className='w-full flex gap-2'>
-                <span>4. Job Location:</span>
-                <span className='font-normal'>{location}</span>
-              </div>
-              <div className='w-full flex gap-2'>
-                <span>5. Service Period:</span>
-                <span className='font-normal'>{service}</span>
-              </div>
-              <div className='w-full flex gap-2'>
-                <span>6. IO NO:</span>
-                <span className='font-normal'>-</span>
-              </div>
-              <div className='w-full flex gap-2'>
-                <span>7. Billing Details:</span>
-                <span className='font-normal'>As below</span>
+              <div className='h-full flex flex-col justify-between  flex-grow'>
+                <span className='border-[1px] border-black p-1 pl-2'>
+                  {invoice?.invoiceNumber}
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2'>
+                  {' '}
+                  {workOrder?.workOrderNumber}
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2'>
+                  {' '}
+                  {ent?.name ? (
+                    <span className='font-normal uppercase'>{ent?.name}</span>
+                  ) : (
+                    <span className='font-normal text-red-500 uppercase'>
+                      No vendor name found. Try by Reloading
+                    </span>
+                  )}
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2'>
+                  {location}
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2'>
+                  {service}
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2'>-</span>
+                <span className='border-[1px] border-black p-1 pl-2'>
+                  As Below
+                </span>
               </div>
             </div>
-            <div className='w-[50%] flex flex-col gap-1 justify-center items-center pl-10'>
-              <div className='w-full flex gap-2'>
-                <span className='font-bold'>1. Date of Receipt in Section</span>
-                <span className='font-normal'>-</span>
+            <div className='w-[40%] flex border-[1px] border-black justify-start h-fit'>
+              <div className='h-full flex flex-col  w-fit'>
+                <span className='border-[1px] border-black p-1 pl-2 font-bold'>
+                  {' '}
+                  Date of Receipt in
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2'>
+                  Date of Receipt in Bill section
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2'>
+                  DO No
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2'>
+                  SES Sheet No
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2'>
+                  Dt SESheet
+                </span>
               </div>
-              <div className='w-full flex gap-2'>
-                <span>2. Date of Receipt in Bill section</span>
-                <span className='font-normal'>-</span>
-              </div>
-              <div className='w-full flex gap-2'>
-                <span>3. DO No</span>
-                <span className='font-normal'>-</span>
-              </div>
-              <div className='w-full flex gap-2'>
-                <span>4. SES Sheet no</span>
-                <span className='font-normal'>-</span>
-              </div>
-              <div className='w-full flex gap-2'>
-                <span>5. Dt SESheet</span>
-                <span className='font-normal'>-</span>
+              <div className='h-full flex flex-col  flex-grow'>
+                <span className='border-[1px] border-black p-1 pl-2 flex-grow'>
+                  -
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2 flex-grow'>
+                  -
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2 flex-grow'>
+                  -
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2 flex-grow'>
+                  -
+                </span>
+                <span className='border-[1px] border-black p-1 pl-2 flex-grow'>
+                  -
+                </span>
               </div>
             </div>
           </div>
@@ -712,60 +753,72 @@ const WMDInvoice = ({
             </table>
           </div>
         </div>
-        <div className='flex gap-4 items-center justify-between border-[1px] border-black p-4 mt-4'>
-          <div className='w-[30%]  flex flex-col gap-1'>
-            <div className='w-full flex gap-2'>
+        <div className='flex gap-4 items-center justify-between  mt-6'>
+          <div className='w-[30%]  flex flex-col  border-[1px] border-black'>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
               <span>Sign:</span>
               <span className='font-normal'></span>
             </div>
-            <div className='w-full flex gap-2'>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
               <span>Name:</span>
               <span className='font-normal'></span>
             </div>
-            <div className='w-full flex gap-2'>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
               <span>Date:</span>
               <span className='font-normal'></span>
             </div>
-
-            <span className='font-normal'>JS Rcvd in Exe Sec </span>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
+              <span className='font-normal'>JS Rcvd in Exe Sec </span>
+              <span className='font-normal'></span>
+            </div>
           </div>
-          <div className='w-[30%]  flex flex-col gap-1'>
-            <div className='w-full flex gap-2'>
+          <div className='w-[30%]  flex flex-col '>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
               <span>Sign:</span>
               <span className='font-normal'></span>
             </div>
-            <div className='w-full flex gap-2'>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
               <span>Name:</span>
               <span className='font-normal'></span>
             </div>
-            <div className='w-full flex gap-2'>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
               <span>Date:</span>
               <span className='font-normal'></span>
             </div>
-            <span>Certified by Site Engg/ Officer </span>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
+              <span>Certified by Site Engg/ Officer </span>
+              <span className='font-normal'></span>
+            </div>
           </div>
-          <div className='w-[30%]  flex flex-col gap-1'>
-            <div className='w-full flex gap-2'>
+          <div className='w-[30%]  flex flex-col '>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
               <span>Sign: </span>
               <span className='font-normal'></span>
             </div>
-            <div className='w-full flex gap-2'>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
               <span>Name:</span>
               <span className='font-normal'></span>
             </div>
-            <div className='w-full flex gap-2'>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
               <span>Date:</span>
               <span className='font-normal'></span>
             </div>
-            <span>Certified by Mgr/ Sr Mgr </span>
+            <div className='w-full flex gap-2 border-[1px] border-black p-1'>
+              <span>Certified by Mgr/ Sr Mgr </span>
+              <span className='font-normal'></span>
+            </div>
           </div>
         </div>
-        <div className='flex gap-4 items-center justify-between border-[1px] border-black p-4 mt-4'>
-          <div className='w-[30%] flex flex-col gap-1'>
-            <span className='font-semibold'>Name & Sign & Date</span>
-            <span className='font-normal'>JS Rcvd in Bill Sec </span>
+        <div className='flex gap-4 items-center justify-between mt-6'>
+          <div className='w-[30%] flex flex-col border-[1px] border-black'>
+            <span className='font-semibold border-[1px] border-black p-1'>
+              Name & Sign & Date
+            </span>
+            <span className='font-normal border-[1px] border-black p-1'>
+              JS Rcvd in Bill Sec{' '}
+            </span>
           </div>
-          <div className='w-[30%] flex flex-col gap-1'>
+          <div className='w-[30%] flex flex-col '>
             <span className='font-semibold'>Name & Sign & Date</span>
             <div className='h-[50] w-[50]'>
               <Image
