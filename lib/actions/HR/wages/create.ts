@@ -31,7 +31,7 @@ const createWageForAnEmployee = async (dataString: string) => {
       employee,
       month,
       year,
-      otherCash,
+      otherCash: otherCashDescription,
       otherDeduction,
       incentiveApplicable,
       damageDeduction,
@@ -39,7 +39,6 @@ const createWageForAnEmployee = async (dataString: string) => {
       isAdvanceDeduction,
       isDamageDeduction,
     } = data;
-    const otherCashDescription = otherCash;
     const { sundays, totalDays, sundayDates } = calcSundays(month, year);
     const totalWorkingDays = totalDays - sundays;
     const empData = await EmployeeData.findOne({
@@ -120,9 +119,9 @@ const createWageForAnEmployee = async (dataString: string) => {
 
     // OtherCash should not contain only eoc calculation
     const otherCashTotal = empData?.attendanceAllowance ? workedWeeks * 1.4 : 0;
-    otherCashDescription.eoc = (
-      empData?.attendanceAllowance ? workedWeeks * 1.4 : 0
-    ).toFixed(2);
+    otherCashDescription.eoc = empData?.attendanceAllowance
+      ? workedWeeks * 1.4
+      : 0;
 
     if (attendanceRecords.status !== 200) {
       return {
@@ -174,12 +173,12 @@ const createWageForAnEmployee = async (dataString: string) => {
 
     let otherDeductionTotal = 0;
     //totalPay = totalPay + allowances;
-    // allowances = allowances + otherCashTotal - eoc field in otherCash;
-    for (let value in otherCash) {
+    // allowances = allowances + otherCashTotal - eoc field in otherCashDescription;
+    for (let value in otherCashDescription) {
       // in case of eoc , it won't be added to the total pay and allowances
       if (value === 'eoc') continue;
-      totalPay = totalPay + convert_to_number(otherCash[value]);
-      allowances = allowances + convert_to_number(otherCash[value]);
+      totalPay = totalPay + convert_to_number(otherCashDescription[value]);
+      allowances = allowances + convert_to_number(otherCashDescription[value]);
     }
 
     if (incentiveApplicable && incentiveDays > 0) {
@@ -204,10 +203,10 @@ const createWageForAnEmployee = async (dataString: string) => {
       // console.log('Subtracting PF');
       netAmountPaid = netAmountPaid - pf;
     }
-    // if(empData.ESICApplicable){
-    // console.log('Subtracting ESI');
-    netAmountPaid = netAmountPaid - esi;
-    // }
+    if (empData.ESICApplicable) {
+      // console.log('Subtracting ESI');
+      netAmountPaid = netAmountPaid - esi;
+    }
 
     // For incentive payment - Adding 1000+ no of days * designation.basic pay
     // const incentiveAmount = 4*360; // for example

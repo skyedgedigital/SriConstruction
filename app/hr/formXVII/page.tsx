@@ -294,6 +294,10 @@ const Page = ({
                     className=' text-black border-2 border-black'
                     colSpan={1}
                   ></TableHead>
+                  <TableHead
+                    className=' text-black border-2 border-black'
+                    colSpan={1}
+                  ></TableHead>
 
                   <TableHead
                     className=' text-black border-2 border-black text-center'
@@ -344,8 +348,9 @@ const Page = ({
                   <TableHead className=' text-black border-2 border-black'>
                     Other cash payments
                   </TableHead>
-                  {/* <TableHead className=' text-black border-2 border-black'>Other Allowances</TableHead> */}
-
+                  <TableHead className='text-black border-2 border-black'>
+                    Total Allowance
+                  </TableHead>
                   <TableHead className=' text-black border-2 border-black'>
                     Total
                   </TableHead>
@@ -361,9 +366,7 @@ const Page = ({
                   <TableHead className=' text-black border-2 border-black'>
                     Net Amount Paid
                   </TableHead>
-                  <TableHead className='text-black border-2 border-black'>
-                    Total Allowance
-                  </TableHead>
+
                   <TableHead className=' text-black border-2 border-black'>
                     Signature/Thumb impression of workman
                   </TableHead>
@@ -432,9 +435,9 @@ const Page = ({
 
                       {employee?.basic && (
                         <div>
-                          {Math.round(
-                            Number(employee?.basic * employee?.attendance)
-                          )}
+                          {Number(
+                            employee?.basic * employee?.attendance
+                          ).toFixed(2)}
                         </div>
                       )}
                       {employee?.basic && <div>Incent</div>}
@@ -462,31 +465,6 @@ const Page = ({
                         : 0
                       ).toFixed(2)}
                     </TableCell>
-                    {/* <TableCell className='border-black border-2 text-black'>
-                  {employee.allowances}
-                  </TableCell> */}
-                    <TableCell className='border-black border-2 text-black'>
-                      {Math.round(employee?.total).toFixed(2)}
-                    </TableCell>
-                    <TableCell className='border-black border-2 text-black'>
-                      {/* {Math.round(0.12 * employee?.total).toFixed(2)} */}
-                      {Math.round(
-                        (employee?.attendance * employee?.payRate +
-                          employee?.otherCash) *
-                          0.12
-                      ).toFixed(2)}
-                    </TableCell>
-                    <TableCell className='border-black border-2 text-black'>
-                      {employee?.employee?.ESICApplicable
-                        ? Math.round(0.0075 * employee?.total).toFixed(2)
-                        : 0}
-                    </TableCell>
-                    <TableCell className='border-black border-2 text-black'>
-                      {employee?.otherDeduction}
-                    </TableCell>
-                    <TableCell className='border-black border-2 text-black'>
-                      {Math.round(employee?.netAmountPaid).toFixed(2)}
-                    </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {(
                         parseFloat(employee.otherCashDescription?.hra) +
@@ -500,98 +478,37 @@ const Page = ({
                         parseFloat(employee.otherCashDescription?.oa)
                       ).toFixed(2)}
                     </TableCell>
+                    <TableCell className='border-black border-2 text-black'>
+                      {(employee?.total).toFixed(2)}
+                    </TableCell>
+                    <TableCell className='border-black border-2 text-black'>
+                      {Math.round(
+                        employee?.employee?.pfApplicable
+                          ? (employee?.attendance * employee?.payRate +
+                              employee?.otherCash) *
+                              0.12
+                          : 0
+                      ).toFixed(2)}
+                    </TableCell>
+                    <TableCell className='border-black border-2 text-black'>
+                      {Math.round(
+                        employee?.employee?.ESICApplicable
+                          ? Number(0.0075 * employee?.total)
+                          : 0
+                      ).toFixed(2)}
+                    </TableCell>
+                    <TableCell className='border-black border-2 text-black'>
+                      {employee?.otherDeduction}
+                    </TableCell>
+                    <TableCell className='border-black border-2 text-black'>
+                      {Math.round(employee?.netAmountPaid).toFixed(2)}
+                    </TableCell>
+
                     <TableCell className='border-black border-2 text-black'></TableCell>
                     <TableCell className='border-black border-2 text-black'></TableCell>
                     <TableCell className='border-black border-2 text-black'></TableCell>
                   </TableRow>
                 ))}
-
-                {/* <TableRow className='text-black font-mono h-28'>
-                  <TableCell className='border-black border-2 text-black'></TableCell>
-                  <TableCell className='border-black border-2 text-black'></TableCell>
-                  <TableCell className='border-black border-2 text-black'></TableCell>
-                  <TableCell className='border-black border-2 text-black'>
-                    Total:
-                  </TableCell>
-                  <TableCell className='border-black border-2 text-black'>
-                    {calculateTotal(
-                      attendanceData?.map((item) => item?.attendance)
-                    )}
-                  </TableCell>
-                  <TableCell className='border-black border-2 text-black'></TableCell>
-                  <TableCell className='border-black border-2 text-black'>
-                    {calculateTotal(
-                      attendanceData?.map(
-                        (item) =>
-                          Number(item?.designation?.basic) +
-                          Number(item?.designation.DA)
-                      )
-                    ).toFixed(2)}
-                  </TableCell>
-                  <TableCell className='border-black border-2 text-black'>
-                    {Math.round(
-                      calculateTotal(
-                        attendanceData.map(
-                          (item) =>
-                            Number(item?.designation.basic) *
-                            Number(item?.attendance)
-                        )
-                      )
-                    )}
-                  </TableCell>
-                  <TableCell className='border-black border-2 text-black'></TableCell>
-                  <TableCell className='border-black border-2 text-black'></TableCell>
-                  <TableCell className='border-black border-2 text-black'>
-                    {calculateTotal(
-                      attendanceData.map((item) => Number(item?.otherCash))
-                    ).toFixed(2)}
-                  </TableCell>
-                  <TableCell className='border-black border-2 text-black'>
-                    {calculateTotal(
-                      attendanceData.map((item) => Number(item?.total))
-                    ).toFixed(2)}
-                  </TableCell>
-                  <TableCell className='border-black border-2 text-black'>
-                    {calculateTotal(
-                      attendanceData.map((item) => 0.12 * Number(item?.total))
-                    ).toFixed(2)}
-                  </TableCell>
-                  <TableCell className='border-black border-2 text-black'>
-                    {calculateTotal(
-                      attendanceData.map((item) => 0.0075 * Number(item?.total))
-                    ).toFixed(2)}
-                  </TableCell>
-                  <TableCell className='border-black border-2 text-black'>
-                    {calculateTotal(
-                      attendanceData.map((item) => Number(item?.otherDeduction))
-                    ).toFixed(2)}
-                  </TableCell>
-                  <TableCell className='border-black border-2 text-black'>
-                    {calculateTotal(
-                      attendanceData.map((item) => Number(item?.netAmountPaid))
-                    ).toFixed(2)}
-                  </TableCell>
-                  <TableCell className='border-black border-2 text-black'>
-                    {calculateTotal(
-                      attendanceData.map(
-                        (item) =>
-                          Number(item?.otherCashDescription?.ca) +
-                          Number(item?.otherCashDescription?.eoc) +
-                          Number(item?.otherCashDescription?.hra) +
-                          Number(item?.otherCashDescription?.incumb) +
-                          Number(item?.otherCashDescription?.ma) +
-                          Number(item?.otherCashDescription?.mob) +
-                          Number(item?.otherCashDescription?.oa) +
-                          Number(item?.otherCashDescription?.pb) +
-                          Number(item?.otherCashDescription?.ssa) +
-                          Number(item?.otherCashDescription?.wa)
-                      )
-                    ).toFixed(2)}
-                  </TableCell>
-                  <TableCell className='border-black border-2 text-black'></TableCell>
-                  <TableCell className='border-black border-2 text-black'></TableCell>
-                  <TableCell className='border-black border-2 text-black'></TableCell>
-                </TableRow> */}
               </TableBody>
             </PDFTable>
             <div className='w-[1675px] min-w-fit border-2 border-black mt-2 flex text-sm p-2 items-center justify-between gap-10'>
@@ -643,12 +560,13 @@ const Page = ({
                 <span>
                   {Math.round(
                     calculateTotal(
-                      attendanceData.map(
-                        (item) =>
-                          (Number(item?.attendance) * Number(item?.payRate) +
-                            Number(item?.otherCash)) *
-                          0.12
-                      )
+                      attendanceData.map((item) => {
+                        return item?.employee?.pfApplicable
+                          ? (Number(item?.attendance) * Number(item?.payRate) +
+                              Number(item?.otherCash)) *
+                              0.12
+                          : 0;
+                      })
                     )
                   ).toFixed(2)}
                 </span>
@@ -670,9 +588,9 @@ const Page = ({
               <div className='flex items-center justify-center gap-1'>
                 <span>Net Payment:</span>
                 <span>
-                  {Math.round(
-                    calculateTotal(
-                      attendanceData.map((item) => Number(item?.netAmountPaid))
+                  {calculateTotal(
+                    attendanceData.map((item) =>
+                      Math.round(Number(item?.netAmountPaid))
                     )
                   ).toFixed(2)}
                 </span>
