@@ -491,29 +491,31 @@ const WMDInvoice = ({
         </Button>
       </div>
       <div
-        className='   '
+        className='border-2 border-black p-2'
         id={`WMD-${invoice?.invoiceId}`}
         ref={contentRefInvoice}
       >
         <div className='  tracking-wider w-full  text-[0.75rem] font-semibold'>
           <div className='flex'>
             <div className='w-full flex flex-col gap-2 justify-center items-center'>
-              <div className='w-[70%] flex-col flex gap-1 justify-center items-center'>
+              <div className='w-[70%] flex-col flex gap-1 justify-center items-center text-base'>
                 <h1 className='uppercase'>Jusco LTD</h1>
                 <h2 className='uppercase'>Water Management</h2>
               </div>
-              <div className=' flex-col flex gap-1 justify-center items-center'>
+              <div className=' flex-col flex gap-1 justify-center items-center text-base'>
                 <h1>JOB STATEMENT / PROFORMA INVOICE FORMAT </h1>
-                <p>(For making DO & Service Entry Sheet for service job) </p>
+                <p className='text-sm'>
+                  (For making DO & Service Entry Sheet for service job){' '}
+                </p>
               </div>
             </div>
-            <div className='w-fit text-nowrap flex flex-col gap-1 justify-center items-center'>
+            <div className='w-fit text-nowrap flex flex-col gap-1 justify-center items-center text-base'>
               <p>From No:- WMD/Bill/01</p>
               <p>Effective Dt: 16.12.2018</p>
             </div>
           </div>
 
-          <div className='flex justify-between gap-4 my-6'>
+          <div className='flex justify-between gap-4 mb-6 mt-10'>
             <div className='w-[50%] flex border-[1px] border-black'>
               <div className='h-full flex flex-col justify-between '>
                 <span className='border-[1px] border-black p-1 pl-2'>1.</span>
