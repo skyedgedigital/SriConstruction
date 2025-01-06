@@ -14,6 +14,7 @@ import { useSearchParams } from 'next/navigation';
 import handleDBConnection from '@/lib/database';
 import { ApiResponse } from '@/interfaces/APIresponses.interface';
 import Attendance from '@/lib/models/HR/attendance.model';
+import { employee } from '../../../../types/employee.type';
 const designationModel =
   mongoose.models.Designation ||
   mongoose.model('Designation', DesignationSchema);
@@ -70,11 +71,15 @@ const fetchFilledWages = async (
         ],
       });
     console.log('bbbbbbbbbbbbbb', resp);
+    const sortedResp = resp?.sort((a, b) =>
+      a.employee?.name.localeCompare(b.employee?.name)
+    );
+
     return {
       success: true,
       status: 200,
       message: 'Successfully Retrieved Wages',
-      data: JSON.stringify(resp),
+      data: JSON.stringify(sortedResp),
       error: null,
     };
   } catch (err) {

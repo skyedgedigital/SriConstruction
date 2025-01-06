@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import toast from 'react-hot-toast';
-import { Separator } from '@/components/ui/separator';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { useReactToPrint } from 'react-to-print';
@@ -16,12 +15,7 @@ import {
   TableRow,
   PDFTable,
 } from '@/components/ui/table';
-
-import { fetchAllAttendance } from '@/lib/actions/attendance/fetch';
-
 import React, { useEffect, useState } from 'react';
-import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
-import { backgroundClip } from 'html2canvas/dist/types/css/property-descriptors/background-clip';
 import * as XLSX from 'xlsx';
 
 const Page = ({
@@ -31,7 +25,9 @@ const Page = ({
 }) => {
   const [attendanceData, setAttendanceData] = useState(null);
   const [total, setTotal] = useState(0);
-
+  const [missingDataWarning, setMissingDataWarning] = useState<
+    String | undefined
+  >('');
   const contentRef = React.useRef(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
   const handleOnClick = async () => {
@@ -210,6 +206,7 @@ const Page = ({
         header: 1,
       })
     );
+
     const worksheet = XLSX.utils.aoa_to_sheet(combinedExcelRows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Bank Statement');
@@ -222,6 +219,13 @@ const Page = ({
     toast.success('Export Completed');
   };
 
+  const warnMissingData = () => {
+    if (missingDataWarning) return;
+    setMissingDataWarning(
+      'Some data is missing in the table. Please make sure all the required information is already saved before exporting the bank statement!'
+    );
+    return null;
+  };
   return (
     <div>
       <div className='flex gap-2 mb-2'>
@@ -265,7 +269,7 @@ const Page = ({
           <div className='flex justify-between left-0  ml-0 mb-10 p-8'>
             <div className='flex flex-col '>
               {' '}
-              {/* <div className=' font-bold'>SRI CONSTRUCTION AND CO.</div>
+              {/* <div className=' font-bold'>Shekhar Enterprises.</div>
               <div className=' '>.H.NO 78 KAPLI NEAR HARI MANDIR,</div>
               <div className=' '>.PO KAPALI SARAIKEA,</div>
               <div className=' '>.KHARSWAN JHARKHAND.</div>{' '} */}
@@ -280,70 +284,109 @@ const Page = ({
         </div>
 
         {attendanceData?.length > 0 && (
-          <div>
+          <div className='flex justify-between items-center mb-2'>
+            {missingDataWarning && (
+              <div className='bg-red-50 text-red-600 rounded px-4 py-2'>
+                {missingDataWarning}
+              </div>
+            )}
             <Button
-              className='mt-4 mb-4 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 mr-auto'
+              disabled={!!missingDataWarning}
+              className='mt-4 mb-4 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700'
               onClick={exportToExcelHandler}
             >
               Export to Excel
-            </Button>
+            </Button>{' '}
           </div>
         )}
 
         {attendanceData && (
           <div>
             <PDFTable className='border-2 border-black  '>
-              <TableHeader className=' py-8 h-24 overflow-auto  '>
-                <TableRow className='text-black font-mono h-28'>
-                  <TableHead className=' text-black border-2 border-black bg-white text-xl font-bold'>
+              <TableHeader className=' py-8 h-fit overflow-auto  '>
+                <TableRow className='text-white bg-gray-600 hover:bg-gray-700 font-mono h-16'>
+                  <TableHead className='  border-2 border-black text-white text-xl font-bold'>
                     Sl. No.
                   </TableHead>
-                  <TableHead className=' text-black border-2 border-black bg-white text-xl font-bold'>
+                  <TableHead className='  border-2 border-black text-white text-xl font-bold'>
                     W.M. Sl.No.
                   </TableHead>
 
-                  <TableHead className=' text-black border-2 border-black bg-white text-xl font-bold'>
+                  <TableHead className='  border-2 border-black text-white text-xl font-bold'>
                     Name of Workman
                   </TableHead>
                   {/* Table headers for each day */}
 
-                  <TableHead className=' text-black border-2 border-black bg-white text-xl font-bold'>
+                  <TableHead className='  border-2 border-black text-white text-xl font-bold'>
                     Bank A/c
                   </TableHead>
 
-                  <TableHead className=' text-black border-2 border-black bg-white text-xl font-bold'>
+                  <TableHead className='  border-2 border-black text-white text-xl font-bold'>
                     IFSC Code
                   </TableHead>
-                  <TableHead className=' text-black border-2 border-black bg-white text-xl font-bold'>
+                  <TableHead className='  border-2 border-black text-white text-xl font-bold'>
                     Amount
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {attendanceData.map((employee, index) => employee.employee && (
-                  <TableRow key={employee._id} className=' h-16 '>
-                    <TableCell className='border-black border-2 text-black text-lg '>
-                      {index + 1}
-                    </TableCell>
-                    <TableCell className='border-black border-2 text-black text-lg'>
-                      {employee.employee.workManNo}
-                    </TableCell>
+                {attendanceData?.map(
+                  (employee, index) =>
+                    employee.employee && (
+                      <TableRow key={employee._id} className=' h-fit '>
+                        <TableCell className='border-black border-2 text-black text-lg '>
+                          {index + 1}
+                        </TableCell>
+                        <TableCell className='border-black border-2 text-black text-lg'>
+                          {employee?.employee?.workManNo ? (
+                            <p>{employee?.employee?.workManNo}</p>
+                          ) : (
+                            <p className='text-red-500'>
+                              N/A{warnMissingData()}
+                            </p>
+                          )}
+                        </TableCell>
 
-                    <TableCell className='border-black border-2 text-black text-lg'>
-                      {employee.employee.name}
-                    </TableCell>
-                    {/* Table data for each day (status) */}
-                    <TableCell className='border-black border-2 text-black text-lg'>
-                      {employee.employee.accountNumber}
-                    </TableCell>
-                    <TableCell className='border-black border-2 text-black text-lg'>
-                      {employee.employee.bank.ifsc}
-                    </TableCell>
-                    <TableCell className='border-black border-2 text-black text-lg'>
-                      {Math.round(employee.netAmountPaid.toFixed(2))}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        <TableCell className='border-black border-2 text-black text-lg'>
+                          {employee?.employee?.name ? (
+                            <p>{employee?.employee?.name}</p>
+                          ) : (
+                            <p className='text-red-500'>
+                              N/A {warnMissingData()}
+                            </p>
+                          )}
+                        </TableCell>
+                        {/* Table data for each day (status) */}
+                        <TableCell className='border-black border-2 text-black text-lg'>
+                          {employee?.employee?.accountNumber ? (
+                            <p>{employee?.employee?.accountNumber}</p>
+                          ) : (
+                            <p className='text-red-500'>
+                              N/A {warnMissingData()}
+                            </p>
+                          )}
+                        </TableCell>
+                        <TableCell className='border-black border-2 text-black text-lg'>
+                          {employee?.employee?.bank?.ifsc ? (
+                            <p>{employee?.employee?.bank?.ifsc}</p>
+                          ) : (
+                            <p className='text-red-500'>
+                              N/A {warnMissingData()}
+                            </p>
+                          )}
+                        </TableCell>
+                        <TableCell className='border-black border-2 text-black text-lg'>
+                          {employee?.netAmountPaid ? (
+                            Math.round(employee?.netAmountPaid?.toFixed(2))
+                          ) : (
+                            <p className='text-red-500'>
+                              N/A {warnMissingData()}
+                            </p>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )
+                )}
               </TableBody>
             </PDFTable>
           </div>
