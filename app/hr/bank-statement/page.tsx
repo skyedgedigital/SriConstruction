@@ -134,7 +134,7 @@ const Page = ({
             }));
           setAttendanceData(parsedData);
           const totalNetAmountPaid = parsedData.reduce(
-            (total, item) => total + (item.netAmountPaid || 0),
+            (total, item) => total + Math.round(item.netAmountPaid || 0),
             0
           );
           setTotal(totalNetAmountPaid.toFixed(0));

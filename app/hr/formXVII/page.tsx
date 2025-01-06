@@ -226,7 +226,7 @@ const Page = ({
                 <div className='font-bold text-blue-600 max-w-64 '>
                   Name and Address of Contractor:
                 </div>
-                <div className='uppercase'>
+                <div className='uppercase max-w-96 font-semibold'>
                   {ent?.name ? (
                     ent?.name
                   ) : (
