@@ -39,10 +39,7 @@ const fetchAttendance = async (filter: string): Promise<ApiResponse<any>> => {
   if (!dbConnection.success) return dbConnection;
   try {
     const searchFilter = JSON.parse(filter);
-    const resp = await Attendance.findOne(searchFilter).populate('workOrderHr');
-
-    if (!resp) {
-      // Function to get the number of days in a given month and year
+    if (searchFilter?.workOrderHr === 'Default') {
       const getDaysInMonth = (year: number, month: number) => {
         return new Date(year, month, 0).getDate();
       };
@@ -69,9 +66,11 @@ const fetchAttendance = async (filter: string): Promise<ApiResponse<any>> => {
         month: searchFilter.month,
         days: daysArray, // Assign the generated days array here
       });
+      // console.log('NEW ATTENDANCE', newAttendance);
 
       // Save the newly created attendance
-      await newAttendance.save();
+      // NOT SAVING PURPOSELY
+      // await newAttendance.save();
       return {
         success: true,
         message: 'Attendance fetched successfully.',
@@ -80,7 +79,10 @@ const fetchAttendance = async (filter: string): Promise<ApiResponse<any>> => {
         error: null,
       };
     } else {
-      console.log('Existing attendance found:', resp);
+      const resp = await Attendance.findOne(searchFilter).populate(
+        'workOrderHr'
+      );
+      // console.log('Existing attendance found:', resp);
       return {
         success: true,
         status: 200,
@@ -117,6 +119,7 @@ const fetchAllAttendance = async (filter: string) => {
     // console.log(
     //   '------------------------------------------------------------------------------'
     // );
+
     const resp = await Attendance.find(searchFilter)
       .populate('employee')
       .populate({

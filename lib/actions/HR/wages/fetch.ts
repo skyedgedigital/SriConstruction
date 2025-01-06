@@ -13,6 +13,7 @@ import { endOfYear } from 'date-fns';
 import { useSearchParams } from 'next/navigation';
 import handleDBConnection from '@/lib/database';
 import { ApiResponse } from '@/interfaces/APIresponses.interface';
+import Attendance from '@/lib/models/HR/attendance.model';
 const designationModel =
   mongoose.models.Designation ||
   mongoose.model('Designation', DesignationSchema);
@@ -74,6 +75,105 @@ const fetchFilledWages = async (
       status: 200,
       message: 'Successfully Retrieved Wages',
       data: JSON.stringify(resp),
+      error: null,
+    };
+  } catch (err) {
+    console.log(err);
+    return {
+      status: 500,
+      message:
+        'Unexpected error occures, Failed to fetch Filled wages, Please try later',
+      error: JSON.stringify(err),
+      success: false,
+      data: null,
+    };
+  }
+};
+const fetchFilledWagesWithAttendanceDays = async (
+  month: number,
+  year: number,
+  workOrderHr: string
+): Promise<ApiResponse<any>> => {
+  const dbConnection = await handleDBConnection();
+  if (!dbConnection.success) return dbConnection;
+  try {
+    const filter: Record<string, any> = { month, year };
+
+    if (workOrderHr !== 'Default') {
+      filter.workOrderHr = workOrderHr;
+    }
+    console.log(filter, 'I am Filter');
+
+    // Fetch employees with matching workOrder and period in their workOrderHr
+
+    // Populate employee IDs
+
+    // const resp = await Wages.find(filter)
+    //   .populate('designation')
+    //   .populate('employee')
+    //   .populate({
+    //     path: 'employee',
+    //     populate: {
+    //       path: 'designation',
+    //       model: 'Designation',
+    //     },
+    //   });
+    const wages = await Wages.find(filter)
+      .populate('designation')
+      .populate({
+        path: 'employee',
+        populate: [
+          {
+            path: 'designation',
+            model: 'Designation',
+          },
+          {
+            path: 'bank',
+            model: 'Bank', // Assuming you have a Bank model
+          },
+        ],
+      });
+    // console.log('bbbbbbbbbbbbbb', wages);
+    if (!wages) {
+      return {
+        status: 500,
+        message:
+          'Unexpected error occures, Failed to fetch Filled wages, Please try later',
+        error: null,
+        success: false,
+        data: null,
+      };
+    }
+
+    const employees = wages?.map((employee) => employee?.employee?._id);
+    console.log('included employees', employees);
+    const attendances = await Attendance.find({
+      employee: { $in: employees },
+      year,
+      month,
+    }).select('days employee');
+
+    console.log('attendances', attendances);
+    const wagesResponseWithAttendanceDays = [];
+    wages.forEach((wemployee) => {
+      const x = attendances?.find(
+        (emp) =>
+          emp?.employee.toString() === wemployee?.employee?._id.toString()
+      );
+      console.log('wemployee', wemployee);
+      console.log('xxxxx', x);
+      wagesResponseWithAttendanceDays.push({
+        ...wemployee._doc,
+        days: x.days,
+      });
+      console.log('final array pushed', wagesResponseWithAttendanceDays);
+    });
+
+    return {
+      success: true,
+      status: 200,
+      message: 'Successfully Retrieved Wages',
+      data: JSON.stringify(wagesResponseWithAttendanceDays),
       error: null,
     };
   } catch (err) {
@@ -169,7 +269,7 @@ const fetchWagesForFinancialYear = async (dataString) => {
     // }).populate("department")
     //   .populate("designation")
     //   .populate("ESILocation");
-    const employees = await EmployeeData.aggregate([
+    const resEmployees = await EmployeeData.aggregate([
       {
         $addFields: {
           appointmentDateObj: {
@@ -224,6 +324,9 @@ const fetchWagesForFinancialYear = async (dataString) => {
         },
       },
     ]);
+    const employees = resEmployees.sort((a, b) => {
+      return Number(a.workManNo) - Number(b.workManNo);
+    });
     console.log('yere employees vaiii', employees);
 
     if (employees.length === 0) {
@@ -385,7 +488,7 @@ const fetchWagesForFinancialYearStatement = async (dataString) => {
     // }).populate("department")
     //   .populate("designation")
     //   .populate("ESILocation");
-    const employees = await EmployeeData.aggregate([
+    const resEmployees = await EmployeeData.aggregate([
       {
         $addFields: {
           appointmentDateObj: {
@@ -440,6 +543,9 @@ const fetchWagesForFinancialYearStatement = async (dataString) => {
         },
       },
     ]);
+    const employees = resEmployees.sort((a, b) => {
+      return Number(a.workManNo) - Number(b.workManNo);
+    });
     console.log('yere employees vaiii', employees);
     if (employees.length === 0) {
       return {
@@ -1484,4 +1590,5 @@ export {
   fetchFinalSettlement,
   fetchWagesForFinancialYearStatement,
   fetchWagesForCalendarYearStatement,
+  fetchFilledWagesWithAttendanceDays,
 };

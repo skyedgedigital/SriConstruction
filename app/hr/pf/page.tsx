@@ -29,7 +29,7 @@ const Page = ({
   searchParams: { [key: string]: string | string[] | undefined };
 }) => {
   const [attendanceData, setAttendanceData] = useState(null);
-
+  console.log('attendence data', attendanceData);
   const contentRef = React.useRef(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
   const handleOnClick = React.useCallback(() => {
@@ -106,13 +106,14 @@ const Page = ({
         // @ts-ignore
         const department = searchParams.dept;
 
-        console.log('shaiaiijsjs');
+        // console.log('shaiaiijsjs');
 
-        const response = await wagesAction.FETCH.fetchFilledWages(
-          month,
-          year,
-          'Default'
-        );
+        const response =
+          await wagesAction.FETCH.fetchFilledWagesWithAttendanceDays(
+            month,
+            year,
+            'Default'
+          );
         //   console.log(JSON.parse(response.data))
         if (response?.success) {
           toast.success(response.message);
@@ -180,9 +181,11 @@ const Page = ({
           employee?.total >= 15000
             ? Math.round(15000).toFixed(2)
             : Math.round(employee.total).toFixed(2),
-        PF: Math.round((employee?.attendance * employee?.designation.PayRate +
-                          employee?.otherCash) *
-                        0.12).toFixed(2),
+        PF: Math.round(
+          (employee?.attendance * employee?.designation.PayRate +
+            employee?.otherCash) *
+            0.12
+        ).toFixed(2),
         'EPF Amount':
           calculateAge(employee?.employee?.dob) > 60
             ? Math.round(0).toFixed(2)
@@ -266,8 +269,8 @@ const Page = ({
         {attendanceData && (
           <div>
             <PDFTable className='border-2 border-black  '>
-              <TableHeader className=' py-8 h-24 overflow-auto  '>
-                <TableRow className='text-black font-mono h-28'>
+              <TableHeader className=' py-8 h-fit overflow-auto  '>
+                <TableRow className='text-black font-mono h-16'>
                   <TableHead className='bg-slate-400 text-black border-2 border-black'>
                     UAN
                   </TableHead>
@@ -298,11 +301,15 @@ const Page = ({
                   <TableHead className='bg-slate-400 text-black border-2 border-black'>
                     PPF Amount
                   </TableHead>
+                  <TableHead className='bg-slate-400 text-black border-2 border-black'>
+                    NCP Days
+                  </TableHead>
+                  <TableHead className='bg-slate-400 text-black border-2 border-black'></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {attendanceData.map((employee, index) => (
-                  <TableRow key={employee._id} className=' h-16 '>
+                  <TableRow key={employee._id} className=' '>
                     <TableCell className='border-black border-2 text-black'>
                       {employee?.employee?.UAN}
                     </TableCell>
@@ -311,7 +318,11 @@ const Page = ({
                     </TableCell>
                     {/* Table data for each day (status) */}
                     <TableCell className='border-black border-2 text-black'>
-                      {(employee?.total).toFixed(2)}
+                      {(
+                        employee?.total -
+                        employee?.allowances -
+                        employee?.incentiveAmount
+                      ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {(employee?.total >= 15000
@@ -333,21 +344,44 @@ const Page = ({
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {/* {(0.12 * employee?.total).toFixed(2)} */}
-                      {(
-                        (employee?.attendance * employee?.designation.PayRate +
-                          employee?.otherCash) *
-                        0.12
+                      {Math.round(
+                        Number(
+                          (employee?.attendance *
+                            employee?.designation.PayRate +
+                            employee?.otherCash) *
+                            0.12
+                        )
                       ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {calculateAge(employee?.employee?.dob) > 60
-                        ? 0
-                        : (0.0833 * employee?.total).toFixed(2)}
+                      {Math.round(
+                        Number(
+                          calculateAge(employee?.employee?.dob) > 60
+                            ? 0
+                            : (0.0833 * employee?.total).toFixed(2)
+                        )
+                      ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {calculateAge(employee?.employee?.dob) > 60
-                        ? (0.12 * employee?.total).toFixed(2)
-                        : (0.0367 * employee?.total).toFixed(2)}
+                      {Math.round(
+                        Number(
+                          calculateAge(employee?.employee?.dob) > 60
+                            ? (0.12 * employee?.total).toFixed(2)
+                            : (0.0367 * employee?.total).toFixed(2)
+                        )
+                      ).toFixed(2)}
+                    </TableCell>
+                    <TableCell className='border-black border-2 text-black'>
+                      {(() => {
+                        let absentCount = 0;
+                        employee?.days.forEach((day) => {
+                          if (day.status === 'Absent') absentCount++;
+                        });
+                        return absentCount;
+                      })()}
+                    </TableCell>
+                    <TableCell className='border-black border-2 text-black'>
+                      0
                     </TableCell>
                   </TableRow>
                 ))}
