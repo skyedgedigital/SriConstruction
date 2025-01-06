@@ -558,30 +558,28 @@ const Page = ({
               <div className='flex items-center justify-center gap-1'>
                 <span>P.F Amt.:</span>
                 <span>
-                  {Math.round(
-                    calculateTotal(
-                      attendanceData.map((item) => {
-                        return item?.employee?.pfApplicable
-                          ? (Number(item?.attendance) * Number(item?.payRate) +
+                  {calculateTotal(
+                    attendanceData.map((item) => {
+                      return item?.employee?.pfApplicable
+                        ? Math.round(
+                            (Number(item?.attendance) * Number(item?.payRate) +
                               Number(item?.otherCash)) *
                               0.12
-                          : 0;
-                      })
-                    )
+                          )
+                        : 0;
+                    })
                   ).toFixed(2)}
                 </span>
               </div>
               <div className='flex items-center justify-center gap-1'>
                 <span>ESI Amt.:</span>
                 <span>
-                  {Math.round(
-                    calculateTotal(
-                      attendanceData.map((item) => {
-                        return item?.employee?.ESICApplicable
-                          ? 0.0075 * Number(item?.total)
-                          : 0;
-                      })
-                    )
+                  {calculateTotal(
+                    attendanceData.map((item) => {
+                      return item?.employee?.ESICApplicable
+                        ? Math.round(0.0075 * Number(item?.total))
+                        : 0;
+                    })
                   ).toFixed(2)}
                 </span>
               </div>
