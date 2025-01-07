@@ -159,6 +159,13 @@ const Page = ({
   }, []);
   console.log('sahi h bhai');
 
+  const calculateAbsentDays = (employee) => {
+    let absentCount = 0;
+    employee?.days.forEach((day) => {
+      if (day.status === 'Absent') absentCount++;
+    });
+    return absentCount;
+  };
   const exportToExcelHandler = async () => {
     console.log('first');
     // const excelReportTitle = `PF Report for year: ${searchParams.year} month: ${searchParams.month} department: ${searchParams.dept}`;
@@ -194,6 +201,7 @@ const Page = ({
           calculateAge(employee?.employee?.dob) > 60
             ? Math.round(0.12 * employee?.total).toFixed(2)
             : Math.round(0.0367 * employee?.total).toFixed(2),
+        'NCP Days': calculateAbsentDays(employee) || 0,
       };
     });
 
@@ -204,7 +212,7 @@ const Page = ({
         employee['EDLI Wages'] || ''
       }#~#${employee.PF || ''}#~#${employee['EPF Amount'] || ''}#~#${
         employee['PPF Amount'] || ''
-      }`;
+      }#~#${employee['NCP Days']}`;
     });
 
     const textData = formattedData.join('\n');
@@ -325,21 +333,28 @@ const Page = ({
                       ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {(employee?.total >= 15000
-                        ? 15000
-                        : employee.total
-                      ).toFixed(2)}
+                      {employee?.total >= 15000
+                        ? (15000).toFixed(2)
+                        : (
+                            employee?.total -
+                            employee?.allowances -
+                            employee?.incentiveAmount
+                          ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {calculateAge(employee?.employee?.dob) > 60
                         ? 0
                         : employee?.total >= 15000
-                        ? 15000
-                        : employee.total.toFixed(2)}
+                        ? (15000).toFixed(2)
+                        : (
+                            employee?.total -
+                            employee?.allowances -
+                            employee?.incentiveAmount
+                          ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {employee?.total >= 15000
-                        ? 15000
+                        ? (15000).toFixed(2)
                         : employee.total.toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
@@ -372,13 +387,7 @@ const Page = ({
                       ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {(() => {
-                        let absentCount = 0;
-                        employee?.days.forEach((day) => {
-                          if (day.status === 'Absent') absentCount++;
-                        });
-                        return absentCount;
-                      })()}
+                      {calculateAbsentDays(employee)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       0

@@ -151,27 +151,27 @@ const fetchFilledWagesWithAttendanceDays = async (
     }
 
     const employees = wages?.map((employee) => employee?.employee?._id);
-    console.log('included employees', employees);
+    // console.log('included employees', employees);
     const attendances = await Attendance.find({
       employee: { $in: employees },
       year,
       month,
     }).select('days employee');
 
-    console.log('attendances', attendances);
+    // console.log('attendances', attendances);
     const wagesResponseWithAttendanceDays = [];
     wages.forEach((wemployee) => {
       const x = attendances?.find(
         (emp) =>
           emp?.employee.toString() === wemployee?.employee?._id.toString()
       );
-      console.log('wemployee', wemployee);
-      console.log('xxxxx', x);
+      // console.log('wemployee', wemployee);
+      // console.log('xxxxx', x);
       wagesResponseWithAttendanceDays.push({
         ...wemployee._doc,
         days: x.days,
       });
-      console.log('final array pushed', wagesResponseWithAttendanceDays);
+      // console.log('final array pushed', wagesResponseWithAttendanceDays);
     });
 
     return {
