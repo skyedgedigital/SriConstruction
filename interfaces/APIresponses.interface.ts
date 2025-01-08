@@ -5,3 +5,7 @@ export interface ApiResponse<T> {
   data: T | null; // T can be any type
   error: string | null | T;
 }
+
+export interface PaymentReportResponse extends ApiResponse<any> {
+  warnings?: string[];
+}

@@ -33,6 +33,9 @@ import {
   Shield,
   TestTube,
   Wrench,
+  ListEndIcon,
+  ListChecks,
+  LucideReceiptPoundSterling,
 } from 'lucide-react';
 import { Building } from 'lucide-react';
 import { LocateFixed } from 'lucide-react';
@@ -110,6 +113,12 @@ const Sidebar = forwardRef<HTMLDivElement, Props>(
                 title: 'Upload_File',
                 href: '/admin/upload_file',
                 icon: Upload,
+                variant: 'ghost',
+              },
+              {
+                title: 'payment report',
+                href: '/admin/payment-report',
+                icon: LucideReceiptPoundSterling,
                 variant: 'ghost',
               },
               // {
@@ -287,7 +296,7 @@ const Sidebar = forwardRef<HTMLDivElement, Props>(
               },
               {
                 title: 'Checklist and Register',
-                href: '/hr/payments',
+                href: '/hr/checklist-and-register',
                 icon: ReceiptIndianRupee,
                 variant: 'ghost',
               },
