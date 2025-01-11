@@ -185,8 +185,8 @@ const Page = ({
     const worksheetData = attendanceData.map((employee, index) => {
       return {
         'Sl No.': index + 1,
-        'IP Number': employee?.employee?.UAN || '',
-        'P.F. No.': employee?.employee?.pfNo || '',
+        'IP Number': employee?.employee?.ESICNo || '',
+        // 'P.F. No.': employee?.employee?.pfNo || '',
         'IP Name': employee?.employee?.name || '',
         'No. of days for which wages paid/payable': employee?.attendance || 0,
         'Total Monthly Wage': (employee?.total).toFixed(2),
