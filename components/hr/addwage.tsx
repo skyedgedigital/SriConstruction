@@ -264,6 +264,7 @@ const AddWage = ({ employeee }) => {
       setAttendanceData(null);
       console.log('employeee aato ra ha', employeee);
       const newData = {
+        wo: employeee.wo,
         basic: parseFloat(formData.basic),
         DA: parseFloat(formData.vda),
         employee: employeee.id,
