@@ -26,6 +26,7 @@ const createWageForAnEmployee = async (dataString: string) => {
   try {
     const data = JSON.parse(dataString);
     const {
+      wo,
       basic,
       DA,
       employee,
@@ -59,6 +60,7 @@ const createWageForAnEmployee = async (dataString: string) => {
       employee: employee,
       month: month,
       year: year,
+      workOrderHr: wo,
     };
     // console.log('dddddd', empData.designation);
     const attendanceRecords = await attendanceAction.FETCH.fetchStatus(
