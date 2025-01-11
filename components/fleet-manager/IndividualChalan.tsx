@@ -301,7 +301,7 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
       total += item?.itemCosting;
     });
     // setTotal(total)
-    return <span className='font-bold text-lg'>{total}</span>;
+    return <span className='font-bold text-lg'>{total.toFixed(2)}</span>;
   };
 
   const handleDeleteChalan = async () => {
@@ -539,17 +539,19 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
                       </TableCell>
                       <TableCell className='border-2 border-gray-400 py-1 text-center'>
                         {/* {formatIndianCurrency(item?.itemPrice)} */}
-                        {item?.item?.itemPrice}
+                        {item?.item?.itemPrice.toFixed(2)}
                       </TableCell>
                       <TableCell className='border-2 border-gray-400 py-1 text-center'>
                         {item?.unit}
                       </TableCell>
                       <TableCell className='border-2 border-gray-400 py-1 text-center'>
-                        {item?.unit === 'fixed' ? '-' : `${item?.hours}`}
+                        {item?.unit === 'fixed'
+                          ? '-'
+                          : `${item?.hours.toFixed(2)}`}
                       </TableCell>
                       <TableCell className='border-2 border-gray-400 py-1 text-center'>
                         {/* Rs. {formatIndianCurrency(calcItemPrice(item))} */}
-                        {item?.itemCosting}
+                        {item?.itemCosting?.toFixed(2)}
                       </TableCell>
                     </TableRow>
                   ))}
