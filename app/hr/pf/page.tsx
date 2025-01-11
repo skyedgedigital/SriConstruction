@@ -174,32 +174,32 @@ const Page = ({
       return {
         UAN: employee?.employee?.UAN || '',
         'Employee Name': employee?.employee?.name || '',
-        'EPF Wages 1': Math.round(employee?.total).toFixed(2),
+        'EPF Wages 1': Math.round(calculateTotal(employee)).toFixed(2),
         'EPF Wages 2': Math.round(
-          employee?.total >= 15000 ? 15000 : employee.total
+          calculateTotal(employee) >= 15000 ? 15000 : calculateTotal(employee)
         ).toFixed(2),
         'EPS Wages':
           calculateAge(employee?.employee?.dob) > 60
             ? Math.round(0).toFixed(2)
-            : employee?.total >= 15000
+            : calculateTotal(employee) >= 15000
             ? Math.round(15000).toFixed(2)
-            : Math.round(employee.total).toFixed(2),
+            : Math.round(calculateTotal(employee)).toFixed(2),
         'EDLI Wages':
-          employee?.total >= 15000
+          calculateTotal(employee) >= 15000
             ? Math.round(15000).toFixed(2)
-            : Math.round(employee.total).toFixed(2),
-        PF: Math.round(
-          (employee?.attendance * employee?.designation.PayRate +
-            employee?.otherCash) *
-            0.12
-        ).toFixed(2),
+            : Math.round(calculateTotal(employee)).toFixed(2),
+        PF: Math.round(calculateTotal(employee) * 0.12).toFixed(2),
         'EPF Amount':
           calculateAge(employee?.employee?.dob) > 60
             ? Math.round(0).toFixed(2)
+            : calculateTotal(employee) > 15000
+            ? Math.round(1250).toFixed(2)
             : Math.round(0.0833 * employee?.total).toFixed(2),
         'PPF Amount':
           calculateAge(employee?.employee?.dob) > 60
-            ? Math.round(0.12 * employee?.total).toFixed(2)
+            ? Math.round(0.12 * calculateTotal(employee)).toFixed(2)
+            : calculateTotal(employee) > 15000
+            ? Math.round(0.12 * calculateTotal(employee) - 1250).toFixed(2)
             : Math.round(0.0367 * employee?.total).toFixed(2),
         'NCP Days': calculateAbsentDays(employee) || 0,
       };
@@ -212,7 +212,7 @@ const Page = ({
         employee['EDLI Wages'] || ''
       }#~#${employee.PF || ''}#~#${employee['EPF Amount'] || ''}#~#${
         employee['PPF Amount'] || ''
-      }#~#${employee['NCP Days']}`;
+      }#~#${employee['NCP Days']}~#0`;
     });
 
     const textData = formattedData.join('\n');
@@ -227,27 +227,14 @@ const Page = ({
 
     URL.revokeObjectURL(url);
     toast.success('File generated and download initiated.');
-
-    // console.log(formattedData);
-    // const worksheet = XLSX.utils.json_to_sheet(formattedData);
-    // console.log(worksheet);
-    // const textData = XLSX.utils.sheet_to_txt(worksheet);
-
-    // const combinedExcelRows = rowsForTitle.concat(
-    //   XLSX.utils.sheet_to_json(XLSX.utils.json_to_sheet(worksheetData), {
-    //     header: 1,
-    //   })
-    // );
-
-    // const worksheet = XLSX.utils.aoa_to_sheet(combinedExcelRows);
-    // const workbook = XLSX.utils.book_new();
-    // XLSX.utils.book_append_sheet(workbook, worksheet, 'Fuel Report');
-    // XLSX.writeFile(
-    //   workbook,
-    //   `PF_${searchParams.month || ''}_${searchParams.year || ''}.xlsx`
-    // );
-    // toast.success('Export Completed');
   };
+
+  function calculateTotal(employee) {
+    const total = employee?.total || 0;
+    const allowances = employee?.allowances || 0;
+    const incentiveAmount = employee?.incentiveAmount || 0;
+    return total - allowances - incentiveAmount;
+  }
 
   const days = Array.from({ length: 31 }, (_, i) => i + 1); // Array of days (1 to 31)
 
@@ -326,46 +313,29 @@ const Page = ({
                     </TableCell>
                     {/* Table data for each day (status) */}
                     <TableCell className='border-black border-2 text-black'>
-                      {(
-                        employee?.total -
-                        employee?.allowances -
-                        employee?.incentiveAmount
-                      ).toFixed(2)}
+                      {calculateTotal(employee).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {employee?.total >= 15000
+                      {calculateTotal(employee) >= 15000
                         ? (15000).toFixed(2)
-                        : (
-                            employee?.total -
-                            employee?.allowances -
-                            employee?.incentiveAmount
-                          ).toFixed(2)}
+                        : calculateTotal(employee).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {calculateAge(employee?.employee?.dob) > 60
                         ? 0
-                        : employee?.total >= 15000
+                        : calculateTotal(employee) >= 15000
                         ? (15000).toFixed(2)
-                        : (
-                            employee?.total -
-                            employee?.allowances -
-                            employee?.incentiveAmount
-                          ).toFixed(2)}
+                        : calculateTotal(employee).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {employee?.total >= 15000
+                      {calculateTotal(employee) >= 15000
                         ? (15000).toFixed(2)
-                        : employee.total.toFixed(2)}
+                        : calculateTotal(employee).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {/* {(0.12 * employee?.total).toFixed(2)} */}
                       {Math.round(
-                        Number(
-                          (employee?.attendance *
-                            employee?.designation.PayRate +
-                            employee?.otherCash) *
-                            0.12
-                        )
+                        Number(calculateTotal(employee) * 0.12)
                       ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
@@ -373,7 +343,9 @@ const Page = ({
                         Number(
                           calculateAge(employee?.employee?.dob) > 60
                             ? 0
-                            : (0.0833 * employee?.total).toFixed(2)
+                            : calculateTotal(employee) > 15000
+                            ? 1250
+                            : (0.0833 * calculateTotal(employee)).toFixed(2)
                         )
                       ).toFixed(2)}
                     </TableCell>
@@ -381,8 +353,10 @@ const Page = ({
                       {Math.round(
                         Number(
                           calculateAge(employee?.employee?.dob) > 60
-                            ? (0.12 * employee?.total).toFixed(2)
-                            : (0.0367 * employee?.total).toFixed(2)
+                            ? (0.12 * calculateTotal(employee)).toFixed(2)
+                            : calculateTotal(employee) > 15000
+                            ? 0.12 * calculateTotal(employee) - 1250
+                            : (0.0367 * calculateTotal(employee)).toFixed(2)
                         )
                       ).toFixed(2)}
                     </TableCell>
