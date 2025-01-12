@@ -56,147 +56,161 @@ const Page = () => {
   };
   return (
     <>
-      <div>
+      <section className='flex flex-col h-screen'>
         <h1 className='font-bold text-blue-500 border-b-2 border-blue-500 text-center py-2 mb-4'>
           Bank
         </h1>
-        <div className='flex flex-col lg:flex-row'>
-          <div className='flex-1 items-center justify-center'>
-            <div className='flex w-full items-center justify-center'>
-              <p>List of Banks</p>
+        <div className='flex-1 overflow-y-auto p-4'>
+          <div className='flex flex-col lg:flex-row lg:gap-8'>
+            <div className='flex-1'>
+              <div className='w-full flex flex-col gap-1 border-[1px] border-gray-300 rounded p-2 justify-start items-center lg:min-h-[calc(100vh-2rem)]'>
+                <div className='flex justify-between items-center w-full'>
+                  <h2 className='flex justify-center text-xl'>List of Banks</h2>
+                  {
+                    <p className='text-gray-400'>
+                      ({data ? <>{data?.length} Banks</> : ''})
+                    </p>
+                  }
+                </div>
+                <div className='flex flex-col w-full'>
+                  {data?.map((ele) => {
+                    return (
+                      <div
+                        key={ele._id}
+                        className='p-2 flex justify-between items-center rounded-sm border-b hover:bg-gray-200'
+                      >
+                        <span>{ele.name}</span>
+                        <div className='flex w-fit gap-2 '>
+                          <button
+                            className='px-2 py-1 bg-white rounded text-blue-500'
+                            onClick={() => {
+                              setShowViewModal(true);
+                              setEditFormName(ele.name);
+                              editFormData.name = ele.name;
+                              editFormData.branch = ele.branch;
+                              editFormData.ifsc = ele.ifsc;
+                            }}
+                          >
+                            View
+                          </button>
+                          <button
+                            className='px-2 py-1 bg-white rounded text-orange-500'
+                            onClick={() => {
+                              setShowModal(true);
+                              setEditFormName(ele.name);
+                              setEditFormEleId(ele._id);
+                              editFormData.name = ele.name;
+                              editFormData.branch = ele.branch;
+                              editFormData.ifsc = ele.ifsc;
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className='px-2 py-1 bg-white rounded text-red-500'
+                            onClick={async () => {
+                              const resp = await BankAction.DELETE.deleteBank(
+                                ele._id
+                              );
+                              if (resp.status === 200) {
+                                toast.success('Deleted,Reload to view Changes');
+                              } else {
+                                toast.error('An Error Occurred');
+                              }
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>{' '}
             </div>
-            <div className='flex flex-col w-full'>
-              {data?.map((ele) => {
-                return (
-                  <div
-                    key={ele._id}
-                    className='p-2 flex justify-between rounded-sm cursor-pointer border-b hover:bg-gray-200'
+
+            <div className='lg:w-1/3'>
+              <div className='lg:sticky lg:top-0'>
+                <div className='w-full flex-col justify-center p-4 gap-2 border-[1px] border-gray-300 rounded'>
+                  <h2 className='flex justify-center items-center text-xl'>
+                    Add Bank
+                  </h2>
+                  <form
+                    onSubmit={handleSubmit}
+                    className='max-w-md mx-auto mt-4 p-6 bg-white rounded-md flex-wrap'
                   >
-                    {ele.name}
-                    <div className='flex'>
-                      <button
-                        className='mr-16 text-green-500'
-                        onClick={() => {
-                          setShowViewModal(true);
-                          setEditFormName(ele.name);
-                          editFormData.name = ele.name;
-                          editFormData.branch = ele.branch;
-                          editFormData.ifsc = ele.ifsc;
-                        }}
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
                       >
-                        View
-                      </button>
-                      <button
-                        className='mr-16 text-blue-500'
-                        onClick={() => {
-                          setShowModal(true);
-                          setEditFormName(ele.name);
-                          setEditFormEleId(ele._id);
-                          editFormData.name = ele.name;
-                          editFormData.branch = ele.branch;
-                          editFormData.ifsc = ele.ifsc;
-                        }}
+                        Name:
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        name='name'
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Bank Name Here'
+                        min='1'
+                      />
+                    </div>
+
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
                       >
-                        Edit
-                      </button>
-                      <button
-                        className='mr-16 text-red-500'
-                        onClick={async () => {
-                          const resp = await BankAction.DELETE.deleteBank(
-                            ele._id
-                          );
-                          if (resp.status === 200) {
-                            toast.success('Deleted,Reload to view Changes');
-                          } else {
-                            toast.error('An Error Occurred');
-                          }
-                        }}
+                        Branch:
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        name='branch'
+                        value={formData.branch}
+                        onChange={handleInputChange}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Branch Here'
+                        min='1'
+                      />
+                    </div>
+
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
                       >
-                        Delete
+                        IFSC Code
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        name='ifsc'
+                        value={formData.ifsc}
+                        onChange={handleInputChange}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter IFSC code Here'
+                        min='1'
+                      />
+                    </div>
+
+                    <div>
+                      <button
+                        type='submit'
+                        className='w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                      >
+                        Add Bank
                       </button>
                     </div>
-                  </div>
-                );
-              })}
+                  </form>
+                </div>{' '}
+              </div>
             </div>
-          </div>
-          <div className='flex-1'>
-            <div className='flex w-full items-center justify-center mt-10 lg:mt-0'>
-              Form For Bank
-            </div>
-            <form
-              onSubmit={handleSubmit}
-              className='max-w-md mx-auto mt-4 p-6 bg-white shadow-md rounded-md flex-wrap'
-            >
-              <div className='mb-4'>
-                <label
-                  htmlFor='input'
-                  className='block text-sm font-medium text-gray-700'
-                >
-                  Name:
-                </label>
-                <input
-                  type='text'
-                  id='input'
-                  name='name'
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                  placeholder='Enter Bank Name Here'
-                  min='1'
-                />
-              </div>
-
-              <div className='mb-4'>
-                <label
-                  htmlFor='input'
-                  className='block text-sm font-medium text-gray-700'
-                >
-                  Branch:
-                </label>
-                <input
-                  type='text'
-                  id='input'
-                  name='branch'
-                  value={formData.branch}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                  placeholder='Enter Branch Here'
-                  min='1'
-                />
-              </div>
-
-              <div className='mb-4'>
-                <label
-                  htmlFor='input'
-                  className='block text-sm font-medium text-gray-700'
-                >
-                  IFSC Code
-                </label>
-                <input
-                  type='text'
-                  id='input'
-                  name='ifsc'
-                  value={formData.ifsc}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                  placeholder='Enter IFSC code Here'
-                  min='1'
-                />
-              </div>
-
-              <div>
-                <button
-                  type='submit'
-                  className='w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-                >
-                  Add Bank
-                </button>
-              </div>
-            </form>
           </div>
         </div>
-      </div>
+      </section>
 
       {showViewModal ? (
         <>

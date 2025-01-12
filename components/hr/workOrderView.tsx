@@ -41,30 +41,39 @@ const WorkOrderView = () => {
 
   return (
     <>
-      <div className='w-full flex flex-col'>
-        <h2 className='flex justify-center text-2xl'>List of Work Orders</h2>
-        {workOrders?.map((ele: any) => (
-          <div
-            key={ele._id}
-            className='p-2 flex rounded-sm cursor-pointer border-b hover:bg-gray-200 items-center justify-between'
-          >
-            <span className='flex-grow'>{ele.workOrderNumber}</span>
-            <div className='flex space-x-2'>
-              <button
-                onClick={() => handleView(ele)}
-                className='bg-blue-500 text-white p-2 rounded-sm'
-              >
-                View
-              </button>
-              <button
-                onClick={() => handleDelete(ele._id)}
-                className='bg-red-500 text-white p-2 rounded-sm'
-              >
-                Delete
-              </button>
+      <div className='w-full flex flex-col gap-1 border-[1px] border-gray-300 rounded p-2 justify-start items-center lg:min-h-[calc(100vh-2rem)]'>
+        <div className='flex justify-between items-center w-full px-3'>
+          <h2 className='flex justify-center text-xl'>List of Work Orders</h2>
+          {
+            <p className='text-gray-400'>
+              {workOrders ? <>({workOrders?.length} workorders)</> : ''}
+            </p>
+          }
+        </div>
+        <div className=' w-full p-1 rounded-sm'>
+          {workOrders?.map((ele: any) => (
+            <div
+              key={ele._id}
+              className='p-2 flex rounded-sm  border-b hover:bg-gray-200 items-center justify-between'
+            >
+              <span className='flex-grow'>{ele.workOrderNumber}</span>
+              <div className='flex space-x-2'>
+                <button
+                  onClick={() => handleView(ele)}
+                  className='text-blue-500 bg-white px-2 py-1 rounded-sm'
+                >
+                  View
+                </button>
+                <button
+                  onClick={() => handleDelete(ele._id)}
+                  className='text-red-500 bg-white px-2 py-1 rounded-sm'
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
       {showModal && selectedWorkOrder && (
         <>
@@ -83,58 +92,121 @@ const WorkOrderView = () => {
                     <label className='block text-sm font-medium text-gray-700'>
                       Work Order Number:
                     </label>
-                    <span className='text-md font-semibold'>
-                      {selectedWorkOrder.workOrderNumber}
-                    </span>
+                    {selectedWorkOrder?.workOrderNumber ? (
+                      <span className='text-md font-semibold'>
+                        {selectedWorkOrder?.workOrderNumber}
+                      </span>
+                    ) : (
+                      <span className='text-md text-red-400'>
+                        Did not found any value. Try by saving this workorder
+                        again
+                      </span>
+                    )}
                   </div>
                   <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2 '>
                     <label className='block text-sm font-medium text-gray-700 '>
                       Department:
                     </label>
-                    <span className='text-md font-semibold'>
-                      {selectedWorkOrder.dept}
-                    </span>
+                    {selectedWorkOrder?.dept ? (
+                      <span className='text-md font-semibold'>
+                        {selectedWorkOrder?.dept}
+                      </span>
+                    ) : (
+                      <span className='text-md text-red-400'>
+                        Did not found any value. Try by saving this workorder
+                        again
+                      </span>
+                    )}
                   </div>
                   <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Job Description:
                     </label>
-                    <span className='text-md font-semibold'>
-                      {selectedWorkOrder.jobDesc} hdgfhejwdn ihdc wdi j
-                      ;cwkp;dow wpc wpo cwdkp
-                    </span>
+                    {selectedWorkOrder?.jobDesc ? (
+                      <span className='text-md font-semibold'>
+                        {selectedWorkOrder?.jobDesc}
+                      </span>
+                    ) : (
+                      <span className='text-md text-red-400'>
+                        Did not found any value. Try by saving this workorder
+                        again
+                      </span>
+                    )}
                   </div>
                   <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Other Description:
                     </label>
-                    <span className='text-md font-semibold'>
-                      {selectedWorkOrder.otherDesc}
-                    </span>
+                    {selectedWorkOrder?.orderDesc ? (
+                      <span className='text-md font-semibold'>
+                        {selectedWorkOrder?.orderDesc}
+                      </span>
+                    ) : (
+                      <span className='text-md text-red-400'>
+                        Did not found any value. Try by saving this workorder
+                        again
+                      </span>
+                    )}
                   </div>
                   <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Section:
                     </label>
-                    <span className='text-md font-semibold'>
-                      {selectedWorkOrder.section}
-                    </span>
+                    {selectedWorkOrder?.section ? (
+                      <span className='text-md font-semibold'>
+                        {selectedWorkOrder?.section}
+                      </span>
+                    ) : (
+                      <span className='text-md text-red-400'>
+                        Did not found any value. Try by saving this workorder
+                        again
+                      </span>
+                    )}
                   </div>
                   <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Valid From:
                     </label>
-                    <span className='text-md font-semibold'>
-                      {selectedWorkOrder.validFrom}
-                    </span>
+                    {selectedWorkOrder?.validFrom ? (
+                      <span className='text-md font-semibold'>
+                        {selectedWorkOrder?.validFrom}
+                      </span>
+                    ) : (
+                      <span className='text-md text-red-400'>
+                        Did not found any value. Try by saving this workorder
+                        again
+                      </span>
+                    )}
                   </div>
                   <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Valid Till:
                     </label>
-                    <span className='text-md font-semibold'>
-                      {selectedWorkOrder.validTo}
-                    </span>
+                    {selectedWorkOrder?.validTo ? (
+                      <span className='text-md font-semibold'>
+                        {selectedWorkOrder?.validTo}
+                      </span>
+                    ) : (
+                      <span className='text-md text-red-400'>
+                        Did not found any value. Try by saving this workorder
+                        again
+                      </span>
+                    )}
+                  </div>
+                  <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
+                    <label className='block text-sm font-medium text-gray-700'>
+                      Lapse Till:
+                    </label>
+                    {selectedWorkOrder?.lapseTill ? (
+                      <span className='text-md font-semibold'>
+                        {selectedWorkOrder?.lapseTill}
+                      </span>
+                    ) : (
+                      <span className='text-md text-red-400'>
+                        Did not found any value. Try by saving this workorder
+                        again
+                      </span>
+                    )}
                   </div>
                   {/* Add more details as necessary */}
                 </div>

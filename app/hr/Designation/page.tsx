@@ -102,232 +102,248 @@ const Page = () => {
   };
   return (
     <>
-      <div>
+      <section className='flex flex-col h-screen'>
         <h1 className='font-bold text-blue-500 border-b-2 border-blue-500 text-center py-2 mb-4'>
           Designation
         </h1>
-        <div className='flex flex-col lg:flex-row'>
-          <div className='flex-1 items-center justify-center'>
-            <div className='flex w-full items-center justify-center'>
-              <p>List of Designations</p>
+        <div className='flex-1 overflow-y-auto p-4'>
+          <div className='flex flex-col lg:flex-row lg:gap-6'>
+            <div className='flex-1'>
+              <div className='w-full flex flex-col gap-1 border-[1px] border-gray-300 rounded p-2 justify-start items-center lg:min-h-[calc(100vh-2rem)]'>
+                <div className='flex justify-between items-center w-full px-3'>
+                  <h2 className='flex justify-center text-xl'>
+                    List of Designations
+                  </h2>
+                  {
+                    <p className='text-gray-400'>
+                      ({data ? <>{data?.length} designations</> : ''})
+                    </p>
+                  }
+                </div>
+                <div className='flex flex-col w-full'>
+                  {data?.map((ele) => {
+                    return (
+                      <div
+                        key={ele._id}
+                        className='p-2 flex justify-between items-center rounded-sm border-b hover:bg-gray-200'
+                      >
+                        <span>{ele.designation}</span>
+                        <div className='flex w-fit justify-center items-center gap-2'>
+                          <button
+                            className='px-2 py-1 bg-white rounded-sm text-blue-500'
+                            onClick={() => {
+                              setShowViewModal(true);
+                              setEditFormName(ele.designation);
+                              editFormData.basic = ele.basic;
+                              editFormData.designation = ele.designation;
+                              editFormData.OldBasic = ele.OldBasic;
+                              editFormData.DA = ele.DA;
+                              editFormData.OldDA = ele.OldDA;
+                              editFormData.PayRate = ele.PayRate;
+                              editFormData.Basic2 = ele.Basic2;
+                            }}
+                          >
+                            View
+                          </button>
+                          <button
+                            className='px-2 py-1 bg-white rounded-sm text-orange-500'
+                            onClick={() => {
+                              setShowModal(true);
+                              setEditFormName(ele.designation);
+                              setEditFormEleId(ele._id);
+                              editFormData.basic = ele.basic;
+                              editFormData.designation = ele.designation;
+                              editFormData.OldBasic = ele.OldBasic;
+                              editFormData.DA = ele.DA;
+                              editFormData.OldDA = ele.OldDA;
+                              editFormData.PayRate = ele.PayRate;
+                              editFormData.Basic2 = ele.Basic2;
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className='px-2 py-1 bg-white rounded-sm text-red-500'
+                            onClick={async () => {
+                              const resp =
+                                await designationAction.DELETE.deleteDesignation(
+                                  ele._id
+                                );
+                              if (resp.status === 200) {
+                                toast.success('Deleted,Reload to view Changes');
+                              } else {
+                                toast.error('An Error Occurred');
+                              }
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>{' '}
             </div>
-            <div className='flex flex-col w-full'>
-              {data?.map((ele) => {
-                return (
-                  <div
-                    key={ele._id}
-                    className='p-2 flex justify-between rounded-sm cursor-pointer border-b hover:bg-gray-200'
+
+            <div className='lg:w-1/3'>
+              <div className='lg:sticky lg:top-0'>
+                <div className='w-full flex-col justify-center p-4 gap-2 border-[1px] border-gray-300 rounded'>
+                  <h2 className='flex justify-center items-center text-xl'>
+                    Add Designation
+                  </h2>
+                  <form
+                    onSubmit={handleSubmit}
+                    className='bg-white rounded-md flex-wrap'
                   >
-                    {ele.designation}
-                    <div className='flex'>
-                      <button
-                        className='mr-16 text-green-500'
-                        onClick={() => {
-                          setShowViewModal(true);
-                          setEditFormName(ele.designation);
-                          editFormData.basic = ele.basic;
-                          editFormData.designation = ele.designation;
-                          editFormData.OldBasic = ele.OldBasic;
-                          editFormData.DA = ele.DA;
-                          editFormData.OldDA = ele.OldDA;
-                          editFormData.PayRate = ele.PayRate;
-                          editFormData.Basic2 = ele.Basic2;
-                        }}
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
                       >
-                        View
-                      </button>
-                      <button
-                        className='mr-16 text-blue-500'
-                        onClick={() => {
-                          setShowModal(true);
-                          setEditFormName(ele.designation);
-                          setEditFormEleId(ele._id);
-                          editFormData.basic = ele.basic;
-                          editFormData.designation = ele.designation;
-                          editFormData.OldBasic = ele.OldBasic;
-                          editFormData.DA = ele.DA;
-                          editFormData.OldDA = ele.OldDA;
-                          editFormData.PayRate = ele.PayRate;
-                          editFormData.Basic2 = ele.Basic2;
-                        }}
+                        Designation:
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        name='designation'
+                        value={formData.designation}
+                        onChange={handleInputChange}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Designation Here'
+                        min='1'
+                      />
+                    </div>
+
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
                       >
-                        Edit
-                      </button>
-                      <button
-                        className='mr-16 text-red-500'
-                        onClick={async () => {
-                          const resp =
-                            await designationAction.DELETE.deleteDesignation(
-                              ele._id
-                            );
-                          if (resp.status === 200) {
-                            toast.success('Deleted,Reload to view Changes');
-                          } else {
-                            toast.error('An Error Occurred');
-                          }
-                        }}
+                        Basic:
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        name='basic'
+                        value={formData.basic}
+                        onChange={handleInputChange}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Basic Here'
+                        min='1'
+                      />
+                    </div>
+
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
                       >
-                        Delete
+                        Old Basic
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        name='OldBasic'
+                        value={formData.OldBasic}
+                        onChange={handleInputChange}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Old Basic Here'
+                        min='1'
+                      />
+                    </div>
+
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        DA:
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        name='DA'
+                        value={formData.DA}
+                        onChange={handleInputChange}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter DA Here'
+                        min='1'
+                      />
+                    </div>
+
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        Old DA:
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        name='OldDA'
+                        value={formData.OldDA}
+                        onChange={handleInputChange}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Old DA Here'
+                        min='1'
+                      />
+                    </div>
+
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        Pay Rate:
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        name='PayRate'
+                        value={formData.PayRate}
+                        onChange={handleInputChange}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter DA Here'
+                        min='1'
+                      />
+                    </div>
+
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        Basic2:
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        name='Basic2'
+                        value={formData.Basic2}
+                        onChange={handleInputChange}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Branch Here'
+                        min='1'
+                      />
+                    </div>
+
+                    <div>
+                      <button
+                        type='submit'
+                        className='w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                      >
+                        Save Designation
                       </button>
                     </div>
-                  </div>
-                );
-              })}
+                  </form>
+                </div>{' '}
+              </div>
             </div>
-          </div>
-          <div className='flex-1'>
-            <div className='flex w-full items-center justify-center mt-10 lg:mt-0'>
-              Form For Designation
-            </div>
-            <form
-              onSubmit={handleSubmit}
-              className='max-w-md mx-auto mt-4 p-6 bg-white shadow-md rounded-md flex-wrap'
-            >
-              <div className='mb-4'>
-                <label
-                  htmlFor='input'
-                  className='block text-sm font-medium text-gray-700'
-                >
-                  Designation:
-                </label>
-                <input
-                  type='text'
-                  id='input'
-                  name='designation'
-                  value={formData.designation}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                  placeholder='Enter Designation Here'
-                  min='1'
-                />
-              </div>
-
-              <div className='mb-4'>
-                <label
-                  htmlFor='input'
-                  className='block text-sm font-medium text-gray-700'
-                >
-                  Basic:
-                </label>
-                <input
-                  type='text'
-                  id='input'
-                  name='basic'
-                  value={formData.basic}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                  placeholder='Enter Basic Here'
-                  min='1'
-                />
-              </div>
-
-              <div className='mb-4'>
-                <label
-                  htmlFor='input'
-                  className='block text-sm font-medium text-gray-700'
-                >
-                  Old Basic
-                </label>
-                <input
-                  type='text'
-                  id='input'
-                  name='OldBasic'
-                  value={formData.OldBasic}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                  placeholder='Enter Old Basic Here'
-                  min='1'
-                />
-              </div>
-
-              <div className='mb-4'>
-                <label
-                  htmlFor='input'
-                  className='block text-sm font-medium text-gray-700'
-                >
-                  DA:
-                </label>
-                <input
-                  type='text'
-                  id='input'
-                  name='DA'
-                  value={formData.DA}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                  placeholder='Enter DA Here'
-                  min='1'
-                />
-              </div>
-
-              <div className='mb-4'>
-                <label
-                  htmlFor='input'
-                  className='block text-sm font-medium text-gray-700'
-                >
-                  Old DA:
-                </label>
-                <input
-                  type='text'
-                  id='input'
-                  name='OldDA'
-                  value={formData.OldDA}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                  placeholder='Enter Old DA Here'
-                  min='1'
-                />
-              </div>
-
-              <div className='mb-4'>
-                <label
-                  htmlFor='input'
-                  className='block text-sm font-medium text-gray-700'
-                >
-                  Pay Rate:
-                </label>
-                <input
-                  type='text'
-                  id='input'
-                  name='PayRate'
-                  value={formData.PayRate}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                  placeholder='Enter DA Here'
-                  min='1'
-                />
-              </div>
-
-              <div className='mb-4'>
-                <label
-                  htmlFor='input'
-                  className='block text-sm font-medium text-gray-700'
-                >
-                  Basic2:
-                </label>
-                <input
-                  type='text'
-                  id='input'
-                  name='Basic2'
-                  value={formData.Basic2}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
-                  placeholder='Enter Branch Here'
-                  min='1'
-                />
-              </div>
-
-              <div>
-                <button
-                  type='submit'
-                  className='w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-                >
-                  Add Designation
-                </button>
-              </div>
-            </form>
           </div>
         </div>
-      </div>
+      </section>
 
       {showViewModal ? (
         <>

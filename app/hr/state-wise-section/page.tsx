@@ -12,17 +12,25 @@ const Page = () => {
   };
 
   return (
-    <div>
-      <div>
-        <h1 className='font-bold text-blue-50 border-b-2 border-blue-500 text-center py-2 mb-4'>
-          State wise action
-        </h1>
-        <div className='flex flex-col lg:flex-row'>
-          <StateWiseView reload={reload} />
-          <StateWiseForm onFormSubmit={handleFormSubmit} />
+    <section className='flex flex-col h-screen'>
+      <h1 className='font-bold text-blue-500 border-b-2 border-blue-500 text-center py-2'>
+        State Wise Section
+      </h1>
+
+      <div className='flex-1 overflow-y-auto p-4'>
+        <div className='flex flex-col lg:gap-8 lg:flex-row'>
+          <div className='flex-1'>
+            <StateWiseView reload={reload} />
+          </div>
+
+          <div className='lg:w-fit'>
+            <div className='lg:sticky lg:top-4'>
+              <StateWiseForm onFormSubmit={handleFormSubmit} />
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
