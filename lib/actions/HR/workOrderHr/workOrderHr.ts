@@ -108,7 +108,7 @@ const fetchAllValidWorkOrderHr = async (): Promise<ApiResponse<any>> => {
     return {
       success: true,
       message: 'Work Orders Retrieved',
-      data: JSON.stringify(validWOs),
+      data: JSON.stringify(resp),
       status: 200,
       error: null,
     };
