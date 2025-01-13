@@ -134,19 +134,19 @@ const Page = ({
                     item.employee && item.employee.department._id === department
                 );
 
-          console.log('bbbbbbbbbb', filteredData);
+          // console.log('bbbbbbbbbb', filteredData);
 
-          console.log('aagya response', parsedData);
-          const CheckMultipleEntry = filteredData.filter(
-            (obj, index) =>
-              obj.employee &&
-              filteredData.findIndex(
-                (item) =>
-                  item.employee && item.employee.UAN === obj.employee.UAN
-              ) === index
-          );
-          console.log(CheckMultipleEntry, 'Filterd entry');
-          setAttendanceData(CheckMultipleEntry);
+          // console.log('aagya response', parsedData);
+          // const CheckMultipleEntry = filteredData.filter(
+          //   (obj, index) =>
+          //     obj.employee &&
+          //     filteredData.findIndex(
+          //       (item) =>
+          //         item.employee && item.employee.UAN === obj.employee.UAN
+          //     ) === index
+          // );
+          // console.log(CheckMultipleEntry, 'Filterd entry');
+          setAttendanceData(filteredData);
         } else {
           toast.error(response.message);
         }
