@@ -115,14 +115,14 @@ const fetchAllValidWorkOrderHr = async (): Promise<ApiResponse<any>> => {
     }
     const validWOs = [];
     const now = Date.now();
-    resp.forEach((wo) => {
-      const validTill = new Date(wo?.validTo).getTime();
+    resp?.forEach((wo) => {
+      const lapseTill = new Date(wo?.lapseTill).getTime();
       // console.log(x);
-      if (validTill >= now) {
+      if (lapseTill >= now) {
         validWOs.push(wo);
       }
     });
-    console.log('valid res', validWOs, validWOs.length);
+    // console.log('valid res', validWOs, validWOs.length);
     return {
       success: true,
       message: 'Work Orders Retrieved',
