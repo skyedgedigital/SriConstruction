@@ -1,8 +1,21 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -34,7 +47,20 @@ const Page = () => {
   const [workOrderNumber, setWorkOrderNumber] = useState<any>(null);
   const years = Array.from({ length: 2024 - 2010 + 1 }, (_, i) => 2010 + i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const monthsName = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthsName = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
 
   const thirdform = useForm<ThirdFormFields>({
     defaultValues: {
@@ -83,8 +109,7 @@ const Page = () => {
       const action = event.nativeEvent.submitter.value;
       if (action == 'BS')
         window.open(`/hr/bonus-statement?${queryString}`, '_blank');
-      else 
-        window.open(`/hr/leave-statement?${queryString}`, '_blank');
+      else window.open(`/hr/leave-statement?${queryString}`, '_blank');
     } catch (error) {
       toast.error('Internal Server Error');
       console.error('Internal Server Error:', error);
@@ -108,7 +133,8 @@ const Page = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      const workOrderResp = await WorkOrderHrAction.FETCH.fetchAllWorkOrderHr();
+      const workOrderResp =
+        await WorkOrderHrAction.FETCH.fetchAllValidWorkOrderHr();
       if (workOrderResp.success) {
         setAllWorkOrderNumbers(JSON.parse(workOrderResp.data));
       } else {

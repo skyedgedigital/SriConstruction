@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 
-interface IWorkOrderHr {
+export interface IWorkOrderHr {
   workOrderNumber: string;
   date: string;
   jobDesc: string;

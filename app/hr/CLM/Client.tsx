@@ -132,7 +132,8 @@ const Client = () => {
       // const { data, success, error } =
       //   await workOrderAction.FETCH.fetchAllWorkOrder();
 
-      const workOrderResp = await WorkOrderHrAction.FETCH.fetchAllWorkOrderHr();
+      const workOrderResp =
+        await WorkOrderHrAction.FETCH.fetchAllValidWorkOrderHr();
       const success = workOrderResp.success;
       // const error = workOrderResp.error
       // const data = JSON.parse(workOrderResp.data)
@@ -443,7 +444,7 @@ const Client = () => {
                   ? wo.workOrderAtten
                   : ''
               );
-
+            // how is this being done, I have to check if something goes wrong
             const attendanceDefault =
               parsed.workOrder === 'Default' && existingAttendance
                 ? existingAttendance.days.reduce((acc, day) => {

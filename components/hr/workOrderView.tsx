@@ -1,4 +1,5 @@
 import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
+import { IWorkOrderHr } from '@/lib/models/HR/workOrderHr.model';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -39,6 +40,17 @@ const WorkOrderView = () => {
     setShowModal(true);
   };
 
+  const isWorkOrderInLapse = (wo: IWorkOrderHr): Boolean => {
+    const validTill = new Date(wo?.validTo).getTime();
+    const lapseTill = new Date(wo?.lapseTill).getTime();
+    const now = Date.now();
+    return validTill <= now && now <= lapseTill;
+  };
+  const isWorkOrderExpired = (wo: IWorkOrderHr): Boolean => {
+    const lapseTill = new Date(wo?.lapseTill).getTime();
+    const now = Date.now();
+    return lapseTill <= now;
+  };
   return (
     <>
       <div className='w-full flex flex-col gap-1 border-[1px] border-gray-300 rounded p-2 justify-start items-center lg:min-h-[calc(100vh-2rem)]'>
@@ -56,7 +68,24 @@ const WorkOrderView = () => {
               key={ele._id}
               className='p-2 flex rounded-sm  border-b hover:bg-gray-200 items-center justify-between'
             >
-              <span className='flex-grow'>{ele.workOrderNumber}</span>
+              <div className='flex-grow flex justify-start items-center gap-3'>
+                <span>{ele.workOrderNumber}</span>
+                {isWorkOrderInLapse(ele) ? (
+                  <span
+                    className={` text-white bg-orange-500 text-xs rounded-full px-2 py-1`}
+                  >
+                    In Lapse
+                  </span>
+                ) : isWorkOrderExpired(ele) ? (
+                  <span
+                    className={` text-white bg-red-500 text-xs rounded-full px-2 py-1`}
+                  >
+                    Expired
+                  </span>
+                ) : (
+                  ''
+                )}
+              </div>
               <div className='flex space-x-2'>
                 <button
                   onClick={() => handleView(ele)}
@@ -91,17 +120,34 @@ const WorkOrderView = () => {
                   <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Work Order Number:
-                    </label>
-                    {selectedWorkOrder?.workOrderNumber ? (
-                      <span className='text-md font-semibold'>
-                        {selectedWorkOrder?.workOrderNumber}
-                      </span>
-                    ) : (
-                      <span className='text-md text-red-400'>
-                        Did not found any value. Try by saving this workorder
-                        again
-                      </span>
-                    )}
+                    </label>{' '}
+                    <div className='flex justify-start items-center gap-3'>
+                      {selectedWorkOrder?.workOrderNumber ? (
+                        <span className='text-md font-semibold'>
+                          {selectedWorkOrder?.workOrderNumber}
+                        </span>
+                      ) : (
+                        <span className='text-md text-red-400'>
+                          Did not found any value. Try by saving this workorder
+                          again
+                        </span>
+                      )}
+                      {isWorkOrderInLapse(selectedWorkOrder) ? (
+                        <span
+                          className={` text-white bg-orange-500 text-xs rounded-full px-2 py-1`}
+                        >
+                          In Lapse
+                        </span>
+                      ) : isWorkOrderExpired(selectedWorkOrder) ? (
+                        <span
+                          className={` text-white bg-red-500 text-xs rounded-full px-2 py-1`}
+                        >
+                          Expired
+                        </span>
+                      ) : (
+                        ''
+                      )}
+                    </div>
                   </div>
                   <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2 '>
                     <label className='block text-sm font-medium text-gray-700 '>

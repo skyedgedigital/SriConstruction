@@ -122,7 +122,8 @@ const Arrear = () => {
       // const { data, success, error } =
       //   await workOrderAction.FETCH.fetchAllWorkOrder();
 
-      const workOrderResp = await WorkOrderHrAction.FETCH.fetchAllWorkOrderHr();
+      const workOrderResp =
+        await WorkOrderHrAction.FETCH.fetchAllValidWorkOrderHr();
       const success = workOrderResp.success;
       // const error = workOrderResp.error
       // const data = JSON.parse(workOrderResp.data)
@@ -305,9 +306,9 @@ const Arrear = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className='max-w-80 max-h-72'>
-                      <SelectItem value='Default' key='Default'>
+                      {/* <SelectItem value="Default" key="Default">
                         Default
-                      </SelectItem>
+                      </SelectItem> */}
 
                       {allWorkOrderNumbers?.map((option, index) => (
                         <SelectItem value={option._id.toString()} key={option}>
@@ -428,42 +429,49 @@ const Arrear = () => {
               Arrear Pay Slip
             </Button>
           </div>
-          <Table className='mt-4'>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Employee Name</TableHead>
-                <TableHead>Emp. Code</TableHead>
-                <TableHead>Designation</TableHead>
-                <TableHead>Current Wage</TableHead>
-                <TableHead>Last Wage</TableHead>
-                <TableHead>Difference</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {wagesData.map((employee, index) => {
-                const LastWage =
-                  employee.employee?.designation_details[0]?.OldBasic;
-                // const currentWage =
-                //   employee.employee?.designation_details[0]?.basic;
-                // const updatedWage = getUpdatedWage(
-                //   employee.employee?._id,
-                //   currentWage
-                // );
-                // const wageDifference = (updatedWage - currentWage).toFixed(2);
-                const UpdatedWage =
-                  employee.employee?.designation_details[0]?.basic;
-                const wageDifference = (UpdatedWage - LastWage).toFixed(2);
+          {wagesData.length === 0 ? (
+            <div className='mt-10 flex items-center justify-center'>
+              <span className='text-slate-800/55 text-3xl'>
+                Employee Data not available
+              </span>
+            </div>
+          ) : (
+            <Table className='mt-4'>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Employee Name</TableHead>
+                  <TableHead>Emp. Code</TableHead>
+                  <TableHead>Designation</TableHead>
+                  <TableHead>Current Wage</TableHead>
+                  <TableHead>Last Wage</TableHead>
+                  <TableHead>Difference</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {wagesData.map((employee, index) => {
+                  const LastWage =
+                    employee.employee?.designation_details[0]?.OldBasic;
+                  // const currentWage =
+                  //   employee.employee?.designation_details[0]?.basic;
+                  // const updatedWage = getUpdatedWage(
+                  //   employee.employee?._id,
+                  //   currentWage
+                  // );
+                  // const wageDifference = (updatedWage - currentWage).toFixed(2);
+                  const UpdatedWage =
+                    employee.employee?.designation_details[0]?.basic;
+                  const wageDifference = (UpdatedWage - LastWage).toFixed(2);
 
-                return (
-                  <TableRow key={index}>
-                    <TableCell>{employee.employee?.name}</TableCell>
-                    <TableCell>{employee.employee?.code}</TableCell>
-                    <TableCell>
-                      {employee.employee?.designation_details[0]?.designation}
-                    </TableCell>
-                    <TableCell>{UpdatedWage}</TableCell>
-                    <TableCell>
-                      {/* <Input
+                  return (
+                    <TableRow key={index}>
+                      <TableCell>{employee.employee?.name}</TableCell>
+                      <TableCell>{employee.employee?.code}</TableCell>
+                      <TableCell>
+                        {employee.employee?.designation_details[0]?.designation}
+                      </TableCell>
+                      <TableCell>{UpdatedWage}</TableCell>
+                      <TableCell>
+                        {/* <Input
                         type="number"
                         value={getUpdatedWage(
                           employee.employee._id,
@@ -478,14 +486,15 @@ const Arrear = () => {
                         className="w-20 p-1 rounded-sm text-black/95 border border-black"
                         placeholder="New Wage"
                       /> */}
-                      {LastWage}
-                    </TableCell>
-                    <TableCell>{wageDifference}</TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                        {LastWage}
+                      </TableCell>
+                      <TableCell>{wageDifference}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
         </div>
       )}
     </div>

@@ -40,7 +40,8 @@ const Page = () => {
       // const { data, success, error } =
       //   await workOrderAction.FETCH.fetchAllWorkOrder();
 
-      const workOrderResp = await WorkOrderHrAction.FETCH.fetchAllWorkOrderHr();
+      const workOrderResp =
+        await WorkOrderHrAction.FETCH.fetchAllValidWorkOrderHr();
       const success = workOrderResp.success;
       // const error = workOrderResp.error
       // const data = JSON.parse(workOrderResp.data)
