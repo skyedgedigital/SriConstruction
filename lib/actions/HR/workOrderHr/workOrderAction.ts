@@ -6,6 +6,7 @@ import {
   fetchAllWorkOrderHr,
   fetchSingleWorkOrderHr,
   getTotalWorkOrder,
+  updateWorkOrderHr,
 } from './workOrderHr';
 
 const WorkOrderHrAction = {
@@ -21,6 +22,9 @@ const WorkOrderHrAction = {
   },
   DELETE: {
     deleteWorkOrderHr: deleteWorkOrderHr,
+  },
+  UPDATE: {
+    updateWorkOrderHr,
   },
 };
 

@@ -6,7 +6,17 @@ import toast from 'react-hot-toast';
 const WorkOrderView = () => {
   const [workOrders, setWorkOrders] = useState<any>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
+
+  const [editedWorkOrderNumber, setEditedWorkOrderNumber] = useState('');
+  const [editedDate, setEditedDate] = useState('');
+  const [editedJobDesc, setEditedJobDesc] = useState('');
+  const [editedOrderDesc, setEditedOrderDesc] = useState('');
+  const [editedDept, setEditedDept] = useState('');
+  const [editedSection, setEditedSection] = useState('');
+  const [editedValidFrom, setEditedValidFrom] = useState('');
+  const [editedValidTo, setEditedValidTo] = useState('');
 
   useEffect(() => {
     const fn = async () => {
@@ -38,6 +48,51 @@ const WorkOrderView = () => {
   const handleView = (workOrder: any) => {
     setSelectedWorkOrder(workOrder);
     setShowModal(true);
+  };
+  const handleEditModal = (workOrder: any) => {
+    setShowEditModal(true);
+    setSelectedWorkOrder(workOrder);
+    setEditedWorkOrderNumber(workOrder?.workOrderNumber);
+    setEditedDate(workOrder?.date);
+    setEditedJobDesc(workOrder?.jobDesc);
+    setEditedOrderDesc(workOrder?.orderDesc);
+    setEditedDept(workOrder?.dept);
+    setEditedSection(workOrder?.section);
+    setEditedValidFrom(workOrder?.validFrom);
+    setEditedValidTo(workOrder?.validTo);
+  };
+
+  const handleOnSubmitChanges = async (e) => {
+    e.preventDefault();
+    const obj = {
+      date: editedDate,
+      jobDesc: editedJobDesc,
+      orderDesc: editedOrderDesc,
+      section: editedSection,
+      validFrom: editedValidFrom,
+      validTo: editedValidTo,
+      dept: editedDept,
+      workOrderNumber: editedWorkOrderNumber,
+    };
+
+    try {
+      const { message, data, error, status, success } =
+        await WorkOrderHrAction.UPDATE.updateWorkOrderHr(
+          selectedWorkOrder?._id,
+          JSON.stringify(obj)
+        );
+
+      if (success) {
+        toast.success(message);
+      }
+      if (!success) {
+        toast.error(message);
+      }
+    } catch (error) {
+      toast.error(
+        error || 'Unexpected error occurred, Failed to update workorder'
+      );
+    }
   };
 
   const isWorkOrderInLapse = (wo: IWorkOrderHr): Boolean => {
@@ -92,6 +147,12 @@ const WorkOrderView = () => {
                   className='text-blue-500 bg-white px-2 py-1 rounded-sm'
                 >
                   View
+                </button>{' '}
+                <button
+                  className='px-2 py-1 bg-white rounded-sm text-orange-500'
+                  onClick={() => handleEditModal(ele)}
+                >
+                  Edit
                 </button>
                 <button
                   onClick={() => handleDelete(ele._id)}
@@ -268,6 +329,203 @@ const WorkOrderView = () => {
               </div>
             </div>
           </div>
+          <div className='opacity-25 fixed inset-0 z-40 bg-black'></div>
+        </>
+      )}
+      {showEditModal && (
+        <>
+          <div className=' justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none'>
+            <div className='relative w-full lg:w-2/3 my-6 p-4'>
+              <div className=' rounded-lg shadow-lg relative flex flex-col gap-5 w-full bg-white outline-none focus:outline-none px-6'>
+                <div className='flex items-start justify-between p-3 border-b border-solid border-blueGray-200 rounded-t'>
+                  <h3 className='text-2xl font-semibold'>
+                    Edit Work Order Details
+                  </h3>
+                  <button
+                    className='p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none'
+                    onClick={() => setShowEditModal(false)}
+                  ></button>
+                </div>
+                <form
+                  onSubmit={handleOnSubmitChanges}
+                  className=' bg-white  rounded-md flex-wrap w-full'
+                >
+                  {' '}
+                  <div className='grid grid-cols-2  gap-4 lg:flex-row w-full'>
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        Work Order Number
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        value={editedWorkOrderNumber}
+                        onChange={(e) => {
+                          setEditedWorkOrderNumber(e.target.value);
+                        }}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Work Order Number'
+                        min='1'
+                      />
+                    </div>
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        Date
+                      </label>
+                      <input
+                        type='date'
+                        id='input'
+                        value={editedDate}
+                        onChange={(e) => {
+                          setEditedDate(e.target.value);
+                        }}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Work Order Number'
+                        min='1'
+                      />
+                    </div>
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        Job Description
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        value={editedJobDesc}
+                        onChange={(e) => {
+                          setEditedJobDesc(e.target.value);
+                        }}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Job Desc'
+                        min='1'
+                      />
+                    </div>
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        Order Description
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        value={editedOrderDesc}
+                        onChange={(e) => {
+                          setEditedOrderDesc(e.target.value);
+                        }}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Work Order Number'
+                        min='1'
+                      />
+                    </div>
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        Department
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        value={editedDept}
+                        onChange={(e) => {
+                          setEditedDept(e.target.value);
+                        }}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Department'
+                        min='1'
+                      />
+                    </div>
+                    <div className='mb-4'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        Section
+                      </label>
+                      <input
+                        type='text'
+                        id='input'
+                        value={editedSection}
+                        onChange={(e) => {
+                          setEditedSection(e.target.value);
+                        }}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Section'
+                        min='1'
+                      />
+                    </div>
+                    <div className='mb-4 flex-grow'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        Valid From
+                      </label>
+                      <input
+                        type='date'
+                        id='input'
+                        value={editedValidFrom}
+                        onChange={(e) => {
+                          setEditedValidFrom(e.target.value);
+                        }}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Work Order Number'
+                        min='1'
+                      />
+                    </div>
+                    <div className='mb-4 flex-grow'>
+                      <label
+                        htmlFor='input'
+                        className='block text-sm font-medium text-gray-700'
+                      >
+                        Valid Till
+                      </label>
+                      <input
+                        type='date'
+                        id='input'
+                        value={editedValidTo}
+                        onChange={(e) => {
+                          setEditedValidTo(e.target.value);
+                        }}
+                        className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+                        placeholder='Enter Work Order Number'
+                        min='1'
+                      />
+                    </div>
+                  </div>
+                  <div className='w-full flex justify-center items-center'>
+                    <button
+                      type='submit'
+                      className='w-1/3 mx-auto inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </form>
+                <div className='flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b'>
+                  <button
+                    className='text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150'
+                    type='button'
+                    onClick={() => setShowEditModal(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>{' '}
           <div className='opacity-25 fixed inset-0 z-40 bg-black'></div>
         </>
       )}
