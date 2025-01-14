@@ -200,7 +200,7 @@ const Page = ({
             ? Math.round(0.12 * calculateTotal(employee))
             : calculateTotal(employee) > 15000
             ? Math.round(0.12 * calculateTotal(employee) - 1250)
-            : Math.round(0.0367 * employee?.total),
+            : Math.round(0.0367 * calculateTotal(employee)),
         'NCP Days': calculateAbsentDays(employee) || 0,
       };
     });
@@ -263,7 +263,7 @@ const Page = ({
             ? Math.round(0.12 * calculateTotal(employee))
             : calculateTotal(employee) > 15000
             ? Math.round(0.12 * calculateTotal(employee) - 1250)
-            : Math.round(0.0367 * employee?.total),
+            : Math.round(0.0367 * calculateTotal(employee)),
         'NCP Days': calculateAbsentDays(employee) || 0,
         _: 0,
       };
