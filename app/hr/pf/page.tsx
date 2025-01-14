@@ -166,7 +166,7 @@ const Page = ({
     });
     return absentCount;
   };
-  const exportToExcelHandler = async () => {
+  const exportToTXTHandler = async () => {
     console.log('first');
     // const excelReportTitle = `PF Report for year: ${searchParams.year} month: ${searchParams.month} department: ${searchParams.dept}`;
     // const rowsForTitle = [[excelReportTitle], []];
@@ -229,6 +229,61 @@ const Page = ({
     toast.success('File generated and download initiated.');
   };
 
+  const exportToExcelHandler = async () => {
+    console.log('first');
+    const excelReportTitle = `PF Report for year: ${searchParams.year} month: ${searchParams.month} department: ${searchParams.dept}`;
+    const rowsForTitle = [[excelReportTitle], []];
+    const worksheetData = attendanceData.map((employee: any, idx) => {
+      return {
+        UAN: employee?.employee?.UAN || '',
+        'Employee Name': employee?.employee?.name || '',
+        'EPF Wages 1': Math.round(calculateTotal(employee)),
+        'EPF Wages 2': Math.round(
+          calculateTotal(employee) >= 15000 ? 15000 : calculateTotal(employee)
+        ),
+        'EPS Wages':
+          calculateAge(employee?.employee?.dob) > 60
+            ? Math.round(0)
+            : calculateTotal(employee) >= 15000
+            ? 15000
+            : Math.round(calculateTotal(employee)),
+        'EDLI Wages':
+          calculateTotal(employee) >= 15000
+            ? Math.round(15000)
+            : Math.round(calculateTotal(employee)),
+        PF: Math.round(calculateTotal(employee) * 0.12),
+        'EPF Amount':
+          calculateAge(employee?.employee?.dob) > 60
+            ? Math.round(0)
+            : calculateTotal(employee) > 15000
+            ? Math.round(1250)
+            : Math.round(0.0833 * employee?.total),
+        'PPF Amount':
+          calculateAge(employee?.employee?.dob) > 60
+            ? Math.round(0.12 * calculateTotal(employee))
+            : calculateTotal(employee) > 15000
+            ? Math.round(0.12 * calculateTotal(employee) - 1250)
+            : Math.round(0.0367 * employee?.total),
+        'NCP Days': calculateAbsentDays(employee) || 0,
+        _: 0,
+      };
+    });
+
+    const combinedExcelRows = rowsForTitle.concat(
+      XLSX.utils.sheet_to_json(XLSX.utils.json_to_sheet(worksheetData), {
+        header: 1,
+      })
+    );
+    const worksheet = XLSX.utils.aoa_to_sheet(combinedExcelRows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Fuel Report');
+    XLSX.writeFile(
+      workbook,
+      `PF_${searchParams.month || ''}_${searchParams.year || ''}.xlsx`
+    );
+    toast.success('Export Completed');
+  };
+
   function calculateTotal(employee) {
     const total = employee?.total || 0;
     const allowances = employee?.allowances || 0;
@@ -250,12 +305,18 @@ const Page = ({
       </div>
 
       {attendanceData?.length > 0 && (
-        <div>
+        <div className='flex w-full justify-between'>
           <Button
-            className='mt-4 mb-4 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 mr-auto'
-            onClick={exportToExcelHandler}
+            className='mt-4 mb-4 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700'
+            onClick={exportToTXTHandler}
           >
             Export to .txt(#~#)
+          </Button>
+          <Button
+            className='mt-4 mb-4 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700'
+            onClick={exportToExcelHandler}
+          >
+            Export to Excel
           </Button>
         </div>
       )}
