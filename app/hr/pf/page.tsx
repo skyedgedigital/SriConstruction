@@ -194,7 +194,7 @@ const Page = ({
             ? Math.round(0)
             : calculateTotal(employee) > 15000
             ? Math.round(1250)
-            : Math.round(0.0833 * employee?.total),
+            : Math.round(0.0833 * calculateTotal(employee)),
         'PPF Amount':
           calculateAge(employee?.employee?.dob) > 60
             ? Math.round(0.12 * calculateTotal(employee))
@@ -257,7 +257,7 @@ const Page = ({
             ? Math.round(0)
             : calculateTotal(employee) > 15000
             ? Math.round(1250)
-            : Math.round(0.0833 * employee?.total),
+            : Math.round(0.0833 * calculateTotal(employee)),
         'PPF Amount':
           calculateAge(employee?.employee?.dob) > 60
             ? Math.round(0.12 * calculateTotal(employee))
