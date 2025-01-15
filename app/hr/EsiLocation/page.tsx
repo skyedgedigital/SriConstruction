@@ -2,6 +2,17 @@
 import EsiLocationAction from '@/lib/actions/HR/EsiLocation/EsiLocationAction';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 
 const Page = () => {
   const [data, setData] = useState<any>(null);
@@ -17,14 +28,21 @@ const Page = () => {
   const [EditEsiNo, setEditEsiNo] = useState<string>('');
   const [editBranch, setEditBranch] = useState<string>('');
   const [showViewModal, setShowViewModal] = useState<boolean>(false);
-  useEffect(() => {
-    const fn = async () => {
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+
+  const fetchESICLocation = async () => {
+    try {
       const resp = await EsiLocationAction.FETCH.fetchEsiLocation();
       if (resp.status === 200) {
         setData(JSON.parse(resp.data));
       }
-    };
-    fn();
+    } catch (error) {
+      toast.error('Unexpected error occurred, Please try later');
+    }
+  };
+  useEffect(() => {
+    fetchESICLocation();
   }, []);
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -55,11 +73,25 @@ const Page = () => {
     );
     if (res.status === 200) {
       toast.success('EsiLocation Added');
+      fetchESICLocation();
+      setName('');
+      setAddress('');
+      setBranch('');
+      setBranch('');
     } else {
       toast.error('An Error Occurred');
     }
   };
-
+  const handleDelete = async (id: string) => {
+    const resp = await EsiLocationAction.DELETE.deleteEsiLocation(id);
+    if (resp.status === 200) {
+      toast.success('ESIC Location deleted successfully');
+      fetchESICLocation();
+    } else {
+      toast.error('An Error Occurred');
+    }
+    setDialogOpen(false);
+  };
   return (
     <>
       <section className='flex flex-col h-screen'>
@@ -114,16 +146,9 @@ const Page = () => {
                           </button>
                           <button
                             className='px-2 py-1 bg-white rounded-sm text-red-500'
-                            onClick={async () => {
-                              const resp =
-                                await EsiLocationAction.DELETE.deleteEsiLocation(
-                                  ele._id
-                                );
-                              if (resp.status === 200) {
-                                toast.success('Deleted,Reload to view Changes');
-                              } else {
-                                toast.error('An Error Occurred');
-                              }
+                            onClick={() => {
+                              setSelectedWorkOrder(ele);
+                              setDialogOpen(true);
                             }}
                           >
                             Delete
@@ -451,6 +476,31 @@ const Page = () => {
           <div className='opacity-25 fixed inset-0 z-40 bg-black'></div>
         </>
       ) : null}
+      <AlertDialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogTrigger asChild></AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className='text-red-500'>
+              Confirm Delete
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this ESIC Location? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className='bg-red-500'
+              onClick={() => handleDelete(selectedWorkOrder._id)}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

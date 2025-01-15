@@ -2,6 +2,17 @@
 import departmentHrAction from '@/lib/actions/HR/DepartmentHr/departmentHrAction';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 
 const Page = () => {
   const [departments, setDepartments] = useState<any>(null);
@@ -11,14 +22,16 @@ const Page = () => {
   const [editFormName, setEditFormName] = useState<string>('');
   const [editFormInput, setEditFormInput] = useState<string>('');
   const [editFormEleId, setEditFormEleId] = useState<any>(null);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  const fetchDepartments = async () => {
+    const result = await departmentHrAction.FETCH.fetchDepartmentHr();
+    if (result.status === 200) {
+      setDepartments(JSON.parse(result.data));
+    }
+  };
   useEffect(() => {
-    const fn = async () => {
-      const result = await departmentHrAction.FETCH.fetchDepartmentHr();
-      if (result.status === 200) {
-        setDepartments(JSON.parse(result.data));
-      }
-    };
-    fn();
+    fetchDepartments();
   }, []);
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -34,9 +47,22 @@ const Page = () => {
     );
     if (res.status === 200) {
       toast.success('Department Created');
+      setInputDepartmentString('');
+      fetchDepartments();
     } else {
       toast.error(res.message);
     }
+  };
+
+  const handleDelete = async (id: string) => {
+    const resp = await departmentHrAction.DELETE.deleteDepartmentHr(id);
+    if (resp.status === 200) {
+      toast.success('Department deleted successfully');
+      fetchDepartments();
+    } else {
+      toast.error('An Error Occurred');
+    }
+    setDialogOpen(false);
   };
   return (
     <>
@@ -86,18 +112,9 @@ const Page = () => {
                             </button>
                             <button
                               className='px-2 py-1 rounded bg-white text-red-500'
-                              onClick={async () => {
-                                const resp =
-                                  await departmentHrAction.DELETE.deleteDepartmentHr(
-                                    ele._id
-                                  );
-                                if (resp.status === 200) {
-                                  toast.success(
-                                    'Deleted,Reload to view Changes'
-                                  );
-                                } else {
-                                  toast.error('An Error Occurred');
-                                }
+                              onClick={() => {
+                                setSelectedWorkOrder(ele);
+                                setDialogOpen(true);
                               }}
                             >
                               Delete
@@ -158,7 +175,6 @@ const Page = () => {
 
         {/* <div className='flex flex-col lg:flex-row'></div> */}
       </section>
-
       {showModal ? (
         <>
           <div className='justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none'>
@@ -240,7 +256,32 @@ const Page = () => {
           </div>
           <div className='opacity-25 fixed inset-0 z-40 bg-black'></div>
         </>
-      ) : null}
+      ) : null}{' '}
+      <AlertDialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogTrigger asChild></AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className='text-red-500'>
+              Confirm Delete
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this Department? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className='bg-red-500'
+              onClick={() => handleDelete(selectedWorkOrder._id)}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

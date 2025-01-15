@@ -2,6 +2,17 @@
 import siteMasterAction from '@/lib/actions/HR/siteMaster/siteMasterAction';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 
 const Page = () => {
   const [sites, setSites] = useState<any>([]);
@@ -10,16 +21,23 @@ const Page = () => {
   const [editFormName, setEditFormName] = useState<string>('');
   const [editFormInput, setEditFormInput] = useState<string>('');
   const [editFormEleId, setEditFormEleId] = useState<any>(null);
-  useEffect(() => {
-    const fn = async () => {
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+
+  const fetchSiteMaster = async () => {
+    try {
       const sitesResult = await siteMasterAction.FETCH.fetchSiteMaster();
       if (sitesResult.success) {
         const data = JSON.parse(sitesResult.data);
         console.warn(data);
         setSites(data);
       }
-    };
-    fn();
+    } catch (error) {
+      toast.error('Unexpected error occurred, Please try later');
+    }
+  };
+  useEffect(() => {
+    fetchSiteMaster();
   }, []);
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -35,8 +53,21 @@ const Page = () => {
     );
     if (res.status === 200) {
       toast.success('Site Created');
+      setSiteInput('');
+      fetchSiteMaster();
     } else {
       toast.error('An Error Occurred');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const resp = await siteMasterAction.DELETE.deleteSiteMaster(id);
+    if (resp.status === 200) {
+      toast.success('Site deleted successfully');
+      fetchSiteMaster();
+    } else {
+      toast.error('An Error Occurred');
+      setDialogOpen(false);
     }
   };
   return (
@@ -79,16 +110,9 @@ const Page = () => {
                           </button>
                           <button
                             className='px-2 py-1 bg-white rounded-sm text-red-500'
-                            onClick={async () => {
-                              const resp =
-                                await siteMasterAction.DELETE.deleteSiteMaster(
-                                  ele._id
-                                );
-                              if (resp.status === 200) {
-                                toast.success('Deleted,Reload to view Changes');
-                              } else {
-                                toast.error('An Error Occurred');
-                              }
+                            onClick={() => {
+                              setSelectedWorkOrder(ele);
+                              setDialogOpen(true);
                             }}
                           >
                             Delete
@@ -146,7 +170,6 @@ const Page = () => {
           </div>
         </div>
       </section>
-
       {showModal ? (
         <>
           <div className='justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none'>
@@ -226,7 +249,32 @@ const Page = () => {
           </div>
           <div className='opacity-25 fixed inset-0 z-40 bg-black'></div>
         </>
-      ) : null}
+      ) : null}{' '}
+      <AlertDialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogTrigger asChild></AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className='text-red-500'>
+              Confirm Delete
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this Site Master? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className='bg-red-500'
+              onClick={() => handleDelete(selectedWorkOrder._id)}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

@@ -2,11 +2,23 @@ import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
 import { IWorkOrderHr } from '@/lib/models/HR/workOrderHr.model';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 
 const WorkOrderView = () => {
   const [workOrders, setWorkOrders] = useState<any>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [isDialogOpen, setDialogOpen] = useState(false);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
 
   const [editedWorkOrderNumber, setEditedWorkOrderNumber] = useState('');
@@ -43,6 +55,7 @@ const WorkOrderView = () => {
     } else {
       toast.error(result.message);
     }
+    setDialogOpen(false);
   };
 
   const handleView = (workOrder: any) => {
@@ -155,7 +168,10 @@ const WorkOrderView = () => {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(ele._id)}
+                  onClick={() => {
+                    setSelectedWorkOrder(ele);
+                    setDialogOpen(true);
+                  }}
                   className='text-red-500 bg-white px-2 py-1 rounded-sm'
                 >
                   Delete
@@ -334,8 +350,8 @@ const WorkOrderView = () => {
       )}
       {showEditModal && (
         <>
-          <div className=' justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none'>
-            <div className='relative w-full lg:w-2/3 my-6 p-4'>
+          <div className=' justify-center items-center flex  overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none'>
+            <div className='relative w-full lg:w-2/3 my-6  p-4'>
               <div className=' rounded-lg shadow-lg relative flex flex-col gap-5 w-full bg-white outline-none focus:outline-none px-6'>
                 <div className='flex items-start justify-between p-3 border-b border-solid border-blueGray-200 rounded-t'>
                   <h3 className='text-2xl font-semibold'>
@@ -529,6 +545,31 @@ const WorkOrderView = () => {
           <div className='opacity-25 fixed inset-0 z-40 bg-black'></div>
         </>
       )}
+      <AlertDialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogTrigger asChild></AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className='text-red-500'>
+              Confirm Delete
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this work order? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className='bg-red-500'
+              onClick={() => handleDelete(selectedWorkOrder._id)}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

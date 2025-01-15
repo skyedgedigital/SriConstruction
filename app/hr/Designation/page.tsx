@@ -2,6 +2,17 @@
 import designationAction from '@/lib/actions/HR/Designation/designationAction';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 
 const Page = () => {
   const [data, setData] = useState<any>(null);
@@ -28,16 +39,19 @@ const Page = () => {
   const [showViewModal, setShowViewModal] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [editFormEleId, setEditFormEleId] = useState<any>(null);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
+  const [isDialogOpen, setDialogOpen] = useState(false);
 
+  const fetchDesignations = async () => {
+    const resp = await designationAction.FETCH.fetchDesignations();
+    if (resp.status === 200) {
+      setData(JSON.parse(resp.data));
+    }
+  };
   useEffect(() => {
-    const fn = async () => {
-      const resp = await designationAction.FETCH.fetchDesignations();
-      if (resp.status === 200) {
-        setData(JSON.parse(resp.data));
-      }
-    };
-    fn();
+    fetchDesignations();
   }, []);
+
   const handleInputChange = (event: any) => {
     const { name, value } = event.target;
     if (name === 'basic') {
@@ -96,8 +110,28 @@ const Page = () => {
     );
     if (resp.status === 200) {
       toast.success(resp.message);
+      setFormData({
+        designation: '',
+        basic: 0,
+        OldBasic: 0,
+        DA: 0,
+        OldDA: 0,
+        PayRate: 0,
+        Basic2: 0,
+      });
+      fetchDesignations();
     } else {
       toast.error(resp.message);
+    }
+    setDialogOpen(false);
+  };
+  const handleDelete = async (id: string) => {
+    const resp = await designationAction.DELETE.deleteDesignation(id);
+    if (resp.status === 200) {
+      toast.success('Deleted,Reload to view Changes');
+      fetchDesignations();
+    } else {
+      toast.error('An Error Occurred');
     }
   };
   return (
@@ -164,16 +198,9 @@ const Page = () => {
                           </button>
                           <button
                             className='px-2 py-1 bg-white rounded-sm text-red-500'
-                            onClick={async () => {
-                              const resp =
-                                await designationAction.DELETE.deleteDesignation(
-                                  ele._id
-                                );
-                              if (resp.status === 200) {
-                                toast.success('Deleted,Reload to view Changes');
-                              } else {
-                                toast.error('An Error Occurred');
-                              }
+                            onClick={() => {
+                              setSelectedWorkOrder(ele);
+                              setDialogOpen(true);
                             }}
                           >
                             Delete
@@ -344,7 +371,6 @@ const Page = () => {
           </div>
         </div>
       </section>
-
       {showViewModal ? (
         <>
           <div className='justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none'>
@@ -433,7 +459,6 @@ const Page = () => {
           <div className='opacity-25 fixed inset-0 z-40 bg-black'></div>
         </>
       ) : null}
-
       {showModal ? (
         <>
           <div className='justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none'>
@@ -623,7 +648,32 @@ const Page = () => {
           </div>
           <div className='opacity-25 fixed inset-0 z-40 bg-black'></div>
         </>
-      ) : null}
+      ) : null}{' '}
+      <AlertDialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogTrigger asChild></AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className='text-red-500'>
+              Confirm Delete
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this Designation? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className='bg-red-500'
+              onClick={() => handleDelete(selectedWorkOrder._id)}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

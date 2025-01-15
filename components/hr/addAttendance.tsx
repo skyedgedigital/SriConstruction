@@ -19,6 +19,17 @@ import {
   TableRow,
   TableFooter,
 } from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import attendanceAction from '@/lib/actions/attendance/attendanceAction';
 import toast from 'react-hot-toast';
@@ -38,6 +49,7 @@ const AddAttendance = ({ employeee }) => {
   const [notPaid, setNotPaid] = useState(0);
   const [workOrderList, setWorkOrderList] = useState([]);
   const [workOrderListt, setWorkOrderListt] = useState([]);
+  const [isDialogOpen, setDialogOpen] = useState(false);
 
   const [selectedWorkOrder, setSelectedWorkOrder] = useState({
     workOrderNumber: '',
@@ -54,7 +66,7 @@ const AddAttendance = ({ employeee }) => {
     const fn = async () => {
       // console.warn("The Emp DAta",employeece)
       const workOrderResponse =
-        await WorkOrderHrAction.FETCH.fetchAllWorkOrderHr();
+        await WorkOrderHrAction.FETCH.fetchAllValidWorkOrderHr();
       if (workOrderResponse.success) {
         setWorkOrderList(JSON.parse(workOrderResponse.data));
       }
@@ -295,8 +307,9 @@ const AddAttendance = ({ employeee }) => {
     };
 
     return (
-      <div className='mt-6 flex flex-col'>
-        {/* <Table className='overflow-auto overflow-x-scroll w-screen border-2 border-slate-500'>
+      <>
+        <div className='mt-6 flex flex-col'>
+          {/* <Table className='overflow-auto overflow-x-scroll w-screen border-2 border-slate-500'>
             <TableBody>
             <TableRow>
             <TableCell>Days</TableCell>
@@ -330,123 +343,165 @@ const AddAttendance = ({ employeee }) => {
           </TableRow>
             </TableBody>
           </Table> */}
-        <Table className='overflow-auto overflow-x-scroll w-screen border-2 border-slate-500'>
-          <TableBody>
-            {/* First row for weekdays (table headers) */}
-            <TableRow className=' bg-yellow-400 text-black font-bold'>
-              {weekdaysShort.map((day, index) => (
-                <TableCell key={index}>{day}</TableCell>
-              ))}
-            </TableRow>
-
-            {/* Remaining rows for attendance data */}
-            {weeks.map((week, rowIndex) => (
-              <TableRow key={rowIndex} className=' bg-blue-200 text-black'>
-                {week.map((dayData, cellIndex) => (
-                  <TableCell key={cellIndex}>
-                    {typeof dayData === 'string' ? (
-                      ''
-                    ) : (
-                      <div>
-                        {dayData.day}
-                        {/* Select component for dayData.status */}
-                        <Select
-                          defaultValue={dayData.status}
-                          onValueChange={(event) =>
-                            handleStatusChange(
-                              rowIndex * 7 + cellIndex - emptyCellsBefore,
-                              event
-                            )
-                          } // Adjust index calculation based on empty cells
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder='' />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel></SelectLabel>
-                              <SelectItem value='Present'>Present</SelectItem>
-                              <SelectItem value='Absent'>Absent</SelectItem>
-                              <SelectItem value='Leave'>Leave</SelectItem>
-                              <SelectItem value='Half Day'>Half Day</SelectItem>
-                              <SelectItem value='NH'>NH</SelectItem>
-                              <SelectItem value='Not Paid'>Not Paid</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                  </TableCell>
+          <Table className='overflow-auto overflow-x-scroll w-screen border-2 border-slate-500'>
+            <TableBody>
+              {/* First row for weekdays (table headers) */}
+              <TableRow className=' bg-yellow-400 text-black font-bold'>
+                {weekdaysShort.map((day, index) => (
+                  <TableCell key={index}>{day}</TableCell>
                 ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
 
-        <div className='flex'>
-          <Button
-            onClick={handlePutAttendance}
-            className='left-0 mt-2 w-40 bg-green-500'
-          >
-            Save Attendance
-          </Button>
-          {/* <div className='inline' > */}
-          <span className='mt-4 ml-4 text-black font-semibold'>
-            Select/Update Work Order
-          </span>
-          {selectedWorkOrder?._id !== '' && (
-            <select
-              id='dropdown'
-              value={selectedWorkOrder?._id}
-              onChange={(e) => {
-                const selectedId = e.target.value;
-                const sselectedWorkOrder = workOrderList.find(
-                  (workOrder) => workOrder._id === selectedId
-                );
-                setSelectedWorkOrder({
-                  _id: selectedId,
-                  workOrderNumber: sselectedWorkOrder
-                    ? sselectedWorkOrder.workOrderNumber
-                    : '',
-                });
-              }}
-              className='mt-2 ml-5 block py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+              {/* Remaining rows for attendance data */}
+              {weeks.map((week, rowIndex) => (
+                <TableRow key={rowIndex} className=' bg-blue-200 text-black'>
+                  {week.map((dayData, cellIndex) => (
+                    <TableCell key={cellIndex}>
+                      {typeof dayData === 'string' ? (
+                        ''
+                      ) : (
+                        <div>
+                          {dayData.day}
+                          {/* Select component for dayData.status */}
+                          <Select
+                            defaultValue={dayData.status}
+                            onValueChange={(event) =>
+                              handleStatusChange(
+                                rowIndex * 7 + cellIndex - emptyCellsBefore,
+                                event
+                              )
+                            } // Adjust index calculation based on empty cells
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder='' />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel></SelectLabel>
+                                <SelectItem value='Present'>Present</SelectItem>
+                                <SelectItem value='Absent'>Absent</SelectItem>
+                                <SelectItem value='Leave'>Leave</SelectItem>
+                                <SelectItem value='Half Day'>
+                                  Half Day
+                                </SelectItem>
+                                <SelectItem value='NH'>NH</SelectItem>
+                                <SelectItem value='Not Paid'>
+                                  Not Paid
+                                </SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          <div className='flex'>
+            <Button
+              onClick={handlePutAttendance}
+              className='left-0 mt-2 w-40 bg-green-500'
             >
-              {/* Default option */}
-              <option value={defaultt._id} selected>
-                {defaultt.workOrderNumber}
-              </option>
-              {/* Work order options */}
-              {workOrderList
-                .filter((ele) => defaultt._id != ele._id) // Exclude elements where ele.skip is true
-                .map((ele) => (
-                  <option
-                    value={ele._id}
-                    key={ele._id}
-                    selected={defaultt._id == ele._id}
-                  >
-                    {ele.workOrderNumber}
-                  </option>
-                ))}
-            </select>
-          )}
-          <Button
-            className='mt-2 ml-2'
-            onClick={() =>
-              onDeleteHandler(
-                selectedWorkOrder._id,
-                employeee.id,
-                parseInt(employeee.month),
-                parseInt(employeee.year)
-              )
-            }
-          >
-            Delete Selected. Work Order
-          </Button>
+              Save Attendance
+            </Button>
+            {/* <div className='inline' > */}
+            <span className='mt-4 ml-4 text-black font-semibold'>
+              Select/Update Work Order
+            </span>
+            {selectedWorkOrder?._id !== '' && (
+              <select
+                id='dropdown'
+                value={selectedWorkOrder?._id}
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  const sselectedWorkOrder = workOrderList.find(
+                    (workOrder) => workOrder._id === selectedId
+                  );
+                  setSelectedWorkOrder({
+                    _id: selectedId,
+                    workOrderNumber: sselectedWorkOrder
+                      ? sselectedWorkOrder.workOrderNumber
+                      : '',
+                  });
+                }}
+                className='mt-2 ml-5 block py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
+              >
+                {/* Default option */}
+                <option value={defaultt._id} selected>
+                  {defaultt.workOrderNumber}
+                </option>
+                {/* Work order options */}
+                {workOrderList
+                  .filter((ele) => defaultt._id != ele._id) // Exclude elements where ele.skip is true
+                  .map((ele) => (
+                    <option
+                      value={ele._id}
+                      key={ele._id}
+                      selected={defaultt._id == ele._id}
+                    >
+                      {ele.workOrderNumber}
+                    </option>
+                  ))}
+              </select>
+            )}
+            <Button
+              className='mt-2 ml-2'
+              onClick={() => {
+                setDialogOpen(true);
+                // setSelectedWorkOrder(ele);
+              }}
+              // onClick={() =>
+              //   onDeleteHandler(
+              //     selectedWorkOrder._id,
+              //     employeee.id,
+              //     parseInt(employeee.month),
+              //     parseInt(employeee.year)
+              //   )
+              // }
+            >
+              Delete Selected. Work Order
+            </Button>
 
-          {/* </div> */}
+            {/* </div> */}
+          </div>
         </div>
-      </div>
+        <AlertDialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+          <AlertDialogTrigger asChild></AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className='text-red-500'>
+                Confirm Delete
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete attendance for selected Work
+                Order? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDialogOpen(false)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className='bg-red-500'
+                onClick={() =>
+                  onDeleteHandler(
+                    selectedWorkOrder._id,
+                    employeee.id,
+                    parseInt(employeee.month),
+                    parseInt(employeee.year)
+                  )
+                }
+                // onClick={() => handleDelete(selectedWorkOrder._id)}
+              >
+                OK
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
     );
   };
 
@@ -493,38 +548,40 @@ const AddAttendance = ({ employeee }) => {
   }, []);
 
   return (
-    <div className=''>
-      {employeee?.wo === 'Default' && (
-        <div className='bg-yellow-100 text-yellow-600 p-1 mb-1 pl-2 rounded'>
-          This is Default Pre-Filled Attendance
-        </div>
-      )}
-      <span className='text-green-500 font-semibold mx-2'>
-        Present {present}
-      </span>
-      <span className='text-red-500 font-semibold mx-2'>Absent {absent}</span>
-      <span className='text-blue-500 font-semibold mx-2'>Leave {leave}</span>
-      <span className='text-blue-500 font-semibold mx-2'>
-        Half Day {halfDay}
-      </span>
-      <span className='text-blue-500 font-semibold mx-2'>
-        National Holiday(NH) {nh}
-      </span>
-      <span className='text-blue-500 font-semibold mx-2'>
-        Not Paid {notPaid}
-      </span>
-      {!attendanceData ? (
-        <div>Loading......</div>
-      ) : (
-        createAttendanceTable(attendanceData)
-      )}
-      {/* <div>
+    <>
+      <div className=''>
+        {employeee?.wo === 'Default' && (
+          <div className='bg-yellow-100 text-yellow-600 p-1 mb-1 pl-2 rounded'>
+            This is Default Pre-Filled Attendance
+          </div>
+        )}
+        <span className='text-green-500 font-semibold mx-2'>
+          Present {present}
+        </span>
+        <span className='text-red-500 font-semibold mx-2'>Absent {absent}</span>
+        <span className='text-blue-500 font-semibold mx-2'>Leave {leave}</span>
+        <span className='text-blue-500 font-semibold mx-2'>
+          Half Day {halfDay}
+        </span>
+        <span className='text-blue-500 font-semibold mx-2'>
+          National Holiday(NH) {nh}
+        </span>
+        <span className='text-blue-500 font-semibold mx-2'>
+          Not Paid {notPaid}
+        </span>
+        {!attendanceData ? (
+          <div>Loading......</div>
+        ) : (
+          createAttendanceTable(attendanceData)
+        )}
+        {/* <div>
         This employee have saved attendances for workOrders :
         {employeee?.employee?.workOrderHr?.map((wo) => (
           <p key={wo?.workOrderHr}>{JSON.stringify(wo?.workOrderHr)}</p>
-        ))}
-      </div> */}
-    </div>
+          ))}
+          </div> */}
+      </div>
+    </>
   );
 };
 
