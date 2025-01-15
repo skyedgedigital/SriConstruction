@@ -57,20 +57,7 @@ import departmentHrAction from '@/lib/actions/HR/DepartmentHr/departmentHrAction
 import { fetchEmployeeByDep } from '@/lib/actions/HR/EmployeeData/fetch';
 import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
 import { fetchAllEmployees } from '@/lib/actions/employee/fetch';
-const monthsName = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
+import { months, monthsName, years } from '@/constants';
 
 const schema = z.object({
   year: z.string().trim().min(1, 'Required'),
@@ -231,9 +218,6 @@ const Client = () => {
       console.error('Internal Server Error:', error);
     }
   };
-
-  const years = Array.from({ length: 2024 - 2010 + 1 }, (_, i) => 2010 + i);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   const onSubmit: SubmitHandler<FormFields> = async (data: any, event) => {
     try {

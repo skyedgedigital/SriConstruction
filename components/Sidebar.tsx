@@ -33,8 +33,6 @@ import {
   Shield,
   TestTube,
   Wrench,
-  ListEndIcon,
-  ListChecks,
   LucideReceiptPoundSterling,
 } from 'lucide-react';
 import { Building } from 'lucide-react';
@@ -107,12 +105,6 @@ const Sidebar = forwardRef<HTMLDivElement, Props>(
                 title: 'Analytics',
                 href: '/admin/analytics',
                 icon: BarChart,
-                variant: 'ghost',
-              },
-              {
-                title: 'Upload_File',
-                href: '/admin/upload_file',
-                icon: Upload,
                 variant: 'ghost',
               },
               {
@@ -322,6 +314,12 @@ const Sidebar = forwardRef<HTMLDivElement, Props>(
                 title: 'Arrear Generator',
                 href: '/hr/Arrear',
                 icon: HandCoins,
+                variant: 'ghost',
+              },
+              {
+                title: 'Upload_File',
+                href: '/hr/upload_file',
+                icon: Upload,
                 variant: 'ghost',
               },
               {

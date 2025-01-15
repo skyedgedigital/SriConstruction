@@ -26,6 +26,7 @@ import { useEffect, useState } from 'react';
 import DamageRegister from './DamageForm';
 import AdvanceRegister from './AdvanceForm';
 import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
+import { months, monthsName, years } from '@/constants';
 
 const Page = () => {
   const [selectedTab, setSelectedTab] = useState('compliance'); // New state for tabs
@@ -73,24 +74,6 @@ const Page = () => {
     },
     resolver: zodResolver(schema),
   });
-
-  const monthsName = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-
-  const years = Array.from({ length: 2024 - 2010 + 1 }, (_, i) => 2010 + i);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
     toast.success('Form submitted successfully!');
@@ -185,7 +168,7 @@ const Page = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className='max-w-80 max-h-72'>
-                          {years.map((option) => (
+                          {years?.map((option) => (
                             <SelectItem value={option.toString()} key={option}>
                               {option}
                             </SelectItem>
@@ -216,7 +199,7 @@ const Page = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className='max-w-80 max-h-72'>
-                          {months.map((option) => (
+                          {months?.map((option) => (
                             <SelectItem value={option.toString()} key={option}>
                               {monthsName[option - 1]}
                             </SelectItem>

@@ -57,6 +57,7 @@ import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
 import departmentHrAction from '@/lib/actions/HR/DepartmentHr/departmentHrAction';
 import EsiLocationAction from '@/lib/actions/HR/EsiLocation/EsiLocationAction';
 import StateActionHr from '@/lib/actions/HR/State/StateAction';
+import { months, years } from '@/constants';
 
 const schema = z.object({
   year: z.string().trim().min(1, 'Required'),
@@ -215,9 +216,6 @@ const Page = () => {
   const [year, setYear] = useState(null);
   const [month, setMonth] = useState(null);
 
-  const years = Array.from({ length: 2024 - 2010 + 1 }, (_, i) => 2010 + i);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
-
   const onEmployeeSubmit: SubmitHandler<SecondFormFields> = async (
     data: SecondFormFields
   ) => {
@@ -370,7 +368,7 @@ const Page = () => {
   return (
     <div className='pr-2'>
       <h1 className='font-bold text-blue-500 border-b-2 border-blue-500 text-center py-2 mb-4'>
-        PF ESIC Bank Statement
+        PF ESIC
       </h1>
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
         <Form {...form}>

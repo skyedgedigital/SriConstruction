@@ -23,6 +23,7 @@ import toast from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
 import departmentHrAction from '@/lib/actions/HR/DepartmentHr/departmentHrAction';
+import { monthsName, years, months } from '@/constants';
 
 const thirdSchema = z.object({
   year: z.string().trim().min(1, 'Required'),
@@ -45,22 +46,6 @@ const Page = () => {
   const [departments, setDepartments] = useState([]);
   const [allWorkOrderNumbers, setAllWorkOrderNumbers] = useState([]);
   const [workOrderNumber, setWorkOrderNumber] = useState<any>(null);
-  const years = Array.from({ length: 2024 - 2010 + 1 }, (_, i) => 2010 + i);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
-  const monthsName = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
 
   const thirdform = useForm<ThirdFormFields>({
     defaultValues: {
