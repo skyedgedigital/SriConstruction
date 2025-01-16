@@ -87,6 +87,44 @@ const fetchPaymentReport = async (
               ],
             },
           },
+          totalEmployerPF: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ifNull: ['$employeeData', false] }, // Check if employee data exists
+                    { $ifNull: ['$employeeData.pfApplicable', false] }, // Check if pfApplicable exists and is true
+                  ],
+                },
+                {
+                  $multiply: [
+                    {
+                      $subtract: [
+                        '$total',
+                        { $add: ['$incentiveAmount', '$allowances'] },
+                      ],
+                    },
+                    0.13,
+                  ],
+                },
+                0,
+              ],
+            },
+          },
+          totalEmployerESIC: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ifNull: ['$employeeData', false] }, // Check if employee data exists
+                    { $ifNull: ['$employeeData.ESICApplicable', false] }, // Check if ESICApplicable exists and is true
+                  ],
+                },
+                { $multiply: ['$total', 0.0325] },
+                0,
+              ],
+            },
+          },
           // Keep track of missing data for reporting
           missingPFCount: {
             $sum: {
@@ -131,6 +169,8 @@ const fetchPaymentReport = async (
           totalAllowancesAmount: { $round: ['$totalAllowancesAmount', 2] },
           totalPF: { $round: ['$totalPF', 2] },
           totalESIC: { $round: ['$totalESIC', 2] },
+          totalEmployerPF: { $round: ['$totalEmployerPF', 2] },
+          totalEmployerESIC: { $round: ['$totalEmployerESIC', 2] },
           missingPFCount: 1,
           missingESICCount: 1,
         },

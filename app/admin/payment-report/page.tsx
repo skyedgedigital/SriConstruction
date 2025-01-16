@@ -37,20 +37,7 @@ import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
 import AdminAnalytics from '@/lib/actions/adminAnalytics/adminAnalyticsAction';
 import { formatCurrency } from '../../../utils/formatCurrency';
-const monthsName = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
+import { months, monthsName, years } from '@/constants';
 
 const schema = z.object({
   year: z.string().trim().min(1, 'Required'),
@@ -71,9 +58,6 @@ const Client = () => {
 
   const [year, setYear] = useState(null);
   const [month, setMonth] = useState(null);
-
-  const years = Array.from({ length: 2024 - 2010 + 1 }, (_, i) => 2010 + i);
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   const [reportData, setReportData] = useState<any[]>([]);
 
@@ -123,6 +107,10 @@ const Client = () => {
   const totalPF = reportData.reduce((sum, row) => sum + row.totalPF, 0) || 0;
   const totalESIC =
     reportData.reduce((sum, row) => sum + row.totalESIC, 0) || 0;
+  const totalEmployerPF =
+    reportData.reduce((sum, row) => sum + row.totalEmployerPF, 0) || 0;
+  const totalEmployerESIC =
+    reportData.reduce((sum, row) => sum + row.totalEmployerESIC, 0) || 0;
   const totalNetAmount =
     reportData.reduce((sum, row) => sum + row.totalNetAmount, 0) || 0;
 
@@ -247,6 +235,10 @@ const Client = () => {
                 <TableHead className='text-white'>Gross Amount</TableHead>
                 <TableHead className='text-white'>Total PF</TableHead>
                 <TableHead className='text-white'>Total ESIC</TableHead>
+                <TableHead className='text-white'>Total Employer PF</TableHead>
+                <TableHead className='text-white'>
+                  Total Employer ESIC
+                </TableHead>
                 <TableHead className='text-white'>Net Amount</TableHead>
               </TableRow>
             </TableHeader>
@@ -270,6 +262,8 @@ const Client = () => {
                   <TableCell>{formatCurrency(row.totalAmount)}</TableCell>
                   <TableCell>{formatCurrency(row.totalPF)}</TableCell>
                   <TableCell>{formatCurrency(row.totalESIC)}</TableCell>
+                  <TableCell>{formatCurrency(row.totalEmployerPF)}</TableCell>
+                  <TableCell>{formatCurrency(row.totalEmployerESIC)}</TableCell>
                   <TableCell>{formatCurrency(row.totalNetAmount)}</TableCell>
                 </TableRow>
               ))}
@@ -285,6 +279,8 @@ const Client = () => {
                 <TableCell>{formatCurrency(totalGrossAmount)}</TableCell>
                 <TableCell>{formatCurrency(totalPF)}</TableCell>
                 <TableCell>{formatCurrency(totalESIC)}</TableCell>
+                <TableCell>{formatCurrency(totalEmployerPF)}</TableCell>
+                <TableCell>{formatCurrency(totalEmployerESIC)}</TableCell>
                 <TableCell>{formatCurrency(totalNetAmount)}</TableCell>
               </TableRow>
             </TableFooter>
