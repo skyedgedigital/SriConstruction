@@ -94,25 +94,36 @@ const Client = () => {
   };
 
   const totalEmployeeCount =
-    reportData.reduce((sum, row) => sum + row.employeeCount, 0) || 0;
+    Math.round(
+      reportData.reduce((sum, row) => sum + row.employeeCount, 0)
+    ).toFixed(0) || 0;
   const totalAttendance =
-    reportData.reduce((sum, row) => sum + row.totalAttendance, 0).toFixed(2) ||
+    reportData.reduce((sum, row) => sum + row.totalAttendance, 0).toFixed(0) ||
     0;
   const totalAllowances =
-    reportData.reduce((sum, row) => sum + row.totalAllowancesAmount, 0) || 0;
+    Math.round(
+      reportData.reduce((sum, row) => sum + row.totalAllowancesAmount, 0)
+    ) || 0;
   const totalIncentives =
-    reportData.reduce((sum, row) => sum + row.totalIncentiveAmount, 0) || 0;
+    Math.round(
+      reportData.reduce((sum, row) => sum + row.totalIncentiveAmount, 0)
+    ) || 0;
   const totalGrossAmount =
-    reportData.reduce((sum, row) => sum + row.totalAmount, 0) || 0;
-  const totalPF = reportData.reduce((sum, row) => sum + row.totalPF, 0) || 0;
+    Math.round(reportData.reduce((sum, row) => sum + row.totalAmount, 0)) || 0;
+  const totalPF =
+    Math.round(reportData.reduce((sum, row) => sum + row.totalPF, 0)) || 0;
   const totalESIC =
-    reportData.reduce((sum, row) => sum + row.totalESIC, 0) || 0;
+    Math.round(reportData.reduce((sum, row) => sum + row.totalESIC, 0)) || 0;
   const totalEmployerPF =
-    reportData.reduce((sum, row) => sum + row.totalEmployerPF, 0) || 0;
+    Math.round(reportData.reduce((sum, row) => sum + row.totalEmployerPF, 0)) ||
+    0;
   const totalEmployerESIC =
-    reportData.reduce((sum, row) => sum + row.totalEmployerESIC, 0) || 0;
+    Math.round(
+      reportData.reduce((sum, row) => sum + row.totalEmployerESIC, 0)
+    ) || 0;
   const totalNetAmount =
-    reportData.reduce((sum, row) => sum + row.totalNetAmount, 0) || 0;
+    Math.round(reportData.reduce((sum, row) => sum + row.totalNetAmount, 0)) ||
+    0;
 
   return (
     <div>
@@ -251,20 +262,32 @@ const Client = () => {
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{row.workOrderNumber}</TableCell>
                   <TableCell>{row.workOrderDetails.location}</TableCell>
-                  <TableCell>{row.employeeCount}</TableCell>
-                  <TableCell>{row.totalAttendance.toFixed(2)}</TableCell>
+                  <TableCell>{row.employeeCount.toFixed(0)}</TableCell>
+                  <TableCell>{row.totalAttendance.toFixed(0)}</TableCell>
                   <TableCell>
-                    {formatCurrency(row.totalAllowancesAmount)}
+                    {formatCurrency(Math.round(row.totalAllowancesAmount))}
                   </TableCell>
                   <TableCell>
-                    {formatCurrency(row.totalIncentiveAmount)}
+                    {formatCurrency(Math.round(row.totalIncentiveAmount))}
                   </TableCell>
-                  <TableCell>{formatCurrency(row.totalAmount)}</TableCell>
-                  <TableCell>{formatCurrency(row.totalPF)}</TableCell>
-                  <TableCell>{formatCurrency(row.totalESIC)}</TableCell>
-                  <TableCell>{formatCurrency(row.totalEmployerPF)}</TableCell>
-                  <TableCell>{formatCurrency(row.totalEmployerESIC)}</TableCell>
-                  <TableCell>{formatCurrency(row.totalNetAmount)}</TableCell>
+                  <TableCell>
+                    {formatCurrency(Math.round(row.totalAmount))}
+                  </TableCell>
+                  <TableCell>
+                    {formatCurrency(Math.round(row.totalPF))}
+                  </TableCell>
+                  <TableCell>
+                    {formatCurrency(Math.round(row.totalESIC))}
+                  </TableCell>
+                  <TableCell>
+                    {formatCurrency(Math.round(row.totalEmployerPF))}
+                  </TableCell>
+                  <TableCell>
+                    {formatCurrency(Math.round(row.totalEmployerESIC))}
+                  </TableCell>
+                  <TableCell>
+                    {formatCurrency(Math.round(row.totalNetAmount))}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

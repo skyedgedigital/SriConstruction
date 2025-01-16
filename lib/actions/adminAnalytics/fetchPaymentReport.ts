@@ -4,6 +4,7 @@ import { PaymentReportResponse } from '@/interfaces/APIresponses.interface';
 import handleDBConnection from '@/lib/database';
 import Wages from '@/lib/models/HR/wages.model';
 import mongoose from 'mongoose';
+import WorkOrderHrAction from '../HR/workOrderHr/workOrderAction';
 
 const fetchPaymentReport = async (
   filter: string
@@ -14,7 +15,34 @@ const fetchPaymentReport = async (
     const searchFilter = JSON.parse(filter);
     const { year, month } = searchFilter;
 
-    const aggregatedData = await Wages.aggregate([
+    // Get all valid work orders first
+    const { data, status, success, message, error } =
+      await WorkOrderHrAction.FETCH.fetchAllValidWorkOrderHr();
+    if (!success) {
+      return { data, status, success, message, error };
+    }
+    const validWorkOrders = await JSON.parse(data);
+
+    // Create a base result for all work orders with zero values
+    const baseResults = validWorkOrders.map((wo) => ({
+      workOrderNumber: wo.workOrderNumber,
+      workOrderDetails: wo,
+      employeeCount: 0,
+      totalAttendance: 0,
+      totalAmount: 0,
+      totalNetAmount: 0,
+      totalIncentiveAmount: 0,
+      totalAllowancesAmount: 0,
+      totalPF: 0,
+      totalESIC: 0,
+      totalEmployerPF: 0,
+      totalEmployerESIC: 0,
+      missingPFCount: 0,
+      missingESICCount: 0,
+    }));
+
+    // Get aggregated wage data
+    const wageData = await Wages.aggregate([
       { $match: { year: parseInt(year), month: parseInt(month) } },
       {
         $lookup: {
@@ -36,7 +64,7 @@ const fetchPaymentReport = async (
       {
         $unwind: {
           path: '$employeeData',
-          preserveNullAndEmptyArrays: true, // Keep records even if employee data is missing
+          preserveNullAndEmptyArrays: true,
         },
       },
       {
@@ -162,7 +190,7 @@ const fetchPaymentReport = async (
           workOrderNumber: '$_id',
           workOrderDetails: 1,
           employeeCount: { $size: '$employeeCount' },
-          totalAttendance: 1,
+          totalAttendance: { $round: ['$totalAttendance', 2] },
           totalAmount: { $round: ['$totalAmount', 2] },
           totalNetAmount: { $round: ['$totalNetAmount', 2] },
           totalIncentiveAmount: { $round: ['$totalIncentiveAmount', 2] },
@@ -177,13 +205,21 @@ const fetchPaymentReport = async (
       },
     ]);
 
+    // Merge wage data with base results
+    const finalResults = baseResults.map((baseResult) => {
+      const wageResult = wageData.find(
+        (w) => w.workOrderNumber === baseResult.workOrderNumber
+      );
+      return wageResult || baseResult;
+    });
+
     // Add warning if there's missing data
-    const hasMissingData = aggregatedData.some(
+    const hasMissingData = finalResults.some(
       (data) => data.missingPFCount > 0 || data.missingESICCount > 0
     );
 
     if (hasMissingData) {
-      const missingDataSummary = aggregatedData.reduce((acc, data) => {
+      const missingDataSummary = finalResults.reduce((acc, data) => {
         if (data.missingPFCount > 0) {
           acc.push(
             `${data.workOrderNumber}: ${data.missingPFCount} employees missing PF status`
@@ -202,7 +238,7 @@ const fetchPaymentReport = async (
         message:
           'Payment report fetched with warnings: ' +
           missingDataSummary.join('; '),
-        data: JSON.stringify(aggregatedData),
+        data: JSON.stringify(finalResults),
         status: 200,
         error: null,
         warnings: missingDataSummary,
@@ -212,7 +248,7 @@ const fetchPaymentReport = async (
     return {
       success: true,
       message: 'Payment report fetched successfully.',
-      data: JSON.stringify(aggregatedData),
+      data: JSON.stringify(finalResults),
       status: 200,
       error: null,
     };
