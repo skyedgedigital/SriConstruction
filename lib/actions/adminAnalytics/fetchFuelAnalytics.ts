@@ -1,26 +1,26 @@
-'use server';
+"use server";
 
-import { ApiResponse } from '@/interfaces/APIresponses.interface';
-import handleDBConnection from '@/lib/database';
-import Chalan from '@/lib/models/chalan.model';
-import Compliance from '@/lib/models/compliances.model';
-import Consumable from '@/lib/models/consumables.model';
-import FuelManagement from '@/lib/models/fuelManagement.model';
+import { ApiResponse } from "@/interfaces/APIresponses.interface";
+import handleDBConnection from "@/lib/database";
+import Chalan from "@/lib/models/chalan.model";
+import Compliance from "@/lib/models/compliances.model";
+import Consumable from "@/lib/models/consumables.model";
+import FuelManagement from "@/lib/models/fuelManagement.model";
 
 const monthNameToNumber = (monthName: string): number => {
   const monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   const monthIndex = monthNames.indexOf(monthName);
   return monthIndex !== -1 ? monthIndex + 1 : -1; // Months are 1-based
@@ -32,8 +32,9 @@ const getVehiclesWithHours = async (month: string, year: string) => {
     const yearNum = parseInt(year, 10);
 
     if (monthNum === -1 || isNaN(yearNum)) {
-      throw new Error('Invalid month or year');
+      throw new Error("Invalid month or year");
     }
+
 
     const startDate = new Date(yearNum, monthNum - 1, 1);
     const endDate = new Date(yearNum, monthNum, 0, 23, 59, 59, 999);
@@ -41,6 +42,7 @@ const getVehiclesWithHours = async (month: string, year: string) => {
     const chalans = await Chalan.find({
       date: { $gte: startDate, $lte: endDate },
     }).exec();
+
 
     const vehicleData = {};
 
@@ -57,7 +59,7 @@ const getVehiclesWithHours = async (month: string, year: string) => {
               totalFuel: 0,
               fuelCost: 0,
               complianceCost: 0,
-              consumablesCost: 0,
+              consumablesCost:0
             };
           }
           vehicleData[vehicleNumber].chalans.push({
@@ -99,8 +101,8 @@ const getVehiclesWithHours = async (month: string, year: string) => {
 
     let consumablesDocs = await Consumable.find({
       month: month,
-      year: year,
-    });
+      year:year
+    })
 
     consumablesDocs.forEach((ele) => {
       if (vehicleData[ele.vehicleNumber]) {
@@ -121,7 +123,7 @@ const getVehiclesWithHours = async (month: string, year: string) => {
     return {
       success: false,
       status: 500,
-      message: 'Internal Server Error',
+      message: "Internal Server Error",
       error: JSON.stringify(err),
     };
   }

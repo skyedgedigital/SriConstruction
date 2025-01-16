@@ -6,7 +6,7 @@ export interface IFuel extends mongoose.Document {
   createdAt: Date;
   updatedAt: Date;
 }
-export interface IFuelPrices {
+export interface IFuelPrices{
   fuelType: string;
   price: number;
 }

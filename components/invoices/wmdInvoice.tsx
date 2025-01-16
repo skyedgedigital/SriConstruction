@@ -27,39 +27,51 @@ import chalanAction from '@/lib/actions/chalan/chalanAction';
 import { useReactToPrint } from 'react-to-print';
 import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
 import { IEnterprise } from '@/interfaces/enterprise.interface';
+import { Loader } from 'lucide-react';
+import workOrderAction from '@/lib/actions/workOrder/workOrderAction';
 
 const todayDate = () => {
   let date = new Date().toLocaleDateString();
   let x = date.split('/');
-  return `${x[1]}/${x[0]}/${x[2]}`;
+  // return `${x[1]}/${x[0]}/${x[2]}`;
+  return date;
 };
 
 const WMDInvoice = ({
-  invoice,
+  // invoice,
   items,
   workOrder,
   itemCost,
   location,
   service,
   department,
+  selectedChalanNumbers,
 }: // mergedItems
 
 {
   items: any;
   workOrder: any;
-  invoice: any;
+  // invoice: any;
   itemCost: any;
   location: any;
   service: any;
   department: any;
+  selectedChalanNumbers: string[];
   // mergedItems:any
 }) => {
+  console.log('WON', workOrder);
+  // CHALANS NUMBER SORTED AND JOINED, THIS WILL BE INVOICE ID
+  const invoiceId = selectedChalanNumbers.sort().join(',').trim();
+
   // conroutersole.warn("The Merged Items",mergedItems)
   const [totalCgst, setTotalCgst] = useState(0);
   const [totalSgst, setTotalSgst] = useState(0);
   const [totalHours, setTotalHours] = useState(0);
   const [ent, setEnt] = useState<IEnterprise | null>(null);
-
+  const [invoiceNumber, setInvoiceNumber] = useState<string>('');
+  const [loadingStates, setLoadingStates] = useState({
+    autoInvoiceNumberGenerateLoader: false,
+  });
   const [itemsList, setItemsList] = useState([]);
   const [dateMapping, setDateMapping] = useState({});
   const contentRefInvoice = useRef(null);
@@ -119,8 +131,9 @@ const WMDInvoice = ({
     };
 
     const summarySheetInfo = async () => {
-      let invoiceId = invoice.invoiceId;
-      const resp = await chalanAction.FETCH.getSummaryPdfData(invoiceId);
+      const resp = await chalanAction.FETCH.getSummaryPdfData(
+        selectedChalanNumbers
+      );
       if (resp.success) {
         // toast.success("Recieved Summary Data")
         console.error(resp.data);
@@ -130,7 +143,7 @@ const WMDInvoice = ({
 
     fn();
     summarySheetInfo();
-  }, [items, invoice]);
+  }, [items, selectedChalanNumbers]);
 
   // const displayDate = (itemName: string) => {
   //   let date = dateMapping?.get(itemName).from;
@@ -207,7 +220,8 @@ const WMDInvoice = ({
   );
 
   const generatePDF = async (printOrDownload: string) => {
-    const originalElementId = `WMD-${invoice?.invoiceId}`;
+    // PUT LOGIC TO PROHIBIT DOWNLOAD WITHOUT ENTERING INVOICE NUMBER
+    const originalElementId = `WMD-${invoiceNumber}`;
 
     const pdf = new jsPDF('l', 'pt', 'a4');
     const originalElement = document.getElementById(originalElementId)!;
@@ -219,9 +233,45 @@ const WMDInvoice = ({
       callback: async () => {
         // Generate the PDF as a data URL
         const pdfDataUrl = pdf.output('dataurlstring');
-        const fileName = `WMD-${invoice?.invoiceNumber}.pdf`;
+        const fileName = `WMD-${invoiceNumber}.pdf`;
         if (printOrDownload === 'download') pdf.save(fileName);
 
+        const invoiceAlreadyExists =
+          await chalanAction.CHECK.checkExistingInvoice(selectedChalanNumbers);
+        //invoiceAlreadyExists.success will be true if no invoice exists
+        if (!invoiceAlreadyExists.success) {
+          return toast.error(
+            invoiceAlreadyExists.message || 'Invoice already exists'
+          );
+        }
+        const savedInvoiceResponse =
+          await chalanAction.CREATE.createMergeChalan(
+            selectedChalanNumbers,
+            invoiceNumber
+          );
+
+        if (!savedInvoiceResponse.success) {
+          return toast.error(
+            savedInvoiceResponse.message ||
+              'Failed to save invoice, Please try again later'
+          );
+        }
+        if (savedInvoiceResponse.success) {
+          toast.success(savedInvoiceResponse.message);
+        } // deducting workorder balance
+        const workOrderUpdateResponse =
+          await workOrderAction.UPDATE.updateWorkOrderBalance(
+            workOrder,
+            grandTotal
+          );
+        if (!workOrderUpdateResponse.success) {
+          toast.error('work order value did not deducted, Please try again', {
+            duration: 5000,
+          });
+        }
+        if (workOrderUpdateResponse.success) {
+          toast.success(workOrderUpdateResponse.message);
+        }
         const byteString = atob(pdfDataUrl.split(',')[1]);
         const mimeString = pdfDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -251,7 +301,7 @@ const WMDInvoice = ({
               console.log('PDF available at', downloadURL);
 
               const pdfResult = await uploadInvoiceToFireBase(
-                invoice,
+                invoiceId,
                 downloadURL
               );
 
@@ -260,12 +310,12 @@ const WMDInvoice = ({
               } else {
                 toast.error(pdfResult.message);
               }
+              await generateSummaryPDF(printOrDownload);
             } catch (error) {
               console.error('Error getting download URL:', error);
             }
           }
         );
-        await generateSummaryPDF(printOrDownload);
       },
       x: 10,
       y: 10,
@@ -275,7 +325,7 @@ const WMDInvoice = ({
   };
 
   const generateSummaryPDF = async (printOrDownload: string) => {
-    const originalElementId = `WMD-${invoice?.invoiceId}-summary`;
+    const originalElementId = `WMD-${invoiceNumber}-summary`;
 
     // console.log('found element', elementId);
     const pdf = new jsPDF('l', 'pt', 'a4');
@@ -288,7 +338,7 @@ const WMDInvoice = ({
     pdf.html(element, {
       callback: async () => {
         const pdfDataUrl = pdf.output('dataurlstring');
-        const fileName = `WMD-${invoice?.invoiceNumber}.pdf`;
+        const fileName = `WMD-${invoiceNumber}.pdf`;
         if (printOrDownload === 'download') pdf.save(fileName);
 
         const byteString = atob(pdfDataUrl.split(',')[1]);
@@ -320,7 +370,7 @@ const WMDInvoice = ({
               console.log('Summary PDF available at', downloadURL);
 
               const pdfResult = await uploadSummaryToFireBase(
-                invoice,
+                invoiceId,
                 downloadURL
               );
 
@@ -370,8 +420,8 @@ const WMDInvoice = ({
       console.log('error toh yeh hai boss', err);
     }
   };
-  console.log('yeich hai items array bawa', items);
-  console.log('yeich hai items array bawa', invoice);
+  console.log('Received items in WMD Invoice', items);
+  // console.log('yeich hai items array bawa', invoice);
   function numberToWords(amount) {
     if (typeof amount !== 'number' || amount < 0) {
       return 'Invalid input';
@@ -467,32 +517,100 @@ const WMDInvoice = ({
     return resp.data;
   };
 
+  const generateInvoiceNumber = async () => {
+    // Fixed function name typo
+    try {
+      setLoadingStates((allStates) => ({
+        ...allStates,
+        autoInvoiceNumberGenerateLoader: true,
+      }));
+      const resp = await chalanAction.FETCH.getLatestInvoiceNumber();
+      if (resp.success) {
+        return JSON.parse(resp.data);
+      } else {
+        console.error('An Error Occurred');
+        toast.error(resp.message);
+        return null;
+      }
+    } catch (err) {
+      toast.error('An Error Occurred');
+      return null;
+    } finally {
+      setLoadingStates((allStates) => ({
+        ...allStates,
+        autoInvoiceNumberGenerateLoader: false,
+      }));
+    }
+  };
+  const handleAutoGenerateInvoice = async () => {
+    const generatedInvoiceNumberApi = await generateInvoiceNumber();
+    let generatedInvoiceNumber = generatedInvoiceNumberApi.slice(1, -1);
+    if (generatedInvoiceNumber) {
+      console.log(generatedInvoiceNumber.length);
+      setInvoiceNumber(generatedInvoiceNumber); // Update form with generated invoice number
+      toast.success('Invoice number generated successfully');
+    } else {
+      toast.error('Failed to generate invoice number');
+    }
+  };
   return (
     <main className=' w-full flex flex-col gap-1 p-4 pt-20'>
       <div className='flex justify-between items-center pr-6 '>
-        <Button
-          onClick={() => {
-            reactToPrintFnInvoice();
-            generateAndUploadInvoicePDF('print');
-          }}
-        >
-          Print WMD Invoice
-        </Button>{' '}
-        <Button
-          onClick={(e) => {
-            e.preventDefault();
-            generateAndUploadInvoicePDF('download');
-            return;
-          }}
-          className='bg-green-700 text-white px-4 py-2 flex gap-1 items-center rounded ml-auto hover:bg-blue-200 hover:text-primary-color-extreme text-xs'
-        >
-          <MdOutlineFileDownload className='text-lg' />
-          <p>Download WMD Invoice</p>
-        </Button>
+        <div className='flex items-end justify-center gap-2'>
+          <form className='flex flex-col gap-1 justify-start items-start'>
+            <label>Enter invoice number</label>
+            <input
+              className='text-lg p-1 border-[1px] border-gray-300 rounded-sm bg-gray-50'
+              placeholder='123'
+              type='text'
+              value={invoiceNumber}
+              onChange={(e) => setInvoiceNumber(e.currentTarget.value)}
+            />
+          </form>{' '}
+          <span>or</span>
+          <button
+            onClick={handleAutoGenerateInvoice}
+            className='bg-blue-100 text-blue-500 px-2 py-1 rounded-sm flex justify-center items-center gap-1'
+          >
+            {loadingStates.autoInvoiceNumberGenerateLoader && <Loader />}
+            <>Auto generate invoice number</>
+          </button>
+        </div>
+        <div className='flex justify-between items-center gap-3'>
+          <Button
+            onClick={() => {
+              if (!invoiceNumber) {
+                return toast.error(
+                  'Invoice number is must to save invoice or summery sheet'
+                );
+              }
+              reactToPrintFnInvoice();
+              generateAndUploadInvoicePDF('print');
+            }}
+          >
+            Print WMD Invoice
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              if (!invoiceNumber) {
+                return toast.error(
+                  'Invoice number is must to save invoice or summery sheet'
+                );
+              }
+              generateAndUploadInvoicePDF('download');
+              return;
+            }}
+            className='bg-green-700 text-white px-4 py-2 flex gap-1 items-center rounded ml-auto hover:bg-blue-200 hover:text-primary-color-extreme text-xs'
+          >
+            <MdOutlineFileDownload className='text-lg' />
+            <p>Download WMD Invoice</p>
+          </Button>
+        </div>
       </div>
       <div
         className='border-2 border-black p-2'
-        id={`WMD-${invoice?.invoiceId}`}
+        id={`WMD-${invoiceNumber}`}
         ref={contentRefInvoice}
       >
         <div className='  tracking-wider w-full  text-[0.75rem] font-semibold'>
@@ -552,11 +670,11 @@ const WMDInvoice = ({
               </div>
               <div className='h-full flex flex-col justify-between  flex-grow'>
                 <span className='border-[1px] border-black p-1 pl-2'>
-                  {invoice?.invoiceNumber}
+                  {invoiceNumber ? invoiceNumber : 'N/A'}
                 </span>
                 <span className='border-[1px] border-black p-1 pl-2'>
                   {' '}
-                  {workOrder?.workOrderNumber}
+                  {workOrder}
                 </span>
                 <span className='border-[1px] border-black p-1 pl-2'>
                   {' '}
@@ -848,6 +966,11 @@ const WMDInvoice = ({
       <div className='mt-10 flex justify-between items-center pr-6 '>
         <Button
           onClick={() => {
+            if (!invoiceNumber) {
+              return toast.error(
+                'Invoice number is must to save invoice or summery sheet'
+              );
+            }
             reactToPrintFnSummary();
             generateAndUploadInvoiceSummaryPDF('print');
           }}
@@ -857,6 +980,11 @@ const WMDInvoice = ({
         <Button
           onClick={(e) => {
             e.preventDefault();
+            if (!invoiceNumber) {
+              return toast.error(
+                'Invoice number is must to save invoice or summery sheet'
+              );
+            }
             generateAndUploadInvoiceSummaryPDF('download');
             return;
           }}
@@ -868,7 +996,7 @@ const WMDInvoice = ({
       </div>
       <div className='flex items-center justify-center '>
         <div
-          id={`WMD-${invoice?.invoiceId}-summary`}
+          id={`WMD-${invoiceNumber}-summary`}
           ref={contentRefSummary}
           className='flex flex-col justify-center items-center w-full '
         >
@@ -877,8 +1005,7 @@ const WMDInvoice = ({
             {/* <p className='tracking-wide'>{invoiceState?.invoiceNo}</p> Summary
             Sheet
           </h2> */}
-            <p className='tracking-wide'>{invoice?.invoiceNumber}</p> Summary
-            Sheet
+            <p className='tracking-wide'>{invoiceNumber}</p> Summary Sheet
           </h2>
           <div className='overflow-x-scroll w-full'>
             <table className=' w-full text-sm border-collapse'>
@@ -910,5 +1037,4 @@ const WMDInvoice = ({
     </main>
   );
 };
-
 export default WMDInvoice;

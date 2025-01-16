@@ -113,6 +113,12 @@ const Sidebar = forwardRef<HTMLDivElement, Props>(
                 icon: LucideReceiptPoundSterling,
                 variant: 'ghost',
               },
+              {
+                title: 'WorkOrder',
+                href: '/admin/workOrder',
+                icon: FileSignature,
+                variant: 'ghost',
+              },
               // {
               //   title: 'Emp Net Wages',
               //   href: '/admin/empCalenderYearWage',

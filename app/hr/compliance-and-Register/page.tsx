@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Select,
@@ -6,9 +6,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -16,20 +16,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Loader2 } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { useEffect, useState } from 'react';
-import DamageRegister from './DamageForm';
-import AdvanceRegister from './AdvanceForm';
-import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
-import { months, monthsName, years } from '@/constants';
+} from "@/components/ui/form";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
+import { useEffect, useState } from "react";
+import DamageRegister from "./DamageForm";
+import AdvanceRegister from "./AdvanceForm";
+import WorkOrderHrAction from "@/lib/actions/HR/workOrderHr/workOrderAction";
+import { months, monthsName, years } from "@/constants";
 
 const Page = () => {
-  const [selectedTab, setSelectedTab] = useState('compliance'); // New state for tabs
+  const [selectedTab, setSelectedTab] = useState("compliance"); // New state for tabs
   const [year, setYear] = useState(null);
   const [month, setMonth] = useState(null);
   const [workOrderNumber, setWorkOrderNumber] = useState<any>(null);
@@ -41,8 +41,7 @@ const Page = () => {
       // const { data, success, error } =
       //   await workOrderAction.FETCH.fetchAllWorkOrder();
 
-      const workOrderResp =
-        await WorkOrderHrAction.FETCH.fetchAllValidWorkOrderHr();
+      const workOrderResp = await WorkOrderHrAction.FETCH.fetchAllValidWorkOrderHr();
       const success = workOrderResp.success;
       // const error = workOrderResp.error
       // const data = JSON.parse(workOrderResp.data)
@@ -50,41 +49,41 @@ const Page = () => {
       if (success) {
         const workOrderNumbers = JSON.parse(workOrderResp.data);
         setAllWorkOrderNumbers(workOrderNumbers);
-        console.log('yeraaaa wowowowwoncjd', workOrderNumbers);
+        console.log("yeraaaa wowowowwoncjd", workOrderNumbers);
       } else {
-        toast.error('Can not fetch work order numbers!');
+        toast.error("Can not fetch work order numbers!");
       }
     };
     fetch();
   }, []);
 
   const schema = z.object({
-    year: z.string().trim().min(1, 'Required'),
-    month: z.string().trim().min(1, 'Required'),
-    workOrder: z.string().trim().min(1, 'Required'),
+    year: z.string().trim().min(1, "Required"),
+    month: z.string().trim().min(1, "Required"),
+    workOrder: z.string().trim().min(1, "Required"),
   });
 
   type FormFields = z.infer<typeof schema>;
 
   const form = useForm<FormFields>({
     defaultValues: {
-      year: '',
-      month: '',
-      workOrder: '',
+      year: "",
+      month: "",
+      workOrder: "",
     },
     resolver: zodResolver(schema),
   });
 
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
-    toast.success('Form submitted successfully!');
+    toast.success("Form submitted successfully!");
     window.open(
       `/hr/compliance-and-Register/compliance-register?month=${data.month}&year=${data.year}&workOrder=${data.workOrder}&workOrderName=${workOrderName}`,
-      '_blank'
+      "_blank"
     );
   };
 
   useEffect(() => {
-    console.log('XXX', allWorkOrderNumbers);
+    console.log("XXX", allWorkOrderNumbers);
     const name = allWorkOrderNumbers.find(
       (won) => won._id === workOrderNumber
     )?.workOrderNumber;
@@ -95,7 +94,7 @@ const Page = () => {
 
   return (
     <div>
-      <h1 className='font-bold text-blue-500 border-b-2 border-blue-500 text-center py-2 mb-4'>
+      <h1 className="font-bold text-blue-500 border-b-2 border-blue-500 text-center py-2 mb-4">
         Compliance and Register
       </h1>
       {/* <div className="flex justify-center items-center mb-4">
@@ -103,56 +102,56 @@ const Page = () => {
       </div> */}
 
       {/* Tab Navigation */}
-      <div className='flex justify-center space-x-4 mb-6'>
+      <div className="flex justify-center space-x-4 mb-6">
         <button
           className={`py-2 px-4 rounded-2xl transition-colors ${
-            selectedTab === 'compliance'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 hover:bg-slate-300'
+            selectedTab === "compliance"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 hover:bg-slate-300"
           }`}
-          onClick={() => setSelectedTab('compliance')}
+          onClick={() => setSelectedTab("compliance")}
         >
           Compliance Register
         </button>
         <button
           className={`py-2 px-4 rounded-2xl transition-colors ${
-            selectedTab === 'damage'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 hover:bg-slate-300'
+            selectedTab === "damage"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 hover:bg-slate-300"
           }`}
-          onClick={() => setSelectedTab('damage')}
+          onClick={() => setSelectedTab("damage")}
         >
           Damage Register
         </button>
         <button
           className={`py-2 px-4 rounded-2xl transition-colors ${
-            selectedTab === 'advance'
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 hover:bg-slate-300'
+            selectedTab === "advance"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 hover:bg-slate-300"
           }`}
-          onClick={() => setSelectedTab('advance')}
+          onClick={() => setSelectedTab("advance")}
         >
           Advance Register
         </button>
       </div>
 
       {/* Tab Content */}
-      {selectedTab === 'compliance' && (
-        <div className=' mt-8 w-full md:w-3/4 lg:w-1/2 mx-auto'>
+      {selectedTab === "compliance" && (
+        <div className=" mt-8 w-full md:w-3/4 lg:w-1/2 mx-auto">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className='p-2 mr-2 border-[1px] border-gray-300 rounded-md shadow-lg flex flex-col gap-6'
+              className="p-2 mr-2 border-[1px] border-gray-300 rounded-md shadow-lg flex flex-col gap-6"
             >
-              <h2 className=' bg-primary-color-extreme/10 font-semibold py-1 text-base text-center'>
+              <h2 className=" bg-primary-color-extreme/10 font-semibold py-1 text-base text-center">
                 Select Year and Month
               </h2>
-              <div className='flex flex-col md:flex-row p-3 gap-4'>
+              <div className="flex flex-col md:flex-row p-3 gap-4">
                 <FormField
                   control={form.control}
-                  name='year'
+                  name="year"
                   render={({ field }) => (
-                    <FormItem className=' flex-col flex gap-1 flex-1'>
+                    <FormItem className=" flex-col flex gap-1 flex-1">
                       <FormLabel>Year</FormLabel>
                       <Select
                         onValueChange={(e) => field.onChange(e)}
@@ -161,13 +160,13 @@ const Page = () => {
                         <FormControl>
                           <SelectTrigger>
                             {field.value ? (
-                              <SelectValue placeholder='' />
+                              <SelectValue placeholder="" />
                             ) : (
-                              'Select Year'
+                              "Select Year"
                             )}
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className='max-w-80 max-h-72'>
+                        <SelectContent className="max-w-80 max-h-72">
                           {years?.map((option) => (
                             <SelectItem value={option.toString()} key={option}>
                               {option}
@@ -181,9 +180,9 @@ const Page = () => {
                 />
                 <FormField
                   control={form.control}
-                  name='month'
+                  name="month"
                   render={({ field }) => (
-                    <FormItem className=' flex-col flex gap-1 flex-1'>
+                    <FormItem className=" flex-col flex gap-1 flex-1">
                       <FormLabel>Month</FormLabel>
                       <Select
                         onValueChange={(e) => field.onChange(e)}
@@ -192,13 +191,13 @@ const Page = () => {
                         <FormControl>
                           <SelectTrigger>
                             {field.value ? (
-                              <SelectValue placeholder='' />
+                              <SelectValue placeholder="" />
                             ) : (
-                              'Select Month'
+                              "Select Month"
                             )}
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className='max-w-80 max-h-72'>
+                        <SelectContent className="max-w-80 max-h-72">
                           {months?.map((option) => (
                             <SelectItem value={option.toString()} key={option}>
                               {monthsName[option - 1]}
@@ -212,9 +211,9 @@ const Page = () => {
                 />
                 <FormField
                   control={form.control}
-                  name='workOrder'
+                  name="workOrder"
                   render={({ field }) => (
-                    <FormItem className=' flex-col flex gap-1 w-1/3'>
+                    <FormItem className=" flex-col flex gap-1 w-1/3">
                       <FormLabel>Work Order</FormLabel>
                       <Select
                         onValueChange={(e) => {
@@ -223,16 +222,16 @@ const Page = () => {
                         }}
                         value={field.value}
                       >
-                        <FormControl className='px-2 border border-gray-400'>
+                        <FormControl className="px-2 border border-gray-400">
                           <SelectTrigger>
                             {field.value ? (
-                              <SelectValue placeholder='' />
+                              <SelectValue placeholder="" />
                             ) : (
-                              'Select Work Order No.'
+                              "Select Work Order No."
                             )}
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className='max-w-80 max-h-72 '>
+                        <SelectContent className="max-w-80 max-h-72 ">
                           {allWorkOrderNumbers?.map((option, index) => (
                             <SelectItem
                               value={option._id.toString()}
@@ -248,13 +247,13 @@ const Page = () => {
                   )}
                 />
               </div>
-              <div className='py-4 flex flex-col md:flex-row justify-center items-center'>
+              <div className="py-4 flex flex-col md:flex-row justify-center items-center">
                 <Button
-                  type='submit'
-                  className='flex items-center gap-1 border-2 border-black px-4 mb-2 rounded bg-green-500 text-white'
+                  type="submit"
+                  className="flex items-center gap-1 border-2 border-black px-4 mb-2 rounded bg-green-500 text-white"
                 >
                   {form.formState.isSubmitting && (
-                    <Loader2 className='h-4 w-4 animate-spin' />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   )}
                   Show Compliance Register
                 </Button>
@@ -265,8 +264,8 @@ const Page = () => {
       )}
 
       {/* Placeholder content for other tabs */}
-      {selectedTab === 'damage' && <DamageRegister />}
-      {selectedTab === 'advance' && <AdvanceRegister />}
+      {selectedTab === "damage" && <DamageRegister />}
+      {selectedTab === "advance" && <AdvanceRegister />}
     </div>
   );
 };

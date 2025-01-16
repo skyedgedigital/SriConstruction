@@ -1,8 +1,8 @@
-'use server';
+"use server";
 
-import { ApiResponse } from '@/interfaces/APIresponses.interface';
-import handleDBConnection from '@/lib/database';
-import EmployeeData from '@/lib/models/HR/EmployeeData.model';
+import { ApiResponse } from "@/interfaces/APIresponses.interface";
+import handleDBConnection from "@/lib/database";
+import EmployeeData from "@/lib/models/HR/EmployeeData.model";
 
 const fetchEmpNames = async (
   page = 0,
@@ -12,14 +12,14 @@ const fetchEmpNames = async (
   if (!dbConnection.success) return dbConnection;
   try {
     const resp = await EmployeeData.find({}).select("name").sort({ name: 1 });
-      // .skip(page * limit)
-      // .limit(limit);
+    // .skip(page * limit)
+    // .limit(limit);
     return {
       success: true,
       data: JSON.stringify(resp),
       status: 200,
       error: null,
-      message: 'Employee fetched successfully',
+      message: "Employee fetched successfully",
     };
   } catch (err) {
     console.error(err);
@@ -27,7 +27,7 @@ const fetchEmpNames = async (
       success: false,
       status: 500,
       message:
-        'Unexpected error occurred, Failed to fetch Employee, Please Try Later',
+        "Unexpected error occurred, Failed to fetch Employee, Please Try Later",
       error: JSON.stringify(err),
       data: null,
     };
@@ -44,7 +44,7 @@ const fetchEmpsJoinedOrLeftWithinDateRange = async (
   try {
     // Convert frontend date format (yyyy-mm-dd) to the database format (dd-mm-yyyy)
     const convertToDatabaseFormat = (date) =>
-      date.split('-').reverse().join('-');
+      date.split("-").reverse().join("-");
 
     const start = convertToDatabaseFormat(startDate); // Convert start date
     const end = convertToDatabaseFormat(endDate); // Convert end date
@@ -72,15 +72,15 @@ const fetchEmpsJoinedOrLeftWithinDateRange = async (
       status: 200,
       data: JSON.stringify(result),
       error: null,
-      message: 'Employee fetched successfully',
+      message: "Employee fetched successfully",
     };
   } catch (err) {
-    console.error('Error fetching employees:', err);
+    console.error("Error fetching employees:", err);
     return {
       success: false,
       status: 500,
       message:
-        'Unexpected error occurred, Failed to fetch Employee data, Please Try Later',
+        "Unexpected error occurred, Failed to fetch Employee data, Please Try Later",
       error: JSON.stringify(err),
       data: null,
     };
@@ -93,7 +93,7 @@ const checkDate = (
   endDate: string
 ): boolean => {
   const toDateObject = (date: string): Date => {
-    const [day, month, year] = date.split('-').map(Number);
+    const [day, month, year] = date.split("-").map(Number);
     return new Date(year, month - 1, day);
   };
   const target = toDateObject(targetDate);
@@ -111,7 +111,7 @@ const fetchEmployeesJoined = async (
   try {
     // Helper function to convert dd-mm-yyyy to a Date object
     const toDatabaseDateFormat = (date) => {
-      const parts = date.split('-');
+      const parts = date.split("-");
       if (parts.length !== 3) throw new Error(`Invalid date format: ${date}`);
       // If format is yyyy-mm-dd, convert to dd-mm-yyyy
       return parts[0].length === 4
@@ -125,12 +125,12 @@ const fetchEmployeesJoined = async (
     console.log(start);
     console.log(end);
 
-    const flag: boolean = checkDate('02-11-2024', start, end);
+    const flag: boolean = checkDate("02-11-2024", start, end);
 
     if (flag) {
-      console.log('falls withing');
+      console.log("falls withing");
     } else {
-      console.log('doesnt');
+      console.log("doesnt");
     }
 
     // Fetch all employees from the database
@@ -157,16 +157,16 @@ const fetchEmployeesJoined = async (
       success: true,
       status: 200,
       data: JSON.stringify({ filteredDocs, count: filteredDocs.length }),
-      message: 'Employee fetched successfully',
+      message: "Employee fetched successfully",
       error: null,
     };
   } catch (err) {
-    console.error('Error fetching employees:', err);
+    console.error("Error fetching employees:", err);
     return {
       success: false,
       status: 500,
       message:
-        'Unexpected error occurred, Failed to fetch Employee, Please Try Later',
+        "Unexpected error occurred, Failed to fetch Employee, Please Try Later",
       error: JSON.stringify(err),
       data: null,
     };
@@ -182,7 +182,7 @@ const fetchEmployeesResigned = async (
   try {
     // Helper function to convert dd-mm-yyyy to a Date object
     const toDatabaseDateFormat = (date) => {
-      const parts = date.split('-');
+      const parts = date.split("-");
       if (parts.length !== 3) throw new Error(`Invalid date format: ${date}`);
       // If format is yyyy-mm-dd, convert to dd-mm-yyyy
       return parts[0].length === 4
@@ -196,12 +196,12 @@ const fetchEmployeesResigned = async (
     console.log(start);
     console.log(end);
 
-    const flag: boolean = checkDate('02-11-2024', start, end);
+    const flag: boolean = checkDate("02-11-2024", start, end);
 
     if (flag) {
-      console.log('falls withing');
+      console.log("falls withing");
     } else {
-      console.log('doesnt');
+      console.log("doesnt");
     }
     const allEmployees = await EmployeeData.find(
       {},
@@ -225,15 +225,15 @@ const fetchEmployeesResigned = async (
       status: 200,
       data: JSON.stringify({ filteredDocs, count: filteredDocs.length }),
       error: null,
-      message: 'Fetch Resigned employee successfully',
+      message: "Fetch Resigned employee successfully",
     };
   } catch (err) {
-    console.error('Error fetching employees:', err);
+    console.error("Error fetching employees:", err);
     return {
       success: false,
       status: 500,
       message:
-        'Unexpected error occurred, Failed to fetch Resigned Employee, Please Try Later',
+        "Unexpected error occurred, Failed to fetch Resigned Employee, Please Try Later",
       data: null,
       error: JSON.stringify(err),
     };

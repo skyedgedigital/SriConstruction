@@ -62,9 +62,11 @@ const vehicleReport = async (startDate, endDate): Promise<ApiResponse<any>> => {
         $lte: end,
       },
     })
+      .sort({ date: 1 })
       .populate('engineer', 'name')
       .populate('department', 'departmentName');
 
+    console.log('vehicle report', vehicleReports);
     let arr = [];
     let totalAmount: number = 0;
     let totalGst: number = 0;

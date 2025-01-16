@@ -176,10 +176,9 @@ const Page = ({
 
   return (
     <div className='ml-[80px]'>
-
       <div className='flex gap-2'>
-      <Button onClick={handleDownloadPDF}>Download PDF</Button>
-      <Button onClick={handleOnClick}>Print</Button>
+        <Button onClick={handleDownloadPDF}>Download PDF</Button>
+        <Button onClick={handleOnClick}>Print</Button>
       </div>
 
       <div ref={contentRef} id={`LeaveStatement/${searchParams.year}`}>
@@ -216,7 +215,7 @@ const Page = ({
           <div className='flex justify-between left-0  ml-0 mb-10 p-8'>
             <div className='flex flex-col '>
               {/* {' '}
-              <div className=' font-bold'>SRI CONSTRUCTION AND CO.</div>
+              <div className=' font-bold'>Shekhar Enterprises</div>
               <div className=' '>.H.NO 78 KAPLI NEAR HARI MANDIR,</div>
               <div className=' '>.PO KAPALI SARAIKEA,</div>
               <div className=' '>.KHARSWAN JHARKHAND.</div>{' '} */}

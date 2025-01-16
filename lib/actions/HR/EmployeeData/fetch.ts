@@ -1,27 +1,27 @@
-'use server';
+"use server";
 
-import { ApiResponse } from '@/interfaces/APIresponses.interface';
-import handleDBConnection from '@/lib/database';
-import EmployeeData from '@/lib/models/HR/EmployeeData.model';
-import { EsiLocationSchema } from '@/lib/models/HR/EsiLocation.model';
-import { DepartmentHrSchema } from '@/lib/models/HR/department_hr';
-import { DesignationSchema } from '@/lib/models/HR/designation.model';
-import { SiteMasterSchema } from '@/lib/models/HR/siteMaster.model';
-import Wages from '@/lib/models/HR/wages.model';
-import WagesSchema from '@/lib/models/HR/wages.model';
-import mongoose from 'mongoose';
+import { ApiResponse } from "@/interfaces/APIresponses.interface";
+import handleDBConnection from "@/lib/database";
+import EmployeeData from "@/lib/models/HR/EmployeeData.model";
+import { EsiLocationSchema } from "@/lib/models/HR/EsiLocation.model";
+import { DepartmentHrSchema } from "@/lib/models/HR/department_hr";
+import { DesignationSchema } from "@/lib/models/HR/designation.model";
+import { SiteMasterSchema } from "@/lib/models/HR/siteMaster.model";
+import Wages from "@/lib/models/HR/wages.model";
+import WagesSchema from "@/lib/models/HR/wages.model";
+import mongoose from "mongoose";
 
 const departmentHrModel =
   mongoose.models.DepartmentHr ||
-  mongoose.model('DepartmentHr', DepartmentHrSchema);
+  mongoose.model("DepartmentHr", DepartmentHrSchema);
 const siteMasterModel =
-  mongoose.models.Site || mongoose.model('Site', SiteMasterSchema);
+  mongoose.models.Site || mongoose.model("Site", SiteMasterSchema);
 const designationModel =
   mongoose.models.Designation ||
-  mongoose.model('Designation', DesignationSchema);
+  mongoose.model("Designation", DesignationSchema);
 const EsiLocationModel =
   mongoose.models.EsiLocation ||
-  mongoose.model('EsiLocation', EsiLocationSchema);
+  mongoose.model("EsiLocation", EsiLocationSchema);
 
 const fetchEmployees = async (
   page = 1,
@@ -30,9 +30,9 @@ const fetchEmployees = async (
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
   try {
-    // console.log('okayyyy');
+    console.log("okayyyy");
 
-    // console.log(page);
+    console.log(page);
     const skipCount = (page - 1) * pageSize;
     const docs = await EmployeeData.find({
       workingStatus: true,
@@ -43,14 +43,14 @@ const fetchEmployees = async (
       .populate("designation");
     // .skip(skipCount)
     // .limit(pageSize)
-    // console.log('skipcount:', skipCount, 'page', page);
-    // const focs = docs.map((item: any) => item.name);
-    // console.log('FOCS', focs);
+    console.log("skipcount:", skipCount, "page", page);
+    const focs = docs.map((item: any) => item.name);
+    console.log("FOCS", focs);
     // console.log("DOCS", docs);
     return {
       success: true,
       status: 200,
-      message: 'Fetched',
+      message: "Fetched",
       data: JSON.stringify(docs),
       error: null,
     };
@@ -59,7 +59,7 @@ const fetchEmployees = async (
     return {
       success: false,
       message:
-        'Unexpected error occurred, Failed to fetch Employees, Please Try Later',
+        "Unexpected error occurred, Failed to fetch Employees, Please Try Later",
       status: 500,
       error: JSON.stringify(err),
       data: null,
@@ -71,7 +71,7 @@ const fetchEmployeesLazyLoading = async (page = 1, pageSize = 15) => {
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
   try {
-    console.log('Fetching employees with lazy loading...');
+    console.log("Fetching employees with lazy loading...");
 
     // Connect to the database
 
@@ -83,7 +83,7 @@ const fetchEmployeesLazyLoading = async (page = 1, pageSize = 15) => {
       .sort({ date: -1 }) // Sorting by the 'date' field in descending order
       .skip(skipCount) // Skip 'skipCount' number of documents
       .limit(pageSize) // Limit the result set to 'pageSize' number of documents
-      .populate('designation'); // Populate the 'designation' field with related data
+      .populate("designation"); // Populate the 'designation' field with related data
 
     // Count the total number of documents (for total pages calculation)
     const totalDocs = await EmployeeData.countDocuments();
@@ -95,7 +95,7 @@ const fetchEmployeesLazyLoading = async (page = 1, pageSize = 15) => {
     return {
       success: true,
       status: 200,
-      message: 'Fetched',
+      message: "Fetched",
       currentPage: page,
       pageSize: pageSize,
       totalPages: totalPages,
@@ -103,11 +103,11 @@ const fetchEmployeesLazyLoading = async (page = 1, pageSize = 15) => {
       data: JSON.stringify(docs), // Return the documents as they are, no need to stringify
     };
   } catch (err) {
-    console.log('Error fetching employees:', err);
+    console.log("Error fetching employees:", err);
 
     return {
       success: false,
-      message: 'Internal Server Error',
+      message: "Internal Server Error",
       status: 500,
       error: JSON.stringify(err),
     };
@@ -124,11 +124,11 @@ const fetchAllEmployees = async (): Promise<ApiResponse<any>> => {
       .sort({
         date: -1,
       })
-      .populate('designation');
+      .populate("designation");
     return {
       success: true,
       status: 200,
-      message: 'Fetched',
+      message: "Fetched",
       data: JSON.stringify(docs),
       error: null,
     };
@@ -136,7 +136,7 @@ const fetchAllEmployees = async (): Promise<ApiResponse<any>> => {
     console.log(err);
     return {
       success: false,
-      message: 'Internal Server Error',
+      message: "Internal Server Error",
       status: 500,
       error: JSON.stringify(err),
       data: null,
@@ -150,19 +150,19 @@ const fetchEmployeesWithWorkorderHr = async (): Promise<ApiResponse<any>> => {
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
   try {
-    console.log('Fetching employees with non-empty workOrderHr');
+    console.log("Fetching employees with non-empty workOrderHr");
 
     // Query to find employees where workOrderHr array has at least one element
     const docs = await EmployeeData.find({
       workOrderHr: { $exists: true, $not: { $size: 0 } },
     })
       .sort({ date: -1 }) // Sort by date in descending order
-      .populate('designation'); // Populate the 'designation' field
+      .populate("designation"); // Populate the 'designation' field
 
     return {
       success: true,
       status: 200,
-      message: 'Fetched all employees with workorder',
+      message: "Fetched all employees with workorder",
       data: JSON.stringify(docs),
       error: null,
     };
@@ -171,7 +171,7 @@ const fetchEmployeesWithWorkorderHr = async (): Promise<ApiResponse<any>> => {
     return {
       success: false,
       message:
-        'Unexpected error occurred, Failed to fetch Employee data with workorder, Please Try Later',
+        "Unexpected error occurred, Failed to fetch Employee data with workorder, Please Try Later",
       status: 500,
       error: JSON.stringify(err),
       data: null,
@@ -187,7 +187,7 @@ const fetchEmployeeByName = async (name): Promise<ApiResponse<any>> => {
     return {
       success: true,
       status: 200,
-      message: 'Details Fetched',
+      message: "Details Fetched",
       data: JSON.stringify(resp),
       error: null,
     };
@@ -195,7 +195,7 @@ const fetchEmployeeByName = async (name): Promise<ApiResponse<any>> => {
     return {
       success: false,
       message:
-        'Unexpected error occurred, Failed to update Damage Register, Please Try Later',
+        "Unexpected error occurred, Failed to update Damage Register, Please Try Later",
       status: 500,
       error: JSON.stringify(err),
       data: null,
@@ -215,7 +215,7 @@ const fetchEmployeeByCode = async (code: string): Promise<ApiResponse<any>> => {
     return {
       success: true,
       status: 200,
-      message: 'Details Fetched',
+      message: "Details Fetched",
       data: JSON.stringify(resp),
       error: null,
     };
@@ -223,7 +223,7 @@ const fetchEmployeeByCode = async (code: string): Promise<ApiResponse<any>> => {
     return {
       success: false,
       message:
-        'Unexpected error occurred, Failed to update Damage Register, Please Try Later',
+        "Unexpected error occurred, Failed to update Damage Register, Please Try Later",
       status: 500,
       error: JSON.stringify(err),
       data: null,
@@ -236,24 +236,24 @@ const fetchEmployeeById = async (docId: any): Promise<ApiResponse<any>> => {
   if (!dbConnection.success) return dbConnection;
   try {
     const resp = await EmployeeData.findOne({ _id: docId })
-      .populate('department')
-      .populate('site')
-      .populate('designation')
-      .populate('ESILocation');
+      .populate("department")
+      .populate("site")
+      .populate("designation")
+      .populate("ESILocation");
 
     if (!resp) {
       return {
         data: null,
         error: null,
         message:
-          'Unexpected error occurred, Failed to employee, Please Try Later',
+          "Unexpected error occurred, Failed to employee, Please Try Later",
         status: 400,
         success: false,
       };
     }
     return {
       success: true,
-      message: 'Fetched Data',
+      message: "Fetched Data",
       status: 200,
       data: JSON.stringify(resp),
       error: null,
@@ -262,7 +262,7 @@ const fetchEmployeeById = async (docId: any): Promise<ApiResponse<any>> => {
     console.log(err);
     return {
       success: false,
-      message: 'Internal Server Error',
+      message: "Internal Server Error",
       status: 500,
       error: JSON.stringify(err),
       data: null,
@@ -276,24 +276,24 @@ const fetchEmployeeByDep = async (dep: any): Promise<ApiResponse<any>> => {
   try {
     const dept = JSON.parse(dep);
     const resp = await EmployeeData.find({ department: dept })
-      .populate('department')
-      .populate('site')
-      .populate('designation')
-      .populate('ESILocation');
+      .populate("department")
+      .populate("site")
+      .populate("designation")
+      .populate("ESILocation");
 
     if (!resp) {
       return {
         data: null,
         error: null,
         message:
-          'Unexpected error occurred, Failed to employee, Please Try Later',
+          "Unexpected error occurred, Failed to employee, Please Try Later",
         status: 400,
         success: false,
       };
     }
     return {
       success: true,
-      message: 'Fetched Data',
+      message: "Fetched Data",
       status: 200,
       data: JSON.stringify(resp),
       error: null,
@@ -303,7 +303,7 @@ const fetchEmployeeByDep = async (dep: any): Promise<ApiResponse<any>> => {
     return {
       success: false,
       message:
-        'Unexpected error occurred, Failed to employee, Please Try Later',
+        "Unexpected error occurred, Failed to employee, Please Try Later",
       status: 500,
       error: JSON.stringify(err),
       data: null,
@@ -327,24 +327,24 @@ const fetchCompliancesByMonthYear = async (
       month: month,
       year: year,
     })
-      .populate('designation')
-      .populate('employee')
-      .populate('workOrderHr');
+      .populate("designation")
+      .populate("employee")
+      .populate("workOrderHr");
 
-    console.log('here is the server response for compliences', resp);
+    console.log("here is the server response for compliences", resp);
     if (!resp) {
       return {
         data: null,
         error: null,
         message:
-          'Unexpected error occurred, Failed to compliances, Please Try Later',
+          "Unexpected error occurred, Failed to compliances, Please Try Later",
         status: 400,
         success: false,
       };
     }
     return {
       success: true,
-      message: 'Fetched Compliances Data for Specified Month and Year',
+      message: "Fetched Compliances Data for Specified Month and Year",
       status: 200,
       data: JSON.stringify(resp),
       error: null,
@@ -354,7 +354,7 @@ const fetchCompliancesByMonthYear = async (
     return {
       success: false,
       message:
-        'Unexpected Error occurred, Failed to fetch Compliances, Please try later',
+        "Unexpected Error occurred, Failed to fetch Compliances, Please try later",
       status: 500,
       error: JSON.stringify(err),
       data: null,

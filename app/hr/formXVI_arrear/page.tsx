@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import toast from 'react-hot-toast';
-import { Separator } from '@/components/ui/separator';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import { useReactToPrint } from 'react-to-print';
+import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
+import { Separator } from "@/components/ui/separator";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { useReactToPrint } from "react-to-print";
 import {
   Table,
   TableBody,
@@ -14,16 +14,16 @@ import {
   TableHeader,
   TableRow,
   PDFTable,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 
-import { fetchAllAttendance } from '@/lib/actions/attendance/fetch';
+import { fetchAllAttendance } from "@/lib/actions/attendance/fetch";
 
-import React, { useEffect, useState } from 'react';
-import { FaWindows } from 'react-icons/fa6';
-import WorkOrderHr from '@/lib/models/HR/workOrderHr.model';
-import wagesAction from '@/lib/actions/HR/wages/wagesAction';
-import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
-import { IEnterprise } from '@/interfaces/enterprise.interface';
+import React, { useEffect, useState } from "react";
+import { FaWindows } from "react-icons/fa6";
+import WorkOrderHr from "@/lib/models/HR/workOrderHr.model";
+import wagesAction from "@/lib/actions/HR/wages/wagesAction";
+import { fetchEnterpriseInfo } from "@/lib/actions/enterprise";
+import { IEnterprise } from "@/interfaces/enterprise.interface";
 
 const Page = ({
   searchParams,
@@ -42,33 +42,33 @@ const Page = ({
     contentRef,
     documentTitle: `FormXVI/${searchParams.year}`,
   });
-  useEffect(() => {
-    const fn = async () => {
-      const resp = await fetchEnterpriseInfo();
-      console.log('response we got ', resp);
-      if (resp.data) {
-        const inf = await JSON.parse(resp.data);
-        setEnt(inf);
-        console.log(ent);
-      }
-      if (!resp.success) {
-        toast.error(
-          `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
-        );
-      }
-    };
-    fn();
-  }, []);
+    useEffect(() => {
+      const fn = async () => {
+        const resp = await fetchEnterpriseInfo();
+        console.log('response we got ', resp);
+        if (resp.data) {
+          const inf = await JSON.parse(resp.data);
+          setEnt(inf);
+          console.log(ent);
+        }
+        if (!resp.success) {
+          toast.error(
+            `Failed to load enterprise details, Please Reload or try later. ERROR : ${resp.error}`
+          );
+        }
+      };
+      fn();
+    }, []);
   const handleOnClick = async () => {
     if (!yearlywages) {
-      toast.error('Attendance data not available for Print generation.');
+      toast.error("Attendance data not available for Print generation.");
       return;
     }
     reactToPrintFn();
   };
   const handleDownloadPDF = async () => {
     if (!yearlywages) {
-      toast.error('Attendance data not available for PDF generation.');
+      toast.error("Attendance data not available for PDF generation.");
       return;
     }
 
@@ -76,7 +76,7 @@ const Page = ({
   };
 
   const generatePDF = async (attendanceData: any) => {
-    const pdf = new jsPDF('l', 'pt', 'a4'); // Create a landscape PDF
+    const pdf = new jsPDF("l", "pt", "a4"); // Create a landscape PDF
     const ogId = `${searchParams.month}/${searchParams.year}`;
 
     // Create a container element to hold the content and table
@@ -86,23 +86,23 @@ const Page = ({
 
     // Append the table to the container element
 
-    tableElement.style.width = '1250px';
+    tableElement.style.width = "1250px";
 
-    const cells = tableElement.querySelectorAll('td, th');
+    const cells = tableElement.querySelectorAll("td, th");
     cells.forEach((cell: any) => {
-      cell.style.padding = '8px'; // Adds padding to each cell
-      cell.style.fontSize = '18px';
+      cell.style.padding = "8px"; // Adds padding to each cell
+      cell.style.fontSize = "18px";
     });
 
     pdf.html(tableElement, {
       callback: async () => {
         pdf.save(`${ogId}.pdf`);
-        const pdfDataUrl = pdf.output('dataurlstring');
+        const pdfDataUrl = pdf.output("dataurlstring");
       },
       x: 10,
       y: 10,
       html2canvas: { scale: 0.5 },
-      autoPaging: 'text',
+      autoPaging: "text",
     });
   };
 
@@ -127,17 +127,17 @@ const Page = ({
       // Add the attendance to the correct month index if it exists for the employee
     });
 
-    console.log(monthlyTotals, 'monthlyTotals'); // Check the result
+    console.log(monthlyTotals, "monthlyTotals"); // Check the result
 
     // Return the aggregated attendance for all months
     return monthlyTotals;
   }
 
-  console.log('yeich toh hain', searchParams);
+  console.log("yeich toh hain", searchParams);
   const startDate = searchParams.startDate;
-  const [syear, smonth, sday] = startDate.split('-').map(Number); //these value are in String
+  const [syear, smonth, sday] = startDate.split("-").map(Number); //these value are in String
   const endDate = searchParams.endDate;
-  const [eyear, emonth, eday] = endDate.split('-').map(Number);
+  const [eyear, emonth, eday] = endDate.split("-").map(Number);
 
   useEffect(() => {
     if (searchParams.modifiedWages) {
@@ -174,10 +174,10 @@ const Page = ({
 
         // })
         setYearlywages(responseData);
-        console.log('response aa gaya', responseData);
+        console.log("response aa gaya", responseData);
       } catch (err) {
-        toast.error('Internal Server Error');
-        console.log('Internal Server Error:', err);
+        toast.error("Internal Server Error");
+        console.log("Internal Server Error:", err);
       }
     };
     if (syear && searchParams.workOrder) {
@@ -189,18 +189,18 @@ const Page = ({
   const days = Array.from({ length: 31 }, (_, i) => i + 1); // Array of days (1 to 31)
 
   const months = [
-    'apr',
-    'may',
-    'jun',
-    'july',
-    'aug',
-    'sep',
-    'oct',
-    'nov',
-    'dec',
-    'Jan',
-    'feb',
-    'mar',
+    "apr",
+    "may",
+    "jun",
+    "july",
+    "aug",
+    "sep",
+    "oct",
+    "nov",
+    "dec",
+    "Jan",
+    "feb",
+    "mar",
   ];
 
   useEffect(() => {

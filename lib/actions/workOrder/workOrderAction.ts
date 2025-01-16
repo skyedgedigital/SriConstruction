@@ -1,23 +1,24 @@
 import { createWorkOrder } from "./create";
 import { deleteWorkOrder } from "./delete";
 import { fetchAllWorkOrdersData, fetchWorkOrderByWorkOrderNumber, fetchWorkOrderUnitsByWorkOrderNameOrId } from "./fetch";
-import { updateWorkOrder } from "./update";
+import { updateWorkOrder, updateWorkOrderBalance } from "./update";
 
 const workOrderAction = {
-    CREATE:{
-        createWorkOrder:createWorkOrder
-    },
-    DELETE:{
-        deleteWorkOrder:deleteWorkOrder
-    },
-    FETCH:{
-        fetchAllWorkOrder:fetchAllWorkOrdersData,
-        fetchWorkOrderByNumber:fetchWorkOrderByWorkOrderNumber,
-        fetchWorkOrderUnitByNumberOrId:fetchWorkOrderUnitsByWorkOrderNameOrId
-    },
-    UPDATE:{
-        updateWorkOrder: updateWorkOrder
-    }
-}
+  CREATE: {
+    createWorkOrder: createWorkOrder,
+  },
+  DELETE: {
+    deleteWorkOrder: deleteWorkOrder,
+  },
+  FETCH: {
+    fetchAllWorkOrder: fetchAllWorkOrdersData,
+    fetchWorkOrderByNumber: fetchWorkOrderByWorkOrderNumber,
+    fetchWorkOrderUnitByNumberOrId: fetchWorkOrderUnitsByWorkOrderNameOrId,
+  },
+  UPDATE: {
+    updateWorkOrder: updateWorkOrder,
+    updateWorkOrderBalance,
+  },
+};
 
 export default workOrderAction

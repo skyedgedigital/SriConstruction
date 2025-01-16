@@ -25,7 +25,7 @@ const fetchVehicleHoursAnalytics = async (): Promise<ApiResponse<any>> => {
         });
       });
     }
-    console.log('Total Hours' + totalHours);
+    console.log("Total Hours"+totalHours);
     return {
       success: true,
       status: 200,

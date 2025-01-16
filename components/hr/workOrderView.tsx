@@ -30,6 +30,7 @@ const WorkOrderView = () => {
   const [editedValidFrom, setEditedValidFrom] = useState('');
   const [editedValidTo, setEditedValidTo] = useState('');
 
+
   useEffect(() => {
     const fn = async () => {
       const result = await WorkOrderHrAction.FETCH.fetchAllWorkOrderHr();

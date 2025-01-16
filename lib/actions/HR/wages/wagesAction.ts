@@ -1,5 +1,5 @@
-import { createWageForAnEmployee } from './create';
-import { fetchFilledWages } from './fetch';
+import { createWageForAnEmployee } from "./create"
+import { fetchFilledWages } from "./fetch"
 import {
   fetchWageForAnEmployee,
   fetchFinalSettlement,
@@ -22,4 +22,4 @@ const wagesAction = {
   },
 };
 
-export default wagesAction;
+export default wagesAction

@@ -1,14 +1,14 @@
-'use client'
+'use client';
 import Create from '@/components/hr/edit';
-import { useSearchParams } from 'next/navigation'
-import React, { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 
 const Page = () => {
-    const params = useSearchParams();
-    const [docId, setDocId] = useState(null);
-    const [name, setName] = useState(null);
-    useEffect(() => {
-      const fn = () => {
+  const params = useSearchParams();
+  const [docId, setDocId] = useState(null);
+  const [name, setName] = useState(null);
+  useEffect(() => {
+    const fn = () => {
       let params_id = params.get('docId');
       let props_name = params.get('name');
       setDocId(params_id);
@@ -19,13 +19,13 @@ const Page = () => {
 
   return (
     <>
-        {docId && name && (
+      {docId && name && (
         <>
           <Create docId={docId} name={name} />
         </>
       )}
     </>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

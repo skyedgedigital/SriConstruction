@@ -27,39 +27,54 @@ import chalanAction from '@/lib/actions/chalan/chalanAction';
 import { useReactToPrint } from 'react-to-print';
 import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
 import { IEnterprise } from '@/interfaces/enterprise.interface';
+import { Loader } from 'lucide-react';
+import workOrderAction from '@/lib/actions/workOrder/workOrderAction';
 
 const todayDate = () => {
   let date = new Date().toLocaleDateString();
   let x = date.split('/');
-  return `${x[1]}/${x[0]}/${x[2]}`;
+  // return `${x[0]}/${x[1]}/${x[2]}`;
+  return date;
 };
-
 const Invoice = ({
-  invoice,
+  // invoice,
   items,
   workOrder,
   itemCost,
   location,
   service,
   department,
+  selectedChalanNumbers,
 }: // mergedItems
 
 {
   items: any;
   workOrder: any;
-  invoice: any;
+  // invoice: any;
   itemCost: any;
   location: any;
   service: any;
   department: any;
+  selectedChalanNumbers: string[];
+
   // mergedItems:any
 }) => {
+  console.log('WON', workOrder);
+
+  // CHALANS NUMBER SORTED AND JOINED, THIS WILL BE INVOICE ID
+  const invoiceId = selectedChalanNumbers.sort().join(',').trim();
   // conroutersole.warn("The Merged Items",mergedItems)
   const [totalCgst, setTotalCgst] = useState(0);
   const [totalSgst, setTotalSgst] = useState(0);
   const [totalHours, setTotalHours] = useState(0);
   const [ent, setEnt] = useState<IEnterprise | null>(null);
-
+  const [invoiceNumber, setInvoiceNumber] = useState<string>('');
+  const [loadingStates, setLoadingStates] = useState({
+    autoInvoiceNumberGenerateLoader: false,
+  });
+  const [lastTwoInvoiceNumbers, setLastTwoInvoiceNumbers] = useState<
+    { _id: string; invoiceNumber: string }[]
+  >([]);
   const [itemsList, setItemsList] = useState([]);
   const [dateMapping, setDateMapping] = useState({});
   const contentInvoiceRef = useRef(null);
@@ -71,6 +86,19 @@ const Invoice = ({
     contentRef: contentSummaryRef,
   });
 
+  useEffect(() => {
+    const fetchLastTwoInvoiceNumbers = async () => {
+      const { data, message, error, status, success } =
+        await chalanAction.FETCH.getLastTwoInvoiceNumbers();
+
+      if (success) {
+        const latest2Docs = await JSON.parse(data);
+        // console.log('LAST TWO INVOICE NUMBERS', latest2Docs);
+        setLastTwoInvoiceNumbers(latest2Docs);
+      }
+    };
+    fetchLastTwoInvoiceNumbers();
+  }, []);
   useEffect(() => {
     const fn = async () => {
       const resp = await fetchEnterpriseInfo();
@@ -122,8 +150,9 @@ const Invoice = ({
     };
 
     const summarySheetInfo = async () => {
-      let invoiceId = invoice.invoiceId;
-      const resp = await chalanAction.FETCH.getSummaryPdfData(invoiceId);
+      const resp = await chalanAction.FETCH.getSummaryPdfData(
+        selectedChalanNumbers
+      );
       if (resp.success) {
         // toast.success("Recieved Summary Data")
         console.log('RESP', resp.data);
@@ -133,7 +162,7 @@ const Invoice = ({
 
     fn();
     summarySheetInfo();
-  }, [items, invoice]);
+  }, [items, selectedChalanNumbers]);
 
   const displayDate = (itemName: string) => {
     // let date = dateMapping?.get(itemName).from;
@@ -211,7 +240,7 @@ const Invoice = ({
   );
 
   const generatePDF = async (printOrDownload: string) => {
-    const originalElementId = invoice?.invoiceId;
+    const originalElementId = invoiceNumber;
 
     const pdf = new jsPDF('l', 'pt', 'a4');
     const originalElement = document.getElementById(originalElementId)!;
@@ -223,9 +252,43 @@ const Invoice = ({
       callback: async () => {
         // Generate the PDF as a data URL
         const pdfDataUrl = pdf.output('dataurlstring');
-        const fileName = `${invoice?.invoiceNumber}.pdf`;
+        const fileName = `Invoice-${invoiceNumber}.pdf`;
         if (printOrDownload === 'download') pdf.save(fileName);
 
+        const invoiceAlreadyExists =
+          await chalanAction.CHECK.checkExistingInvoice(selectedChalanNumbers);
+        //invoiceAlreadyExists.success will be true if no invoice exists
+        if (!invoiceAlreadyExists.success) {
+          return toast.error(
+            invoiceAlreadyExists.message || 'Invoice already exists'
+          );
+        }
+        const savedInvoiceResponse =
+          await chalanAction.CREATE.createMergeChalan(selectedChalanNumbers,invoiceNumber);
+
+        if (!savedInvoiceResponse.success) {
+          return toast.error(
+            savedInvoiceResponse.message ||
+              'Failed to save invoice, Please try again later'
+          );
+        }
+        if (savedInvoiceResponse.success) {
+          toast.success('Invoice saved successfully');
+        }
+        // deducting workorder balance
+        const workOrderUpdateResponse =
+          await workOrderAction.UPDATE.updateWorkOrderBalance(
+            workOrder,
+            grandTotal
+          );
+        if (!workOrderUpdateResponse.success) {
+          toast.error('work order value did not deducted, Please try again', {
+            duration: 5000,
+          });
+        }
+        if (workOrderUpdateResponse.success) {
+          toast.success(workOrderUpdateResponse.message);
+        }
         const byteString = atob(pdfDataUrl.split(',')[1]);
         const mimeString = pdfDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -255,7 +318,7 @@ const Invoice = ({
               console.log('PDF available at', downloadURL);
 
               const pdfResult = await uploadInvoiceToFireBase(
-                invoice,
+                invoiceId,
                 downloadURL
               );
 
@@ -264,12 +327,12 @@ const Invoice = ({
               } else {
                 toast.error(pdfResult.message);
               }
+              await generateSummaryPDF(printOrDownload);
             } catch (error) {
               console.error('Error getting download URL:', error);
             }
           }
         );
-        await generateSummaryPDF(printOrDownload);
       },
       x: 10,
       y: 10,
@@ -279,7 +342,7 @@ const Invoice = ({
   };
 
   const generateSummaryPDF = async (printOrDownload: string) => {
-    const originalElementId = `${invoice?.invoiceId}-summary`;
+    const originalElementId = `${invoiceNumber}-summary`;
 
     // console.log('found element', elementId);
     const pdf = new jsPDF('l', 'pt', 'a4');
@@ -291,7 +354,7 @@ const Invoice = ({
     pdf.html(element, {
       callback: async () => {
         const pdfDataUrl = pdf.output('dataurlstring');
-        const fileName = `${invoice?.invoiceNumber}-summary.pdf`;
+        const fileName = `Invoice-${invoiceNumber}-summary.pdf`;
         if (printOrDownload === 'download') pdf.save(fileName);
 
         const byteString = atob(pdfDataUrl.split(',')[1]);
@@ -323,7 +386,7 @@ const Invoice = ({
               console.log('Summary PDF available at', downloadURL);
 
               const pdfResult = await uploadSummaryToFireBase(
-                invoice,
+                invoiceId,
                 downloadURL
               );
 
@@ -373,8 +436,8 @@ const Invoice = ({
       console.log('error toh yeh hai boss', err);
     }
   };
-  console.log('yeich hai items array bawa', items);
-  console.log('yeich hai items array bawa', invoice);
+  // console.log('yeich hai items array bawa', items);
+  // console.log('yeich hai items array bawa', invoice);
   function numberToWords(amount) {
     if (typeof amount !== 'number' || amount < 0) {
       return 'Invalid input';
@@ -470,34 +533,119 @@ const Invoice = ({
     return resp.data;
   };
 
+  const generateInvoiceNumber = async () => {
+    // Fixed function name typo
+    try {
+      setLoadingStates((allStates) => ({
+        ...allStates,
+        autoInvoiceNumberGenerateLoader: true,
+      }));
+      const resp = await chalanAction.FETCH.getLatestInvoiceNumber();
+      if (resp.success) {
+        return JSON.parse(resp.data);
+      } else {
+        console.error('An Error Occurred');
+        toast.error(resp.message);
+        return null;
+      }
+    } catch (err) {
+      toast.error('An Error Occurred');
+      return null;
+    } finally {
+      setLoadingStates((allStates) => ({
+        ...allStates,
+        autoInvoiceNumberGenerateLoader: false,
+      }));
+    }
+  };
+  const handleAutoGenerateInvoice = async () => {
+    const generatedInvoiceNumberApi = await generateInvoiceNumber();
+    console.log('RECEIVED LATEST INVOICE NUMBERS', generatedInvoiceNumberApi);
+    // let generatedInvoiceNumber = generatedInvoiceNumberApi.slice(1, -1);
+    if (generatedInvoiceNumberApi) {
+      console.log('generatedInvoiceNumber', generatedInvoiceNumberApi);
+      setInvoiceNumber(generatedInvoiceNumberApi); // Update form with generated invoice number
+      toast.success('Invoice number generated successfully');
+    } else {
+      toast.error('Failed to generate invoice number');
+    }
+  };
+
   return (
     <main className=' w-full flex flex-col gap-1 p-4 pt-20'>
-      <div className='flex justify-between items-center pr-6 '>
-        <Button
-          onClick={() => {
-            reactToPrintFnInvoice();
-            generateAndUploadInvoicePDF('print');
-          }}
-        >
-          Print Invoice
-        </Button>
-
-        <Button
-          onClick={(e) => {
-            e.preventDefault();
-            generateAndUploadInvoicePDF('download');
-            return;
-          }}
-          className='bg-green-700 text-white px-4 py-2 flex gap-1 items-center rounded ml-auto hover:bg-blue-200 hover:text-primary-color-extreme text-xs'
-        >
-          <MdOutlineFileDownload className='text-lg' />
-          <p>Download Invoice</p>
-        </Button>
+      <div className='flex justify-between items-end p-6 '>
+        <div className='flex flex-col gap-3'>
+          <div className='flex items-end justify-center gap-2'>
+            <form className='flex flex-col gap-1 justify-start items-start'>
+              <label>Enter invoice number</label>
+              <input
+                className='text-lg p-1 border-[1px] border-gray-300 rounded-sm bg-gray-50'
+                placeholder='123'
+                type='text'
+                value={invoiceNumber}
+                onChange={(e) => setInvoiceNumber(e.currentTarget.value)}
+              />
+            </form>{' '}
+            <span>or</span>
+            <button
+              onClick={handleAutoGenerateInvoice}
+              className='bg-blue-100 text-blue-500 px-2 py-1 rounded-sm flex justify-center items-center gap-1'
+            >
+              {loadingStates.autoInvoiceNumberGenerateLoader && <Loader />}
+              <>Auto generate invoice number</>
+            </button>
+          </div>
+          <div className='text-gray-500 flex justify-start items-center gap-1'>
+            <p className='text-sm'>Last two created invoice numbers are : </p>
+            {lastTwoInvoiceNumbers.length > 0 ? (
+              <>
+                {lastTwoInvoiceNumbers.map((no) => (
+                  <span key={no?._id} className='text-gray-700 text-sm'>
+                    {no?.invoiceNumber},
+                  </span>
+                ))}
+              </>
+            ) : (
+              'Failed to fetch'
+            )}
+          </div>
+        </div>
+        <div className='flex justify-between items-center gap-3'>
+          <Button
+            onClick={() => {
+              if (!invoiceNumber) {
+                return toast.error(
+                  'Invoice number is must to save invoice or summery sheet'
+                );
+              }
+              reactToPrintFnInvoice();
+              generateAndUploadInvoicePDF('print');
+            }}
+          >
+            Print Invoice
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              if (!invoiceNumber) {
+                return toast.error(
+                  'Invoice number is must to save invoice or summery sheet'
+                );
+              }
+              generateAndUploadInvoicePDF('download');
+              return;
+            }}
+            className='bg-green-700 text-white px-4 py-2 flex gap-1 items-center rounded ml-auto hover:bg-blue-200 hover:text-primary-color-extreme text-xs'
+          >
+            <MdOutlineFileDownload className='text-lg' />
+            <p>Download Invoice</p>
+          </Button>
+        </div>
       </div>
       <div className=' flex items-center justify-center '>
         <div
           className=' border-[1px] border-gray-700  tracking-wider w-full  text-[0.75rem] font-semibold'
-          id={`${invoice?.invoiceId}`}
+          id={`${invoiceNumber}`}
           ref={contentInvoiceRef}
         >
           <div className='w-full   flex flex-col gap-3 my-3 ml-4'>
@@ -595,7 +743,12 @@ const Invoice = ({
               <div className='flex flex-col gap-1 min-w-52'>
                 <div className='flex gap-4 items-center '>
                   <p>Invoice no:</p>
-                  <p>{invoice?.invoiceNumber}</p>
+                  <p>
+                    {' '}
+                    SE/{todayDate().split('/')[2].substring(2, 4)}-
+                    {Number(todayDate().split('/')[2].substring(2, 4)) + 1}/
+                    {invoiceNumber}
+                  </p>
                 </div>
                 <div className='flex gap-4 items-center'>
                   <p>Date of Issue :</p>
@@ -612,7 +765,7 @@ const Invoice = ({
                   )}
                 </div>
                 <div className='flex gap-4 items-center'>
-                  <p>WO/PO No</p> <p>{workOrder?.workOrderNumber}</p>
+                  <p>WO/PO No</p> <p>{workOrder}</p>
                 </div>
                 {/* <div className='flex gap-4 items-center'>
                   <p>WO/PO Date:</p>
@@ -817,6 +970,11 @@ const Invoice = ({
       <div className='mt-10 flex justify-between items-center pr-6 '>
         <Button
           onClick={() => {
+            if (!invoiceNumber) {
+              return toast.error(
+                'Invoice number is must to save invoice or summery sheet'
+              );
+            }
             reactToPrintFnSummary();
             generateAndUploadInvoiceSummaryPDF('print');
           }}
@@ -826,6 +984,11 @@ const Invoice = ({
         <Button
           onClick={(e) => {
             e.preventDefault();
+            if (!invoiceNumber) {
+              return toast.error(
+                'Invoice number is must to save invoice or summery sheet'
+              );
+            }
             generateAndUploadInvoiceSummaryPDF('download');
             return;
           }}
@@ -837,7 +1000,7 @@ const Invoice = ({
       </div>
       <div className='flex items-center justify-center '>
         <div
-          id={`${invoice?.invoiceId}-summary`}
+          id={`${invoiceNumber}-summary`}
           className='flex flex-col justify-center items-center w-full '
           ref={contentSummaryRef}
         >
@@ -846,8 +1009,7 @@ const Invoice = ({
             {/* <p className='tracking-wide'>{invoiceState?.invoiceNo}</p> Summary
             Sheet
           </h2> */}
-            <p className='tracking-wide'>{invoice?.invoiceNumber}</p> Summary
-            Sheet
+            <p className='tracking-wide'>{invoiceNumber}</p> Summary Sheet
           </h2>
           <div className='overflow-x-scroll w-full'>
             <table className=' w-full text-sm border-collapse'>

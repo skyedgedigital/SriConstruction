@@ -13,8 +13,12 @@ import {
 import { markChalanAsVerified, updateChalan } from './update';
 import { testFunction } from './test';
 import { fn } from './calculatePrice';
-import { mergeChalans } from './merge';
-import { checkIfExisting, generateContinousInvocieNumber } from './invoice';
+import { mergeChalans, prepareMergedItems } from './merge';
+import {
+  checkIfInvoiceExists,
+  generateContinuousInvoiceNumber,
+  getLastTwoInvoiceNumbers,
+} from './invoice';
 import { getPhysicalChalansOfInvoice } from './getChalanOfInvoice';
 import { getDistinguishedSummaryData } from './summaryPdf';
 import { vehicleReport } from './vehicleReport';
@@ -41,16 +45,20 @@ const chalanAction = {
     getAllVerifiedChalans: getAllVerifiedChalans,
     getAllInvoiceCreatedChalans: getAllInvoiceCreatedChalans,
     getPhysicalChalansOfInvoice: getPhysicalChalansOfInvoice,
-    getLatestInvoiceNumber: generateContinousInvocieNumber,
+    getLatestInvoiceNumber: generateContinuousInvoiceNumber,
     getSummaryPdfData: getDistinguishedSummaryData,
     vehicleReport: vehicleReport,
+    getLastTwoInvoiceNumbers,
   },
   CHECK: {
-    checkExistingInvoice: checkIfExisting,
+    checkExistingInvoice: checkIfInvoiceExists,
   },
   TEST: {
     testChalan: testFunction,
     calc: fn,
+  },
+  PREPARE: {
+    prepareMergedItems,
   },
 };
 

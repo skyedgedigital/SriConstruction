@@ -95,7 +95,7 @@ const getSummaryPdfData = async (
   }
 };
 
-const getDistinguishedSummaryData = async (invoiceId) => {
+const getDistinguishedSummaryData = async (chalanNumbers: string[]) => {
   try {
     // Connect to the database
     const dbConnection = await handleDBConnection();
@@ -109,23 +109,23 @@ const getDistinguishedSummaryData = async (invoiceId) => {
     console.log('Items Map:', itemsMap);
 
     // Fetch the invoice document
-    const invoice = await Invoice.findOne({ invoiceId });
-    if (!invoice) {
-      return {
-        success: false,
-        status: 404,
-        message: 'Invoice not found',
-        error: null,
-        data: null,
-      };
-    }
+    // const invoice = await Invoice.findOne({ invoiceId });
+    // if (!invoice) {
+    //   return {
+    //     success: false,
+    //     status: 404,
+    //     message: 'Invoice not found',
+    //     error: null,
+    //     data: null,
+    //   };
+    // }
 
     // Collect results
     const result: any = {};
 
     // Process each chalan in the invoice
     await Promise.all(
-      invoice.chalans.map(async (chalanNumber) => {
+      chalanNumbers?.map(async (chalanNumber) => {
         const chalanDoc = await Chalan.findOne({ chalanNumber });
         if (chalanDoc) {
           const { items: chalanItems, date, location } = chalanDoc;
@@ -187,5 +187,97 @@ const getDistinguishedSummaryData = async (invoiceId) => {
     };
   }
 };
+// const getDistinguishedSummaryData = async (invoiceId) => {
+//   try {
+//     // Connect to the database
+//  const dbConnection = await handleDBConnection();
+//  if (!dbConnection.success) return dbConnection;
+//     // Fetch items and create a mapping of item IDs to names
+//     const items = await Item.find({});
+//     const itemsMap = new Map();
+//     items.forEach((item) => {
+//       itemsMap.set(item._id.toString(), item.itemName);
+//     });
+//     console.log('Items Map:', itemsMap);
+
+//     // Fetch the invoice document
+//     const invoice = await Invoice.findOne({ invoiceId });
+//     if (!invoice) {
+//       return {
+//         success: false,
+//         status: 404,
+//         message: 'Invoice not found',
+//         error: null,
+//         data: null,
+//       };
+//     }
+
+//     // Collect results
+//     const result: any = {};
+
+//     // Process each chalan in the invoice
+//     await Promise.all(
+//       invoice.chalans.map(async (chalanNumber) => {
+//         const chalanDoc = await Chalan.findOne({ chalanNumber });
+//         if (chalanDoc) {
+//           const { items: chalanItems, date, location } = chalanDoc;
+
+//           // Process each item in the chalan
+//           chalanItems.forEach((chalanItem) => {
+//             const itemId = chalanItem.item.toString();
+//             if (itemsMap.has(itemId)) {
+//               // Initialize structure if not present
+//               if (!result[itemId]) {
+//                 result[itemId] = {
+//                   totalHours: 0,
+//                   details: [],
+//                 };
+//               }
+
+//               // Update total hours
+//               result[itemId].totalHours += chalanItem.hours;
+
+//               // Add details to the result
+//               result[itemId].details.push({
+//                 itemDescription: itemsMap.get(itemId),
+//                 chalanNumber,
+//                 chalanDate: date,
+//                 location,
+//                 workingHour: chalanItem.hours,
+//               });
+//             }
+//           });
+//         }
+//       })
+//     );
+
+//     // Log the result with details
+//     console.log('Result Summary:');
+//     for (const [itemId, data] of Object.entries(result) as [string, any][]) {
+//       console.log(`Item ID: ${itemId}`);
+
+//       console.log(`  Total Hours: ${data.totalHours}`);
+//       console.log(`  Details:`);
+//       data.details.forEach((detail: any, index: number) => {
+//         console.log(`    ${index + 1}. ${JSON.stringify(detail, null, 2)}`);
+//       });
+//     }
+
+//     return {
+//       success: true,
+//       status: 200,
+//       message: 'Data fetched successfully',
+//       data: result,
+//     };
+//   } catch (err) {
+//     console.error('Error in getDistinguishedSummaryData:', err);
+//     return {
+//       success: false,
+//       status: 500,
+//       message: 'Internal Server Error',
+//       error: JSON.stringify(err),
+//     };
+//   }
+// };
 
 export { getDistinguishedSummaryData };

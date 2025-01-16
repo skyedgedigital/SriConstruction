@@ -279,6 +279,7 @@ const AddAttendance = ({ employeee }) => {
       }
     };
 
+    // const handleDelete = (id: any) => {};
     const onDeleteHandler = async (
       workOrderHr_Id: string,
       employee_Id: string,

@@ -30,7 +30,7 @@ const fetchFuelManagement = async (
     for (let i = 0; i < docs.length; i++) {
       total += docs[i]?.amount;
     }
-
+    
     return {
       success: true,
       status: 200,

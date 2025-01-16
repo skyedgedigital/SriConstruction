@@ -166,11 +166,22 @@ const Page = ({
     // You can send the array of chalan numbers (checkedChalans) to your function here
     try {
       console.log('Selected chalan numbers:', checkedChalans); // Example usage
-      const res = await chalanAction.CREATE.createMergeChalan(checkedChalans);
+      // const res = await chalanAction.CREATE.createMergeChalan(checkedChalans);
+      // console.log(res);
+      // if (res?.success) {
+      // } else {
+      //   toast.error(res.message);
+      //   console.log(res.error);
+      // }
+      // console.log(res.message);
+      // const response = await JSON.parse(res.data);
+      // console.log('wow nice invoice bhai', response);
+      // const dataToSend = {
+      //   workOrderNumber: workOrderNumber?.workOrderNumber,
+      // };
       const timestamps = checkedIChalans.map((chalan) =>
         new Date(chalan.date).getTime()
       );
-      console.log(res);
       // Find the minimum and maximum timestamps
       const minTimestamp = Math.min(...timestamps);
       const maxTimestamp = Math.max(...timestamps);
@@ -193,28 +204,22 @@ const Page = ({
       checkedChalans.length > 1
         ? (formattedString = `${formatDate(minDate)} to ${formatDate(maxDate)}`)
         : (formattedString = `${formatDate(minDate)}`);
-      if (res?.success) {
-        console.log(res.message);
-        const response = await JSON.parse(res.data);
-        console.log('wow nice invoice bhai', response);
-        const dataToSend = {
-          workOrderNumber: workOrderNumber?.workOrderNumber,
-        };
-        const query = {
-          wo: workOrderNumber,
-          location: checkedIChalans[0]?.location,
-          service: formattedString,
-          department: checkedIChalans[0].department?.departmentName,
-          invoiceId: response?.invoiceId,
-        };
-        const queryString = new URLSearchParams(query).toString();
-        console.log('dfghjk', queryString);
-        window.open(`/fleetmanager/enter-invoice-number?${queryString}`);
-        // window.open(`/create-invoice?${queryString}`);
-      } else {
-        toast.error(res.message);
-        console.log(res.error);
-      }
+      // this find step is extra we had to do in merge chalan than individualChalanContainer because of how here <Select/> is working
+      const selectWO = allWorkOrderNumbers?.find(
+        (wo) => wo?._id?.toString() === workOrderNumber
+      );
+      const query = {
+        wo: selectWO?.workOrderNumber,
+        location: checkedIChalans[0]?.location,
+        service: formattedString,
+        department: checkedIChalans[0].department?.departmentName,
+        // invoiceId: response?.invoiceId,
+        selectedChalanNumbers: JSON.stringify(checkedChalans),
+      };
+      const queryString = new URLSearchParams(query).toString();
+      console.log('query string', queryString);
+      window.open(`/create-invoice?${queryString}`);
+      // window.open(`/fleetmanager/enter-invoice-number?${queryString}`);
     } catch (error) {
       console.log(error);
     }
@@ -315,6 +320,8 @@ const Page = ({
                   <Select
                     onValueChange={(e) => {
                       field.onChange(e);
+                      // console.log('YYYY', field);
+                      console.log('XXXX', e);
                       setWorkOrderNumber(e);
                     }}
                     value={field.value}
