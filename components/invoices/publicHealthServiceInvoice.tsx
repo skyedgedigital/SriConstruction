@@ -253,7 +253,10 @@ const PublicHealthServiceInvoice = ({
         if (printOrDownload === 'download') pdf.save(fileName);
 
         const invoiceAlreadyExists =
-          await chalanAction.CHECK.checkExistingInvoice(selectedChalanNumbers);
+          await chalanAction.CHECK.checkExistingInvoice(
+            selectedChalanNumbers,
+            `SE/24-25/${invoiceNumber}`
+          );
         //invoiceAlreadyExists.success will be true if no invoice exists
         if (!invoiceAlreadyExists.success) {
           return toast.error(
@@ -532,8 +535,7 @@ const PublicHealthServiceInvoice = ({
     return resp.data;
   };
 
-  const generateInvoiceNumber = async () => {
-    // Fixed function name typo
+  const handleAutoGenerateInvoice = async () => {
     try {
       setLoadingStates((allStates) => ({
         ...allStates,
@@ -541,32 +543,22 @@ const PublicHealthServiceInvoice = ({
       }));
       const resp = await chalanAction.FETCH.getLatestInvoiceNumber();
       if (resp.success) {
-        return JSON.parse(resp.data);
-      } else {
-        console.error('An Error Occurred');
-        toast.error(resp.message);
-        return null;
+        setInvoiceNumber(await JSON.parse(resp.data));
+      }
+      if (!resp.success) {
+        // console.error('An Error Occurred');
+        return toast.error(resp.message);
       }
     } catch (err) {
       toast.error('An Error Occurred');
-      return null;
+      toast.error(
+        JSON.stringify(err) || 'Unexpected error occurred, Please try later'
+      );
     } finally {
       setLoadingStates((allStates) => ({
         ...allStates,
         autoInvoiceNumberGenerateLoader: false,
       }));
-    }
-  };
-  const handleAutoGenerateInvoice = async () => {
-    const generatedInvoiceNumberApi = await generateInvoiceNumber();
-    // console.log('RECEIVED LATEST INVOICE NUMBERS', generatedInvoiceNumberApi);
-    // let generatedInvoiceNumber = generatedInvoiceNumberApi.slice(1, -1);
-    if (generatedInvoiceNumberApi) {
-      console.log('generatedInvoiceNumber', generatedInvoiceNumberApi);
-      setInvoiceNumber(generatedInvoiceNumberApi); // Update form with generated invoice number
-      toast.success('Invoice number generated successfully');
-    } else {
-      toast.error('Failed to generate invoice number');
     }
   };
 
@@ -588,13 +580,16 @@ const PublicHealthServiceInvoice = ({
                 />
               </form>{' '}
               <span>or</span>
-              <button
-                onClick={handleAutoGenerateInvoice}
-                className='bg-blue-100 text-blue-500 px-2 py-1 rounded-sm flex justify-center items-center gap-1'
-              >
-                {loadingStates.autoInvoiceNumberGenerateLoader && <Loader />}
-                <>Auto generate invoice number</>
-              </button>
+              <div className='flex flex-col'>
+                <p className='text-xs text-gray-400'>(Recommended)</p>
+                <button
+                  onClick={handleAutoGenerateInvoice}
+                  className='bg-blue-100 text-blue-500 px-2 py-1 rounded-sm flex justify-center items-center gap-1'
+                >
+                  {loadingStates.autoInvoiceNumberGenerateLoader && <Loader />}
+                  <>Auto generate invoice number</>
+                </button>
+              </div>
             </div>
             <div className='text-gray-500 flex justify-start items-center gap-1'>
               <p className='text-sm'>Last two created invoice numbers are : </p>
@@ -798,7 +793,7 @@ const PublicHealthServiceInvoice = ({
                     </span>
                   )}
                   <span className='border-[1px] border-black p-1 pl-2 font-bold'>
-                    {workOrder}
+                    {workOrder?.workOrderNumber}
                   </span>
                   <span className='border-[1px] border-black p-1 pl-2 font-bold'>
                     -

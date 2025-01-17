@@ -209,7 +209,7 @@ const Page = ({
         (wo) => wo?._id?.toString() === workOrderNumber
       );
       const query = {
-        wo: selectWO?.workOrderNumber,
+        wo: selectWO?._id,
         location: checkedIChalans[0]?.location,
         service: formattedString,
         department: checkedIChalans[0].department?.departmentName,

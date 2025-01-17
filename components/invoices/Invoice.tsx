@@ -256,15 +256,23 @@ const Invoice = ({
         if (printOrDownload === 'download') pdf.save(fileName);
 
         const invoiceAlreadyExists =
-          await chalanAction.CHECK.checkExistingInvoice(selectedChalanNumbers);
+          await chalanAction.CHECK.checkExistingInvoice(
+            selectedChalanNumbers,
+            `SE/24-25/${invoiceNumber}`
+          );
         //invoiceAlreadyExists.success will be true if no invoice exists
         if (!invoiceAlreadyExists.success) {
           return toast.error(
             invoiceAlreadyExists.message || 'Invoice already exists'
           );
         }
+        if (printOrDownload === 'download') pdf.save(fileName);
+
         const savedInvoiceResponse =
-          await chalanAction.CREATE.createMergeChalan(selectedChalanNumbers,invoiceNumber);
+          await chalanAction.CREATE.createMergeChalan(
+            selectedChalanNumbers,
+            invoiceNumber
+          );
 
         if (!savedInvoiceResponse.success) {
           return toast.error(
@@ -533,8 +541,7 @@ const Invoice = ({
     return resp.data;
   };
 
-  const generateInvoiceNumber = async () => {
-    // Fixed function name typo
+  const handleAutoGenerateInvoice = async () => {
     try {
       setLoadingStates((allStates) => ({
         ...allStates,
@@ -542,32 +549,22 @@ const Invoice = ({
       }));
       const resp = await chalanAction.FETCH.getLatestInvoiceNumber();
       if (resp.success) {
-        return JSON.parse(resp.data);
-      } else {
-        console.error('An Error Occurred');
-        toast.error(resp.message);
-        return null;
+        setInvoiceNumber(await JSON.parse(resp.data));
+      }
+      if (!resp.success) {
+        // console.error('An Error Occurred');
+        return toast.error(resp.message);
       }
     } catch (err) {
       toast.error('An Error Occurred');
-      return null;
+      toast.error(
+        JSON.stringify(err) || 'Unexpected error occurred, Please try later'
+      );
     } finally {
       setLoadingStates((allStates) => ({
         ...allStates,
         autoInvoiceNumberGenerateLoader: false,
       }));
-    }
-  };
-  const handleAutoGenerateInvoice = async () => {
-    const generatedInvoiceNumberApi = await generateInvoiceNumber();
-    console.log('RECEIVED LATEST INVOICE NUMBERS', generatedInvoiceNumberApi);
-    // let generatedInvoiceNumber = generatedInvoiceNumberApi.slice(1, -1);
-    if (generatedInvoiceNumberApi) {
-      console.log('generatedInvoiceNumber', generatedInvoiceNumberApi);
-      setInvoiceNumber(generatedInvoiceNumberApi); // Update form with generated invoice number
-      toast.success('Invoice number generated successfully');
-    } else {
-      toast.error('Failed to generate invoice number');
     }
   };
 
@@ -587,13 +584,16 @@ const Invoice = ({
               />
             </form>{' '}
             <span>or</span>
-            <button
-              onClick={handleAutoGenerateInvoice}
-              className='bg-blue-100 text-blue-500 px-2 py-1 rounded-sm flex justify-center items-center gap-1'
-            >
-              {loadingStates.autoInvoiceNumberGenerateLoader && <Loader />}
-              <>Auto generate invoice number</>
-            </button>
+            <div className='flex flex-col'>
+              <p className='text-xs text-gray-400'>(Recommended)</p>
+              <button
+                onClick={handleAutoGenerateInvoice}
+                className='bg-blue-100 text-blue-500 px-2 py-1 rounded-sm flex justify-center items-center gap-1'
+              >
+                {loadingStates.autoInvoiceNumberGenerateLoader && <Loader />}
+                <>Auto generate invoice number</>
+              </button>
+            </div>
           </div>
           <div className='text-gray-500 flex justify-start items-center gap-1'>
             <p className='text-sm'>Last two created invoice numbers are : </p>
@@ -744,9 +744,9 @@ const Invoice = ({
                 <div className='flex gap-4 items-center '>
                   <p>Invoice no:</p>
                   <p>
-                    {' '}
-                    SE/{todayDate().split('/')[2].substring(2, 4)}-
-                    {Number(todayDate().split('/')[2].substring(2, 4)) + 1}/
+                    {/* SE/{todayDate().split('/')[2].substring(2, 4)}-
+                    {Number(todayDate().split('/')[2].substring(2, 4)) + 1}/ */}
+                    SE/24-25/
                     {invoiceNumber}
                   </p>
                 </div>
@@ -755,7 +755,7 @@ const Invoice = ({
                   <p> {todayDate()}</p>
                 </div>
                 <div className='flex gap-4 items-center'>
-                  <p>Vendor code</p>
+                  <p>Vendor code: </p>
                   {ent?.vendorCode ? (
                     <p className='font-normal  mb-2'>{ent?.vendorCode}</p>
                   ) : (
@@ -765,7 +765,7 @@ const Invoice = ({
                   )}
                 </div>
                 <div className='flex gap-4 items-center'>
-                  <p>WO/PO No</p> <p>{workOrder}</p>
+                  <p>WO/PO No: </p> <p>{workOrder?.workOrderNumber}</p>
                 </div>
                 {/* <div className='flex gap-4 items-center'>
                   <p>WO/PO Date:</p>

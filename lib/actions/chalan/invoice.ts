@@ -11,7 +11,8 @@ import { ApiResponse } from '@/interfaces/APIresponses.interface';
 import { revalidatePath } from 'next/cache';
 
 const checkIfInvoiceExists = async (
-  chalanNumbers: string[]
+  chalanNumbers: string[],
+  invoiceNumber: string
 ): Promise<ApiResponse<any>> => {
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
@@ -19,8 +20,12 @@ const checkIfInvoiceExists = async (
   const sortedChalanNumbers = chalanNumbers.sort().join(',').trim();
   try {
     const result = await Invoice.findOne({
-      invoiceId: sortedChalanNumbers,
+      $or: [
+        { invoiceId: sortedChalanNumbers },
+        { invoiceNumber: invoiceNumber },
+      ],
     });
+    console.log('Found invoice', result);
     if (!result) {
       return {
         success: true,
@@ -29,15 +34,18 @@ const checkIfInvoiceExists = async (
         error: null,
         data: null,
       };
-    } else {
-      return {
-        success: false,
-        message: 'Invoice Already Exists In Database',
-        data: JSON.stringify(result),
-        status: 400,
-        error: null,
-      };
     }
+    const message =
+      result.invoiceId === sortedChalanNumbers
+        ? 'Invoice already exists with this chalan'
+        : 'Invoice number already exists';
+    return {
+      success: false,
+      message,
+      data: JSON.stringify(result),
+      status: 400,
+      error: null,
+    };
   } catch (err) {
     return {
       success: false,
@@ -416,16 +424,42 @@ const generateContinuousInvoiceNumber = async (): Promise<ApiResponse<any>> => {
   try {
     const dbConnection = await handleDBConnection();
     if (!dbConnection.success) return dbConnection;
-    const latestDoc = await Invoice.find()
-      .sort({
-        _id: -1,
-      })
-      .limit(1);
-    console.log('LATEST DOC', latestDoc);
-    const latestInvoiceNumber = incrementInvoiceNumber(
-      latestDoc[0].invoiceNumber
+
+    const allInvoiceNumbers = (
+      await Invoice.find().select('invoiceNumber')
+    ).toSorted(
+      (a, b) =>
+        Number(a.invoiceNumber.split('/')[2]) -
+        Number(b.invoiceNumber.split('/')[2])
     );
 
+    if (!allInvoiceNumbers) {
+      return {
+        success: false,
+        status: 200,
+        message:
+          'Failed to look invoice numbers in data base to generate new invoice numbers, Please try later',
+        data: null,
+        error: null,
+      };
+    }
+    console.log('ALL SORTED INVOICE NUMBER', allInvoiceNumbers);
+    const latestInvoiceNumber =
+      Number(
+        allInvoiceNumbers?.[allInvoiceNumbers.length - 1].invoiceNumber.split(
+          '/'
+        )[2]
+      ) + 1;
+    console.log('latest invoice number', latestInvoiceNumber);
+    if (!latestInvoiceNumber) {
+      return {
+        success: false,
+        status: 200,
+        message: 'Failed to generate next invoice number, Please try later',
+        data: null,
+        error: null,
+      };
+    }
     return {
       success: true,
       status: 200,
