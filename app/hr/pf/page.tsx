@@ -136,6 +136,37 @@ const Page = ({
 
           // console.log('bbbbbbbbbb', filteredData);
 
+          const required_filtered_data = filteredData.map((item) => {
+            return {
+              total: item.total,
+              incentiveAmount: item.incentiveAmount,
+              allowances: item.allowances,
+              code: item?.employee.code,
+              employee: {
+                UAN: item?.employee.UAN,
+                name: item?.employee.name,
+                dob: item?.employee.dob,
+              },
+              days: item.days,
+              'NCP DAYS': calculateAbsentDays(item) || 0,
+            };
+          });
+          // console.log(required_filtered_data);
+          const mergedData = required_filtered_data.reduce((acc, item) => {
+            const existing = acc.find((obj) => obj.code === item.code);
+            if (existing) {
+              // Merge values for the same employee code
+              existing.total += item.total;
+              existing.incentiveAmount += item.incentiveAmount;
+              existing.allowances += item.allowances;
+              existing['NCP DAYS'] += item['NCP DAYS'];
+            } else {
+              // Add new entry if code doesn't exist yet
+              acc.push({ ...item });
+            }
+            return acc;
+          }, []);
+
           // console.log('aagya response', parsedData);
           // const CheckMultipleEntry = filteredData.filter(
           //   (obj, index) =>
@@ -146,7 +177,7 @@ const Page = ({
           //     ) === index
           // );
           // console.log(CheckMultipleEntry, 'Filterd entry');
-          setAttendanceData(filteredData);
+          setAttendanceData(mergedData);
         } else {
           toast.error(response.message);
         }
