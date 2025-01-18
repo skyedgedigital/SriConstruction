@@ -65,11 +65,11 @@ const schema = z.object({
   bonusPercentage: z.string().trim().min(1, 'Required'),
 });
 
-const secSchema = z.object({
-  employee: z.string().trim().min(1, 'Required'),
-});
+// const secSchema = z.object({
+//   employee: z.string().trim().min(1, 'Required'),
+// });
 
-type SecondFormFields = z.infer<typeof secSchema>;
+// type SecondFormFields = z.infer<typeof secSchema>;
 type FormFields = z.infer<typeof schema>;
 const Page = () => {
   const router = useRouter();
@@ -83,61 +83,61 @@ const Page = () => {
   });
   const [workOrderNumber, setWorkOrderNumber] = useState<any>(null);
 
-  const secForm = useForm<SecondFormFields>({
-    defaultValues: {
-      employee: '',
-    },
-    resolver: zodResolver(secSchema),
-  });
+  // const secForm = useForm<SecondFormFields>({
+  //   defaultValues: {
+  //     employee: '',
+  //   },
+  //   resolver: zodResolver(secSchema),
+  // });
 
-  const [employees, setEmployees] = useState([]);
-  const [attendanceData, setAttendanceData] = useState(null);
-  const [attendance, setAttendance] = useState(null);
+  // const [employees, setEmployees] = useState([]);
+  // const [attendanceData, setAttendanceData] = useState(null);
+  // const [attendance, setAttendance] = useState(null);
 
-  const [employeeData, setEmployeeData] = useState(null);
+  // const [employeeData, setEmployeeData] = useState(null);
 
-  const [wagesData, setWagesData] = useState(null);
+  // const [wagesData, setWagesData] = useState(null);
 
-  const [year, setYear] = useState(null);
-  const [month, setMonth] = useState(null);
+  // const [year, setYear] = useState(null);
+  // const [month, setMonth] = useState(null);
 
-  const [checkboxStatus, setCheckboxStatus] = useState(false);
+  // const [checkboxStatus, setCheckboxStatus] = useState(false);
 
-  const handleToggle = (e) => {
-    const status = e.target.checked;
-    setCheckboxStatus(status);
-  };
+  // const handleToggle = (e) => {
+  //   const status = e.target.checked;
+  //   setCheckboxStatus(status);
+  // };
 
-  const onEmployeeSubmit: SubmitHandler<SecondFormFields> = async (
-    data: SecondFormFields,
-    event
-  ) => {
-    try {
-      const query = {
-        employee: data.employee,
-        ...(checkboxStatus && { Retrenchment_benefit: '15' }),
-      };
+  // const onEmployeeSubmit: SubmitHandler<SecondFormFields> = async (
+  //   data: SecondFormFields,
+  //   event
+  // ) => {
+  //   try {
+  //     const query = {
+  //       employee: data.employee,
+  //       ...(checkboxStatus && { Retrenchment_benefit: '15' }),
+  //     };
 
-      const queryString = new URLSearchParams(query).toString();
-      // @ts-ignore
-      const action = event.nativeEvent.submitter.value; // get the button value
+  //     const queryString = new URLSearchParams(query).toString();
+  //     // @ts-ignore
+  //     const action = event.nativeEvent.submitter.value; // get the button value
 
-      if (action === 'normal_order') {
-        window.open(
-          `/hr/final-settlement/normal-finalsettlement?${queryString}`,
-          '_blank'
-        );
-      } else {
-        window.open(
-          `/hr/final-settlement/reverse-finalsettlement?${queryString}`,
-          '_blank'
-        );
-      }
-    } catch (error) {
-      toast.error('Internalll Server Error');
-      console.error('Internal Server Error:', error);
-    }
-  };
+  //     if (action === 'normal_order') {
+  //       window.open(
+  //         `/hr/final-settlement/normal-finalsettlement?${queryString}`,
+  //         '_blank'
+  //       );
+  //     } else {
+  //       window.open(
+  //         `/hr/final-settlement/reverse-finalsettlement?${queryString}`,
+  //         '_blank'
+  //       );
+  //     }
+  //   } catch (error) {
+  //     toast.error('Internalll Server Error');
+  //     console.error('Internal Server Error:', error);
+  //   }
+  // };
 
   const onYearSubmit: SubmitHandler<FormFields> = async (
     data: FormFields,
@@ -176,27 +176,27 @@ const Page = () => {
       console.error('Internal Server Error:', error);
     }
   };
-  useEffect(() => {
-    const fn = async () => {
-      try {
-        console.log('wowoowowow');
-        const response = await EmployeeDataAction.FETCH.fetchAllEmployeeData();
+  // useEffect(() => {
+  //   const fn = async () => {
+  //     try {
+  //       console.log('wowoowowow');
+  //       const response = await EmployeeDataAction.FETCH.fetchAllEmployeeData();
 
-        console.log(response);
-        if (response?.success) {
-          const responseData = await JSON.parse(response.data);
-          console.log('sahi response', responseData);
-          setEmployees(responseData);
-        } else {
-          console.log(response.message);
-        }
-      } catch (err) {
-        toast.error('Internal Serveeer Error');
-        console.log('Internal Serveeer Error:', err);
-      }
-    };
-    fn();
-  }, []);
+  //       console.log(response);
+  //       if (response?.success) {
+  //         const responseData = await JSON.parse(response.data);
+  //         console.log('sahi response', responseData);
+  //         setEmployees(responseData);
+  //       } else {
+  //         console.log(response.message);
+  //       }
+  //     } catch (err) {
+  //       toast.error('Internal Serveeer Error');
+  //       console.log('Internal Serveeer Error:', err);
+  //     }
+  //   };
+  //   fn();
+  // }, []);
 
   const [allWorkOrderNumbers, setAllWorkOrderNumbers] = useState([]);
 
@@ -205,7 +205,8 @@ const Page = () => {
       // const { data, success, error } =
       //   await workOrderAction.FETCH.fetchAllWorkOrder();
 
-      const workOrderResp = await WorkOrderHrAction.FETCH.fetchAllValidWorkOrderHr();
+      const workOrderResp =
+        await WorkOrderHrAction.FETCH.fetchAllValidWorkOrderHr();
       const success = workOrderResp.success;
       // const error = workOrderResp.error
       // const data = JSON.parse(workOrderResp.data)
@@ -224,7 +225,7 @@ const Page = () => {
   return (
     <div>
       <h1 className='font-bold text-blue-500 border-b-2 border-blue-500 text-center py-2 mb-4'>
-        Checklist and Registers
+        Leave & Bonus
       </h1>
       <Form {...form}>
         <form
@@ -376,7 +377,7 @@ const Page = () => {
         </form>
       </Form>
 
-      <div className='mt-8 flex flex-col '>
+      {/* <div className='mt-8 flex flex-col '>
         <Form {...secForm}>
           <form
             onSubmit={secForm.handleSubmit(onEmployeeSubmit)}
@@ -465,7 +466,7 @@ const Page = () => {
             </div>
           </form>
         </Form>
-      </div>
+      </div> */}
     </div>
   );
 };

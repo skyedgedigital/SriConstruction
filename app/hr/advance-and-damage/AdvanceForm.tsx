@@ -64,7 +64,9 @@ const AdvanceRegister = () => {
     toast.success("Advance register generated successfully!");
     console.log("Generating register from:", data.fromDate, "to:", data.toDate);
     dateForm.reset();
-    window.open(`/hr/compliance-and-Register/advance-register?fromData=${data.fromDate}&toData=${data.toDate}`);
+    window.open(
+      `/hr/advance-and-damage/advance-register?fromData=${data.fromDate}&toData=${data.toDate}`
+    );
   };
 
   const onSubmitEmployee: SubmitHandler<EmployeeFormFields> = async (data) => {

@@ -136,7 +136,7 @@ const Page = ({
 
           // console.log('bbbbbbbbbb', filteredData);
 
-          const required_filtered_data = filteredData.map((item) => {
+           const required_filtered_data = filteredData.map((item) => {
             return {
               total: item.total,
               incentiveAmount: item.incentiveAmount,

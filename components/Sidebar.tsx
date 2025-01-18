@@ -34,6 +34,8 @@ import {
   TestTube,
   Wrench,
   LucideReceiptPoundSterling,
+  IndianRupee,
+  PersonStanding,
 } from 'lucide-react';
 import { Building } from 'lucide-react';
 import { LocateFixed } from 'lucide-react';
@@ -287,48 +289,6 @@ const Sidebar = forwardRef<HTMLDivElement, Props>(
                 variant: 'ghost',
               },
               {
-                title: 'CLM',
-                href: '/hr/CLM',
-                icon: DatabaseBackup,
-                variant: 'ghost',
-              },
-              {
-                title: 'Checklist and Register',
-                href: '/hr/checklist-and-register',
-                icon: ReceiptIndianRupee,
-                variant: 'ghost',
-              },
-              {
-                title: 'PF ESIC',
-                href: '/hr/pf-esic-BankStatement',
-                icon: ReceiptIndianRupee,
-                variant: 'ghost',
-              },
-              {
-                title: 'Bank Statements',
-                href: '/hr/statements',
-                icon: FileText,
-                variant: 'ghost',
-              },
-              {
-                title: 'Compliance and Register',
-                href: '/hr/compliance-and-Register',
-                icon: Bolt,
-                variant: 'ghost',
-              },
-              {
-                title: 'Arrear Generator',
-                href: '/hr/Arrear',
-                icon: HandCoins,
-                variant: 'ghost',
-              },
-              {
-                title: 'Upload_File',
-                href: '/hr/upload_file',
-                icon: Upload,
-                variant: 'ghost',
-              },
-              {
                 group: {
                   title: 'Master Data',
                   icon: Database,
@@ -383,6 +343,60 @@ const Sidebar = forwardRef<HTMLDivElement, Props>(
                     },
                   ],
                 },
+              },
+              {
+                title: 'CLM',
+                href: '/hr/CLM',
+                icon: DatabaseBackup,
+                variant: 'ghost',
+              },
+              {
+                title: 'Bank Payments',
+                href: '/hr/bank-payments',
+                icon: FileText,
+                variant: 'ghost',
+              },
+              {
+                title: 'PF ESIC',
+                href: '/hr/pf-esic',
+                icon: ReceiptIndianRupee,
+                variant: 'ghost',
+              },
+              {
+                title: 'Leave and Bonus',
+                href: '/hr/leave-and-bonus',
+                icon: ReceiptIndianRupee,
+                variant: 'ghost',
+              },
+              {
+                title: 'Arrear Register',
+                href: '/hr/Arrear',
+                icon: HandCoins,
+                variant: 'ghost',
+              },
+              {
+                title: 'Full & Final',
+                href: '/hr/full-and-final',
+                icon: IndianRupee,
+                variant: 'ghost',
+              },
+              {
+                title: 'Employer Register',
+                href: '/hr/employer-register',
+                icon: PersonStanding,
+                variant: 'ghost',
+              },
+              {
+                title: 'Advance & Damage',
+                href: '/hr/advance-and-damage',
+                icon: Bolt,
+                variant: 'ghost',
+              },
+              {
+                title: 'Upload_File',
+                href: '/hr/upload_file',
+                icon: Upload,
+                variant: 'ghost',
               },
             ]}
           />
