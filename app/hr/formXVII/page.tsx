@@ -201,6 +201,7 @@ const Page = ({
     }
   }
 
+  const canShowNH = [1, 5, 8, 10].includes(parseInt(searchParams?.month));
   return (
     <div className='ml-[80px]'>
       <div className='flex gap-2 mb-2'>
@@ -385,30 +386,36 @@ const Page = ({
                       {index + 1}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {employee?.employee.name}
+                      {employee?.employee?.name}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {employee?.employee.workManNo}
+                      {employee?.employee?.workManNo}
                     </TableCell>
                     {/* Table data for each day (status) */}
                     <TableCell className='border-black border-2 text-black'>
-                      {employee?.designation.designation}
+                      {employee?.designation?.designation}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       <div className='ml-5'>
-                        {Number(employee?.attendance) -
-                          CalculateNationalHolidays(
+                        {canShowNH
+                          ? Number(employee?.attendance) -
+                            CalculateNationalHolidays(
+                              findAttendanceByEmployeeId(employee?.employee._id)
+                            )
+                          : Number(employee?.attendance)}
+                      </div>
+                      {canShowNH && (
+                        <div>
+                          {`NH: ${CalculateNationalHolidays(
                             findAttendanceByEmployeeId(employee?.employee._id)
-                          )}
-                      </div>
-                      <div>
-                        {`NH: ${CalculateNationalHolidays(
-                          findAttendanceByEmployeeId(employee?.employee._id)
-                        )}`}
-                      </div>
-                      <div className='border-t-2 border-black pl-5'>
-                        {employee?.attendance}
-                      </div>
+                          )}`}
+                        </div>
+                      )}
+                      {canShowNH && (
+                        <div className='border-t-2 border-black pl-5'>
+                          {employee?.attendance}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'></TableCell>
                     <TableCell className='border-black border-2 text-black'>
@@ -467,15 +474,15 @@ const Page = ({
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {(
-                        parseFloat(employee.otherCashDescription?.hra) +
-                        parseFloat(employee.otherCashDescription?.mob) +
-                        parseFloat(employee.otherCashDescription?.incumb) +
-                        parseFloat(employee.otherCashDescription?.pb) +
-                        parseFloat(employee.otherCashDescription?.wa) +
-                        parseFloat(employee.otherCashDescription?.ca) +
-                        parseFloat(employee.otherCashDescription?.ma) +
-                        parseFloat(employee.otherCashDescription?.ssa) +
-                        parseFloat(employee.otherCashDescription?.oa)
+                        parseFloat(employee?.otherCashDescription?.hra) +
+                        parseFloat(employee?.otherCashDescription?.mob) +
+                        parseFloat(employee?.otherCashDescription?.incumb) +
+                        parseFloat(employee?.otherCashDescription?.pb) +
+                        parseFloat(employee?.otherCashDescription?.wa) +
+                        parseFloat(employee?.otherCashDescription?.ca) +
+                        parseFloat(employee?.otherCashDescription?.ma) +
+                        parseFloat(employee?.otherCashDescription?.ssa) +
+                        parseFloat(employee?.otherCashDescription?.oa)
                       ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>

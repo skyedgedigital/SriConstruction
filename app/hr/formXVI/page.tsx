@@ -299,18 +299,18 @@ const Page = ({
               </TableHeader>
               <TableBody>
                 {attendanceData.map((employee, index) => (
-                  <TableRow key={employee._id} className='h-16'>
+                  <TableRow key={employee?._id} className='h-16'>
                     <TableCell className='border-black border-2 text-black'>
                       {index + 1}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {employee.employee.name}
+                      {employee?.employee?.name}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {employee.employee.fathersName}
+                      {employee?.employee?.fathersName}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
-                      {employee.employee.sex}
+                      {employee?.employee?.sex}
                     </TableCell>
 
                     {/* Table data for each day (status) */}
@@ -320,38 +320,41 @@ const Page = ({
                         className='border-black border-2 text-black'
                       >
                         {calculateStatus(
-                          employee.days.find((d) => d.day === day)?.status
+                          employee?.days.find((d) => d.day === day)?.status
                         )}
                       </TableCell>
                     ))}
                     <TableCell className='border-black border-2 text-black'>
-                      {employee.days.filter((day) => day.status === 'Present')
+                      {employee?.days.filter((day) => day.status === 'Present')
                         .length +
-                        employee.days.filter((day) => day.status === 'Half Day')
-                          .length *
+                        employee?.days.filter(
+                          (day) => day.status === 'Half Day'
+                        ).length *
                           0.5 +
-                        employee.days.filter((day) => day.status === 'NH')
+                        employee?.days.filter((day) => day.status === 'NH')
                           .length}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {`P: ${
-                        employee.days.filter((day) => day.status === 'Present')
+                        employee?.days.filter((day) => day.status === 'Present')
                           .length
                       }, A: ${
-                        employee.days.filter((day) => day.status === 'Absent')
+                        employee?.days.filter((day) => day.status === 'Absent')
                           .length
                       }, O: ${
-                        employee.days.filter((day) => day.status === 'Not Paid')
-                          .length
+                        employee?.days.filter(
+                          (day) => day.status === 'Not Paid'
+                        ).length
                       }, L: ${
-                        employee.days.filter((day) => day.status === 'Leave')
+                        employee?.days.filter((day) => day.status === 'Leave')
                           .length
                       }, HD: ${
-                        employee.days.filter((day) => day.status === 'Half Day')
-                          .length
+                        employee?.days.filter(
+                          (day) => day.status === 'Half Day'
+                        ).length
                       }
                       , NH: ${
-                        employee.days.filter((day) => day.status === 'NH')
+                        employee?.days.filter((day) => day.status === 'NH')
                           .length
                       }
 
