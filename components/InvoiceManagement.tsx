@@ -19,6 +19,8 @@ import { RxCrossCircled } from 'react-icons/rx';
 import toast from 'react-hot-toast';
 import { SubmitHandler } from 'react-hook-form';
 import { updateInvoice } from '@/lib/actions/chalan/invoice';
+import { Loader } from 'lucide-react';
+import chalanAction from '@/lib/actions/chalan/chalanAction';
 
 // Define your Zod schema for the invoice management form
 const invoiceManagementFormSchema = z.object({
@@ -32,10 +34,10 @@ type FormFields = z.infer<typeof invoiceManagementFormSchema>;
 
 const InvoiceManagement: React.FC<{}> = () => {
   // Initialize the form with Zod resolver and default values
-
-  const [loadingInvoices, setLoadingInvoices] = useState<boolean>(false);
-  const [didFetchedInvoices, setDidFetchedInvoices] = useState<boolean>(false);
-  const [allInvoices, setAllInvoices] = useState([]);
+  // const [taxInvoiceNumber, setTaxInvoiceNumber] = useState<string>('');
+  const [loadingStates, setLoadingStates] = useState({
+    autoTaxInvoiceNumberGenerateLoader: false,
+  });
   const [editNotAllowed, setEditNotAllowed] = useState<boolean>(false);
   const [saving, setSaving] = useState(false);
   const form = useForm({
@@ -62,6 +64,34 @@ const InvoiceManagement: React.FC<{}> = () => {
     }
   };
 
+  const handleAutoGenerateTaxInvoiceNumber = async () => {
+    try {
+      setLoadingStates((allStates) => ({
+        ...allStates,
+        autoTaxInvoiceNumberGenerateLoader: true,
+      }));
+      const resp = await chalanAction.FETCH.getLatestTaxInvoiceNumber();
+      if (resp.success) {
+        // setTaxInvoiceNumber(await JSON.parse(resp.data));
+        form.setValue('TaxNumber', `SE/24-25/${await JSON.parse(resp.data)}`);
+      }
+      if (!resp.success) {
+        console.error('An Error Occurred');
+        return toast.error(resp.message);
+      }
+    } catch (err) {
+      // toast.error('An Error Occurred');
+      console.log(err);
+      toast.error(
+        JSON.stringify(err) || 'Unexpected error occurred, Please try later'
+      );
+    } finally {
+      setLoadingStates((allStates) => ({
+        ...allStates,
+        autoTaxInvoiceNumberGenerateLoader: false,
+      }));
+    }
+  };
   return (
     <main className='flex min-h-screen flex-col w-full'>
       <Form {...form}>
@@ -152,6 +182,19 @@ const InvoiceManagement: React.FC<{}> = () => {
                 );
               }}
             />
+            <div className='flex flex-col'>
+              <p className='text-xs text-gray-400'>(Recommended)</p>
+              <button
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleAutoGenerateTaxInvoiceNumber();
+                }}
+                className='bg-blue-100 text-blue-500 px-2 py-1 rounded-sm flex justify-center items-center gap-1'
+              >
+                {loadingStates.autoTaxInvoiceNumberGenerateLoader && <Loader />}
+                <>Auto generate Tax invoice number</>
+              </button>
+            </div>
           </div>
           <div className='w-full  flex justify-center items-center gap-4'>
             <Button

@@ -17,6 +17,7 @@ import { mergeChalans, prepareMergedItems } from './merge';
 import {
   checkIfInvoiceExists,
   generateContinuousInvoiceNumber,
+  generateContinuousTaxInvoiceNumber,
   getLastTwoInvoiceNumbers,
 } from './invoice';
 import { getPhysicalChalansOfInvoice } from './getChalanOfInvoice';
@@ -46,6 +47,7 @@ const chalanAction = {
     getAllInvoiceCreatedChalans: getAllInvoiceCreatedChalans,
     getPhysicalChalansOfInvoice: getPhysicalChalansOfInvoice,
     getLatestInvoiceNumber: generateContinuousInvoiceNumber,
+    getLatestTaxInvoiceNumber: generateContinuousTaxInvoiceNumber,
     getSummaryPdfData: getDistinguishedSummaryData,
     vehicleReport: vehicleReport,
     getLastTwoInvoiceNumbers,

@@ -477,6 +477,66 @@ const generateContinuousInvoiceNumber = async (): Promise<ApiResponse<any>> => {
     };
   }
 };
+const generateContinuousTaxInvoiceNumber = async (): Promise<
+  ApiResponse<any>
+> => {
+  try {
+    const dbConnection = await handleDBConnection();
+    if (!dbConnection.success) return dbConnection;
+
+    const allTaxInvoiceNumbers = (
+      await Invoice.find().select('TaxNumber')
+    ).toSorted((a, b) => {
+      if (a.TaxNumber && b.TaxNumber)
+        return (
+          Number(a.TaxNumber.split('/')[2]) - Number(b.TaxNumber.split('/')[2])
+        );
+    });
+
+    if (!allTaxInvoiceNumbers) {
+      return {
+        success: false,
+        status: 200,
+        message:
+          'Failed to look invoice numbers in data base to generate new invoice numbers, Please try later',
+        data: null,
+        error: null,
+      };
+    }
+    console.log('ALL SORTED TAX INVOICE NUMBER', allTaxInvoiceNumbers);
+    const latestTaxInvoiceNumber =
+      Number(
+        allTaxInvoiceNumbers?.[allTaxInvoiceNumbers.length - 1].TaxNumber.split(
+          '/'
+        )[2]
+      ) + 1;
+    console.log('latest invoice number', latestTaxInvoiceNumber);
+    if (!latestTaxInvoiceNumber) {
+      return {
+        success: false,
+        status: 200,
+        message: 'Failed to generate next invoice number, Please try later',
+        data: null,
+        error: null,
+      };
+    }
+    return {
+      success: true,
+      status: 200,
+      message: 'Latest Doc Number recieved',
+      data: JSON.stringify(latestTaxInvoiceNumber),
+      error: null,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      status: 500,
+      message: 'Unexpected error occurred,Please try later',
+      error: JSON.stringify(err),
+      data: null,
+    };
+  }
+};
 
 const deleteInvoiceById = async (id: string) => {
   try {
@@ -556,4 +616,5 @@ export {
   generateContinuousInvoiceNumber,
   deleteInvoiceById,
   getLastTwoInvoiceNumbers,
+  generateContinuousTaxInvoiceNumber,
 };
