@@ -1,12 +1,69 @@
 'use server';
 
 import { ApiResponse } from '@/interfaces/APIresponses.interface';
+import { ILeavesCount } from '@/interfaces/HR/attendances.interface';
 import handleDBConnection from '@/lib/database';
 import Attendance from '@/lib/models/HR/attendance.model';
 import EmployeeData from '@/lib/models/HR/EmployeeData.model';
 import WorkOrderHr from '@/lib/models/HR/workOrderHr.model';
 import mongoose from 'mongoose';
 import { revalidatePath } from 'next/cache';
+import attendanceAction from './attendanceAction';
+
+const countLeavesMonthly = (
+  attendanceArrayFromFrontend: {
+    day: number;
+    status:
+      | 'Present'
+      | 'Absent'
+      | 'Leave'
+      | 'Half Day'
+      | 'NH'
+      | 'Not Paid'
+      | 'Earned Leave'
+      | 'Casual Leave'
+      | 'Festival Leave';
+  }[],
+  _id?: string
+): ILeavesCount => {
+  const leavesCount: ILeavesCount = {
+    presentDaysCount: 0,
+    earnedLeaveDaysCount: 0,
+    casualLeaveDaysCount: 0,
+    festivalLeaveDaysCount: 0,
+  };
+  attendanceArrayFromFrontend.forEach((day) => {
+    if (day.status === 'Present') {
+      leavesCount.presentDaysCount++;
+    } else if (day.status === 'NH') {
+      leavesCount.presentDaysCount++;
+    } else if (day.status === 'Half Day') {
+      leavesCount.presentDaysCount += 0.5;
+    } else if (day.status === 'Earned Leave') {
+      leavesCount.earnedLeaveDaysCount++;
+    } else if (day.status === 'Casual Leave') {
+      leavesCount.casualLeaveDaysCount++;
+    } else if (day.status === 'Festival Leave') {
+      leavesCount.festivalLeaveDaysCount++;
+    }
+  });
+  return leavesCount;
+};
+
+const countLeavesYearlyExcludingRequestedMonth = async (
+  filterData: any
+): Promise<ILeavesCount> => {
+  const leavesCountFilter = {
+    year: filterData?.year,
+    employee: filterData?.employee,
+    month: { $ne: filterData?.month },
+    // excluding leaves count for the month save attendance is requested for because new
+    // updated leaves count for current month is already been sent from front end and added while comparing
+  };
+  return attendanceAction.FETCH.fetchYearlyLeavesAndPresentCounts(
+    leavesCountFilter
+  );
+};
 
 function getSundays(year: number, month: number) {
   let sundays = [];
@@ -29,20 +86,79 @@ const putAttendance = async (
   if (!dbConnection.success) return dbConnection;
   try {
     const data = JSON.parse(dataString);
-    console.log('yere month', data);
+    // console.log('yere month', data);
     const attendanceArrayFromFrontend = data.arr;
     // this is workorder ID
     const workOrder = data.workOrder;
     const filterData = JSON.parse(filter);
     filterData.workOrderHr = workOrder;
     console.log('yere filterss', filterData);
-
+    // yere filterss {
+    //   employee: '66e2bf4a813d9a173cba195b',
+    //   year: 2025,
+    //   month: 1,
+    //   workOrderHr: '66abb55f9dc2f6215a1cd50f'
+    // }
     // this is employeeID receiving
     const emp = filterData.employee;
-    console.log('emp to shi hai boss', emp);
+    // console.log('emp to shi hai boss', emp);
+
+    const {
+      presentDaysCount,
+      casualLeaveDaysCount,
+      earnedLeaveDaysCount,
+      festivalLeaveDaysCount,
+    } = countLeavesMonthly(attendanceArrayFromFrontend);
+
+    const {
+      presentDaysCount: yearlyPresentDaysCount,
+      casualLeaveDaysCount: yearlyCasualLeaveDaysCount,
+      earnedLeaveDaysCount: yearlyEarnedLeaveDaysCount,
+      festivalLeaveDaysCount: yearlyFestivalLeaveDaysCount,
+    } = await countLeavesYearlyExcludingRequestedMonth(filterData);
+
+    //CHECKING LEAVE CONSTRAINTS
+
+    if (casualLeaveDaysCount + yearlyCasualLeaveDaysCount > 7) {
+      return {
+        data: null,
+        error: null,
+        message: `Can not provide more than 7 yearly casual leaves per employee. Exceeding ${
+          yearlyCasualLeaveDaysCount + casualLeaveDaysCount - 7
+        } Casual leave(s)`,
+        status: 400,
+        success: false,
+      };
+    }
+    if (festivalLeaveDaysCount + yearlyFestivalLeaveDaysCount > 4) {
+      return {
+        data: null,
+        error: null,
+        message: `Can not provide more than 4 yearly Furlough leaves per employee. Exceeding ${
+          festivalLeaveDaysCount + yearlyFestivalLeaveDaysCount - 4
+        } Festival leave(s)`,
+        status: 400,
+        success: false,
+      };
+    }
+    if (earnedLeaveDaysCount + yearlyEarnedLeaveDaysCount > 15) {
+      return {
+        data: null,
+        error: null,
+        message: `Can not provide more than 15 yearly earned leaves per employee. Exceeding ${
+          earnedLeaveDaysCount + yearlyEarnedLeaveDaysCount - 15
+        } Earned leave(s)`,
+        status: 400,
+        success: false,
+      };
+    }
+
     const doc = await Attendance.findOne(filterData);
+
     if (doc) {
-      console.log('Old');
+      // counting leaves according to constraints
+      countLeavesYearlyExcludingRequestedMonth(filterData);
+      if (doc?.casualLeaves) console.log('Old');
       const currentAttendanceArrayInDB = doc.days;
       attendanceArrayFromFrontend.forEach((ele: any) => {
         const givenDay = ele.day;
@@ -56,22 +172,18 @@ const putAttendance = async (
           currentAttendanceArrayInDB.push(ele);
         }
       });
-      let presentDaysCount = 0;
-
-      attendanceArrayFromFrontend.forEach((day) => {
-        if (day.status === 'Present') {
-          presentDaysCount++;
-        } else if (day.status === 'NH') {
-          presentDaysCount++;
-        } else if (day.status === 'Half Day') {
-          presentDaysCount += 0.5;
-        }
-      });
 
       // console.log(currentAttendanceArrayInDB)
-      console.log('This is the WorkOrder', workOrder);
+      // console.log('This is the WorkOrder', workOrder);
       const updatedData = {
-        $set: { days: currentAttendanceArrayInDB, workOrderHr: workOrder },
+        $set: {
+          days: currentAttendanceArrayInDB,
+          workOrderHr: workOrder,
+          earnedLeaves: earnedLeaveDaysCount,
+          festivalLeaves: festivalLeaveDaysCount,
+          presentDays: presentDaysCount,
+          casualLeaves: casualLeaveDaysCount,
+        },
       };
       const resp = await Attendance.findOneAndUpdate(filterData, updatedData, {
         new: true,
@@ -128,7 +240,7 @@ const putAttendance = async (
                 },
               }
             );
-            console.log('Added Successfully:', period);
+            // console.log('Added Successfully:', period);
           }
         } else {
           // Handle case where the employee document is not found
@@ -153,6 +265,8 @@ const putAttendance = async (
         };
       }
     } else {
+      countLeavesYearlyExcludingRequestedMonth(filterData);
+
       console.log('PUTTING NEW ATTENDANCE');
       let sundays = getSundays(filterData.month, filterData.year);
       console.log('Sundays', sundays);
@@ -169,18 +283,12 @@ const putAttendance = async (
         month: filterData.month,
         days: attendanceArrayFromFrontend,
         workOrderHr: workOrder,
+        earnedLeaves: earnedLeaveDaysCount,
+        furloughLeaves: festivalLeaveDaysCount,
+        presentDays: presentDaysCount,
+        casualLeaves: casualLeaveDaysCount,
       });
-      let presentDaysCount = 0;
 
-      attendanceArrayFromFrontend.forEach((day) => {
-        if (day.status === 'Present') {
-          presentDaysCount++;
-        } else if (day.status === 'NH') {
-          presentDaysCount++;
-        } else if (day.status === 'Half Day') {
-          presentDaysCount += 0.5;
-        }
-      });
       const resp = await doc.save();
       if (resp) {
         const period = `${filterData.month}-${filterData.year}`.trim(); // mm-yyyy  format
@@ -256,14 +364,6 @@ const putAttendance = async (
           data: null,
         };
       }
-      revalidatePath('/hr/CLM');
-      return {
-        success: true,
-        status: 200,
-        message: 'Attendance Created & Saved',
-        data: JSON.stringify(resp),
-        error: null,
-      };
     }
   } catch (err) {
     console.log(err);

@@ -40,5 +40,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const storage = getStorage(app, `gs://${storageBucket}`);
+const storage = getStorage(app);
+
 export { app, storage, firebaseConfig };

@@ -8,6 +8,7 @@ import { WorkOrderHrSchema } from '@/lib/models/HR/workOrderHr.model';
 import { DesignationSchema } from '@/lib/models/HR/designation.model';
 import handleDBConnection from '@/lib/database';
 import { ApiResponse } from '@/interfaces/APIresponses.interface';
+import { ILeavesCount } from '@/interfaces/HR/attendances.interface';
 
 const EmployeeDataModel =
   mongoose.models.EmployeeData ||
@@ -246,6 +247,12 @@ const fetchStatus = async (filter: string): Promise<ApiResponse<any>> => {
         obj['Present'] = obj['Present'] + 1;
       } else if (ele.status == 'Half Day') {
         obj['Present'] = obj['Present'] + 0.5;
+      } else if (ele.status == 'Casual Leave') {
+        obj['Present'] = obj['Present'] + 1;
+      } else if (ele.status == 'Festival Leave') {
+        obj['Present'] = obj['Present'] + 1;
+      } else if (ele.status == 'Earned Leave') {
+        obj['Present'] = obj['Present'] + 1;
       }
     });
     return {
@@ -267,9 +274,46 @@ const fetchStatus = async (filter: string): Promise<ApiResponse<any>> => {
   }
 };
 
+const fetchYearlyLeavesAndPresentCounts = async (
+  filter: any
+): Promise<ILeavesCount> => {
+  const doc = await Attendance.find(filter).select(
+    'presentDays earnedLeaves casualLeaves festivalLeaves'
+  );
+  if (!doc) {
+  }
+  const yearlyLeavesCount: ILeavesCount = {
+    presentDaysCount: 0,
+    earnedLeaveDaysCount: 0,
+    casualLeaveDaysCount: 0,
+    festivalLeaveDaysCount: 0,
+  };
+
+  doc?.forEach((attDoc) => {
+    attDoc?.presentDays &&
+      (yearlyLeavesCount.presentDaysCount += attDoc?.presentDays);
+    attDoc?.earnedLeaves &&
+      (yearlyLeavesCount.earnedLeaveDaysCount += attDoc?.earnedLeaves);
+    attDoc?.casualLeaves &&
+      (yearlyLeavesCount.casualLeaveDaysCount += attDoc?.casualLeaves);
+    attDoc?.festivalLeaves &&
+      (yearlyLeavesCount.festivalLeaveDaysCount += attDoc?.festivalLeaves);
+  });
+
+  // console.log(
+  //   'casualLeaveDaysCount earnedLeaveDaysCount festivalLeaveDaysCount presentDaysCount',
+  //   yearlyLeavesCount.casualLeaveDaysCount,
+  //   yearlyLeavesCount.earnedLeaveDaysCount,
+  //   yearlyLeavesCount.festivalLeaveDaysCount,
+  //   yearlyLeavesCount.presentDaysCount
+  // );
+  return yearlyLeavesCount;
+};
+
 export {
   fetchAttendance,
   fetchStatus,
   fetchAllAttendance,
   fetchAllDepAttendance,
+  fetchYearlyLeavesAndPresentCounts,
 };

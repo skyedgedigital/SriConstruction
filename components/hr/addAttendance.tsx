@@ -47,6 +47,9 @@ const AddAttendance = ({ employeee }) => {
   const [halfDay, setHalfDay] = useState(0);
   const [nh, setNh] = useState(0);
   const [notPaid, setNotPaid] = useState(0);
+  const [earnedLeaves, setEarnedLeaves] = useState(0);
+  const [casualLeaves, setCasualLeaves] = useState(0);
+  const [festivalLeaves, setFestivalLeaves] = useState(0);
   const [workOrderList, setWorkOrderList] = useState([]);
   const [workOrderListt, setWorkOrderListt] = useState([]);
   const [isDialogOpen, setDialogOpen] = useState(false);
@@ -133,6 +136,9 @@ const AddAttendance = ({ employeee }) => {
     let halfDay = 0;
     let nh = 0;
     let np = 0;
+    let el = 0;
+    let cl = 0;
+    let fl = 0;
     att?.forEach((element) => {
       if (element.status === 'Present') {
         present += 1;
@@ -144,10 +150,19 @@ const AddAttendance = ({ employeee }) => {
         nh += 1;
       } else if (element.status === 'Not Paid') {
         np += 1;
-      } else {
+      } else if (element.status === 'Half Day') {
         halfDay += 1;
+      } else if (element.status === 'Earned Leave') {
+        el += 1;
+      } else if (element.status === 'Casual Leave') {
+        cl += 1;
+      } else if (element.status === 'Festival Leave') {
+        fl += 1;
       }
     });
+    setFestivalLeaves(fl);
+    setEarnedLeaves(el);
+    setCasualLeaves(cl);
     setPresent(present);
     setAbsent(absent);
     setLeave(leave);
@@ -382,6 +397,11 @@ const AddAttendance = ({ employeee }) => {
                                 <SelectItem value='Present'>Present</SelectItem>
                                 <SelectItem value='Absent'>Absent</SelectItem>
                                 <SelectItem value='Leave'>Leave</SelectItem>
+                                <SelectItem value='Casual Leave'>CL</SelectItem>
+                                <SelectItem value='Earned Leave'>EL</SelectItem>
+                                <SelectItem value='Festival Leave'>
+                                  FL
+                                </SelectItem>
                                 <SelectItem value='Half Day'>
                                   Half Day
                                 </SelectItem>
@@ -562,13 +582,22 @@ const AddAttendance = ({ employeee }) => {
         <span className='text-red-500 font-semibold mx-2'>Absent {absent}</span>
         <span className='text-blue-500 font-semibold mx-2'>Leave {leave}</span>
         <span className='text-blue-500 font-semibold mx-2'>
-          Half Day {halfDay}
+          Half Day (HD) {halfDay}
         </span>
         <span className='text-blue-500 font-semibold mx-2'>
           National Holiday(NH) {nh}
         </span>
         <span className='text-blue-500 font-semibold mx-2'>
-          Not Paid {notPaid}
+          Not Paid (NP) {notPaid}
+        </span>
+        <span className='text-blue-500 font-semibold mx-2'>
+          Earned Leaves (EL) {earnedLeaves}
+        </span>
+        <span className='text-blue-500 font-semibold mx-2'>
+          Casual Leaves (CL) {casualLeaves}
+        </span>
+        <span className='text-blue-500 font-semibold mx-2'>
+          Festival Leaves (FL) {festivalLeaves}
         </span>
         {!attendanceData ? (
           <div>Loading......</div>
