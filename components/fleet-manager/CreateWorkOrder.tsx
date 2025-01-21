@@ -1,7 +1,7 @@
 'use client';
 
-// import { WorkOrderItems, workOrderNumberForm } from '@/types';
 import React, { useEffect, useState } from 'react';
+import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import {
   Select,
   SelectContent,
@@ -9,7 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form';
 import { z, ZodTypeAny } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createWorkOrder } from '@/lib/actions/workOrder/create';
@@ -40,7 +39,18 @@ import toast from 'react-hot-toast';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { MdEdit, MdKeyboardArrowDown } from 'react-icons/md';
 import { RxCross2, RxCrossCircled, RxPlusCircled } from 'react-icons/rx';
+import workOrderAction from '@/lib/actions/workOrder/workOrderAction';
+import itemAction from '@/lib/actions/item/itemAction';
+import { IItem } from '@/interfaces/item.interface';
 import { MultiSelect } from 'react-multi-select-component';
+
+const unitsMap = new Map([
+  ['hours', 'Hours'],
+  ['days', 'Days'],
+  ['shift', 'Shift'],
+  ['months', 'Months'],
+  ['ot', 'OverTime'],
+]);
 
 const options = [
   { label: 'Months', value: 'months' },
@@ -62,7 +72,7 @@ const zodInputStringPipe = (zodPipe: ZodTypeAny) =>
     .pipe(zodPipe);
 const positiveNumber = z.number({ required_error: 'required' }).positive();
 const workOrderSchema = z.object({
-  workOrderNumber: z.string().trim().min(1, 'Required'), // Add validation for length or pattern if needed
+  workOrderNumber: z.string().trim().min(1, 'Required'),
   workDescription: z.string().trim().min(1, 'Required'),
   workOrderValue: zodInputStringPipe(
     z.number().positive('Value must be greater than 0')
@@ -71,83 +81,76 @@ const workOrderSchema = z.object({
     errorMap: (issue, { defaultError }) => ({
       message: issue.code === 'invalid_date' ? 'Required' : defaultError,
     }),
-  }), // Add pattern validation for specific format if needed
+  }),
   workOrderBalance: zodInputStringPipe(
     z.number().positive('Value must be greater than 0')
   ),
-  items: z
-    .array(
-      z.object({
-        itemName: z.string().trim().min(1, 'Required'),
-        itemPrice: zodInputStringPipe(
-          z.number().positive('Value must be greater than 0')
-        ),
-        hsnNo: z.string().trim().min(1, 'Required'), // Assuming hsnNo is a string
-        itemNumber: zodInputStringPipe(
-          z.number().positive('Value must be greater than 0')
-        ), // Allow zero or positive integers
-      })
-    )
-    .min(1, 'Atleast one item is required'),
-  shiftStatus: z.enum(['true', 'false']),
 });
 
 type FormFields = z.infer<typeof workOrderSchema>;
 
-const CreateWorkOrder = () => {
+const EditWorkOrder = () => {
+  const [unitOptions, setUnitOptions] = useState(options);
+  const [newUnitInput, setNewUnitInput] = useState<string>('');
+  const [addingNewUnitInput, setAddingNewUnitInput] = useState<boolean>(false);
   const [creating, setCreating] = useState<boolean>(false);
+
+  const [workOrderNumber, setWorkOrderNumber] = useState('');
+
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<any>(null);
+
+  const [allWorkOrderNumbers, setAllWorkOrderNumbers] = useState<string[]>([]);
+
+  const [updateItems, setUpdateItems] = useState<IItem[] | null>(null);
+
+  const [selected, setSelected] = useState([]);
+
   const form = useForm<FormFields>({
     defaultValues: {
-      workOrderNumber: '', // Add validation for length or pattern if needed
+      workOrderNumber: '',
       workDescription: '',
       workOrderValue: undefined,
-      workOrderValidity: undefined, // Add pattern validation for specific format if needed
+      workOrderValidity: undefined,
       workOrderBalance: undefined,
-      shiftStatus: 'false',
-      items: [],
     },
     resolver: zodResolver(workOrderSchema),
   });
-  const { fields, append, remove } = useFieldArray({
-    name: 'items',
-    control: form.control,
-  });
-  const [selected, setSelected] = useState([]);
 
   const onSubmit: SubmitHandler<FormFields> = async (data: FormFields) => {
     try {
-      console.log(data.items);
-      let selectedValues = [];
-      selected.forEach((ele) => {
-        selectedValues.push(ele.value);
-      });
-      const workOrderData = {
-        workOrderNumber: data.workOrderNumber,
-        workDescription: data.workDescription,
-        workOrderValue: data.workOrderValue,
-        workOrderValidity: data.workOrderValidity,
-        workOrderBalance: data.workOrderBalance,
-        units: selectedValues,
-      };
-      const items = data.items;
+      const { workOrderNumber, ...updatedData } = data;
 
-      const response = await createWorkOrder(workOrderData, items);
+      var arrPassed = [];
+
+      selected.map((ele) => {
+        arrPassed.push(ele.value);
+      });
+
+      const obj = {
+        ...updatedData,
+        units: arrPassed,
+      };
+
+      const response = await workOrderAction.UPDATE.updateWorkOrder(
+        workOrderNumber,
+        obj
+      );
       console.log(response);
 
       if (response.success) {
         toast.success(response.message);
         form.reset({
-          workOrderNumber: '', // Add validation for length or pattern if needed
+          workOrderNumber: '',
           workDescription: '',
           workOrderValue: '',
-          workOrderValidity: undefined, // Add pattern validation for specific format if needed
+          workOrderValidity: undefined,
           workOrderBalance: '',
-          items: [],
         });
-        console.log('Work Order created successfully:', response.data);
+        console.log('Work Order updated successfully:', response.data);
       } else {
         toast.error(response.message);
-        console.error('Error creating work order:', response.message);
+
+        console.error('Error updating work order:', response.message);
       }
     } catch (error) {
       toast.error(error.message);
@@ -155,6 +158,93 @@ const CreateWorkOrder = () => {
     }
   };
 
+  useEffect(() => {
+    const fetch = async () => {
+      const workOrderResp = await workOrderAction.FETCH.fetchAllWorkOrder();
+      const success = workOrderResp.success;
+      const error = workOrderResp.message;
+      const data = JSON.parse(workOrderResp.data);
+
+      if (success) {
+        const workOrderNumbers = data
+          ? data.map((workOrder) => workOrder.workOrderNumber)
+          : [];
+        console.log(workOrderNumbers);
+        setAllWorkOrderNumbers(workOrderNumbers);
+      } else {
+        toast.error(
+          error || 'can not fetch work order numbers!,Please try later'
+        );
+      }
+    };
+    fetch();
+  }, []);
+
+  useEffect(() => {
+    const fetchWorkOrderData = async () => {
+      const res = await workOrderAction.FETCH.fetchWorkOrderByNumber(
+        workOrderNumber
+      );
+      if (res.success) {
+        const workOrderDetails = await JSON.parse(JSON.stringify(res.data));
+        setSelectedWorkOrder(workOrderDetails);
+
+        // Set form values
+        form.setValue(
+          'workOrderBalance',
+          workOrderDetails.workOrderBalance.toString()
+        );
+        form.setValue(
+          'workOrderValue',
+          workOrderDetails.workOrderValue.toString()
+        );
+        form.setValue('workDescription', workOrderDetails.workDescription);
+        form.setValue('workOrderValidity', workOrderDetails.workOrderValidity);
+
+        const unitsArray = workOrderDetails.units;
+        let tmpArray = [];
+        let newOptions = [...options]; // Start with default options
+
+        // Process all units at once
+        unitsArray.forEach((unit) => {
+          const isExtraUnit = unitsMap.get(unit);
+          if (!isExtraUnit) {
+            // This is a custom unit
+            tmpArray.push({
+              label: unit,
+              value: unit,
+            });
+            // Add to options if not already present
+            if (!newOptions.some((opt) => opt.value === unit)) {
+              newOptions.push({
+                label: unit,
+                value: unit,
+              });
+            }
+          } else {
+            // This is a default unit
+            tmpArray.push({
+              label: unitsMap.get(unit),
+              value: unit,
+            });
+          }
+        });
+
+        // Update states once
+        setUnitOptions(newOptions);
+        setSelected(tmpArray);
+      } else {
+        toast.error(res.message || 'Unable to fetch work order details!');
+      }
+    };
+
+    if (workOrderNumber) {
+      fetchWorkOrderData();
+    }
+  }, [workOrderNumber]);
+
+  console.log('UNIT OPTIONS', unitOptions);
+  console.log('selected', selected);
   return (
     <Form {...form}>
       <form
@@ -162,26 +252,44 @@ const CreateWorkOrder = () => {
         className='border-[1px] border-gray-300 rounded-md shadow-lg flex flex-col gap-6 mt-4'
       >
         <h2 className='bg-blue-50 font-semibold p-1 text-base py-2 text-center'>
-          Add Work Order Form
+          Edit Work Order Form
         </h2>
-        <div className='p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'>
-          {' '}
+        <div className='px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'>
           <FormField
             control={form.control}
             name='workOrderNumber'
             render={({ field }) => (
               <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Work Order Number</FormLabel>
-                <FormControl>
-                  <Input placeholder='' {...field} className=' bg-white ' />
-                </FormControl>
-                {/* <FormDescription>
-                This is your public display name.
-              </FormDescription> */}
+                <FormLabel>Work Order</FormLabel>
+                <Select
+                  onValueChange={(e) => {
+                    field.onChange(e);
+                    setWorkOrderNumber(e);
+                  }}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      {field.value ? (
+                        <SelectValue placeholder='' />
+                      ) : (
+                        'Select Work Order No.'
+                      )}
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {allWorkOrderNumbers?.map((option, index) => (
+                      <SelectItem value={option} key={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name='workOrderValue'
@@ -196,9 +304,6 @@ const CreateWorkOrder = () => {
                     className=' bg-white '
                   />
                 </FormControl>
-                {/* <FormDescription>
-                This is your public display name.
-              </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
@@ -217,9 +322,6 @@ const CreateWorkOrder = () => {
                     className=' bg-white '
                   />
                 </FormControl>
-                {/* <FormDescription>
-                This is your public display name.
-              </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
@@ -229,7 +331,7 @@ const CreateWorkOrder = () => {
             name='workOrderValidity'
             render={({ field }) => (
               <FormItem className='flex flex-col pt-2 justify-center'>
-                <FormLabel>Work Order Validity</FormLabel>
+                <FormLabel>Chalan Validity</FormLabel>
                 {/* <FormControl> */}
                 <Popover>
                   <PopoverTrigger asChild className=''>
@@ -259,10 +361,6 @@ const CreateWorkOrder = () => {
                     />
                   </PopoverContent>
                 </Popover>
-                {/* </FormControl> */}
-                {/* <FormDescription>
-                This is your public display name.
-              </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
@@ -276,166 +374,83 @@ const CreateWorkOrder = () => {
                 <FormControl>
                   <Textarea {...field} className=' bg-white ' />
                 </FormControl>
-                {/* <FormDescription>
-                This is your public display name.
-              </FormDescription> */}
                 <FormMessage />
               </FormItem>
             )}
           />
-          {/* <FormField
-            control={form.control}
-            name="shiftStatus"
-            render={({ field }) => (
-                <FormItem className=' flex-col flex gap-1 flex-1'>
-                <FormLabel>Is this Work Order Shift based?</FormLabel>
-                <Select
-                  onValueChange={(e) => {
-                    field.onChange(e);
-                  }}
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger className="bg-white">
-                      {field.value ? <SelectValue placeholder="" /> : ""}
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="max-w-80 max-h-72 ">
-                    <SelectItem value="true">Yes</SelectItem>
-                    <SelectItem value="false">No</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
-          <div className='mt-2'>
-            <h1>Select Unit of Measurements </h1>
-            <MultiSelect
-              options={options}
-              value={selected}
-              onChange={setSelected}
-              labelledBy='Select'
-            />
-          </div>
-        </div>
-
-        <h2 className='text-blue-800 font-bold px-4'>Fill Items</h2>
-        {form.formState.errors.items && (
-          <p className='text-red-500 italic text-xs'>
-            {form.formState.errors.items.message}
-          </p>
-        )}
-        {fields.map((field, index) => (
-          <div className='px-4 w-full flex flex-col gap-2' key={field.id}>
-            <h2 className='text-blue-800 font-semibold'>{`Item - ${
-              index + 1
-            }`}</h2>
-            <div className='w-full  gap-2 flex flex-col md:flex-row '>
-              <FormField
-                control={form.control}
-                name={`items.${index}.itemName`}
-                render={({ field }) => (
-                  <FormItem className=' flex-col flex gap-1 flex-1'>
-                    <FormLabel>Item Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder='' {...field} className=' bg-white ' />
-                    </FormControl>
-                    {/* <FormDescription>
-                This is your public display name.
-              </FormDescription> */}
-                    <FormMessage />
-                  </FormItem>
-                )}
+          <div className='flex flex-col gap-1'>
+            <div className='mt-2'>
+              <h1>Select Unit of Measurements </h1>
+              <MultiSelect
+                options={unitOptions}
+                value={selected}
+                onChange={setSelected}
+                labelledBy='Select'
               />
-
-              <FormField
-                control={form.control}
-                name={`items.${index}.hsnNo`}
-                render={({ field }) => (
-                  <FormItem className=' flex-col flex gap-1 flex-1'>
-                    <FormLabel>HSN No.</FormLabel>
-                    <FormControl>
-                      <Input placeholder='' {...field} className=' bg-white ' />
-                    </FormControl>
-                    {/* <FormDescription>
-                This is your public display name.
-              </FormDescription> */}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={`items.${index}.itemPrice`}
-                render={({ field }) => (
-                  <FormItem className=' flex-col flex gap-1 flex-1'>
-                    <FormLabel>Item Price</FormLabel>
-                    <FormControl>
-                      <Input
-                        type='number'
-                        placeholder=''
-                        {...field}
-                        className=' bg-white '
-                      />
-                    </FormControl>
-                    {/* <FormDescription>
-                This is your public display name.
-              </FormDescription> */}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={`items.${index}.itemNumber`}
-                render={({ field }) => (
-                  <FormItem className=' flex-col flex gap-1 flex-1'>
-                    <FormLabel>Item Number</FormLabel>
-                    <FormControl>
-                      <Input
-                        type='number'
-                        placeholder=''
-                        {...field}
-                        className=' bg-white '
-                      />
-                    </FormControl>
-                    {/* <FormDescription>
-                This is your public display name.
-              </FormDescription> */}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {index > 0 && (
-                <span className=' flex flex-col justify-between gap-1'>
-                  <span></span>
-                  <button
-                    onClick={() => remove(index)}
-                    className='text-xm w-fit bg-red-600 text-white font-semibold p-2 rounded  '
+            </div>
+            <div className='flex flex-col gap-3'>
+              <div className='flex justify-end gap-1 items-center text-sm text-gray-500'>
+                {!addingNewUnitInput && <p>need more unit?</p>}{' '}
+                {addingNewUnitInput ? (
+                  <span
+                    // just to prevent another use state
+                    onClick={() => setAddingNewUnitInput(false)}
+                    className='bg-white text-blue-500 underline cursor-pointer'
                   >
-                    <CircleX />
-                  </button>
-                </span>
+                    cancel
+                  </span>
+                ) : (
+                  <span
+                    // just to prevent another use state
+                    onClick={() => setAddingNewUnitInput(true)}
+                    className='bg-white text-blue-500 underline cursor-pointer'
+                  >
+                    click to add
+                  </span>
+                )}
+              </div>
+              {addingNewUnitInput && (
+                <div className='flex flex-col gap-1'>
+                  <div className='flex justify-start items-center gap-1'>
+                    <input
+                      className='border-gray-300 border-[1px] p-2 rounded-md flex-grow'
+                      type='text'
+                      value={newUnitInput}
+                      placeholder='new unit'
+                      onChange={(e) => setNewUnitInput(e.currentTarget.value)}
+                    />
+                    <Button
+                      onClick={() => {
+                        const isUnitAlreadyExist = unitOptions.find(
+                          (units) =>
+                            units.label === newUnitInput ||
+                            units.value === newUnitInput
+                        );
+                        if (isUnitAlreadyExist) {
+                          return toast.error('Unit already in options');
+                        }
+                        setUnitOptions((prev) => [
+                          ...prev,
+                          { label: newUnitInput, value: newUnitInput },
+                        ]);
+                        setNewUnitInput('');
+                        toast.success('new unit added');
+                      }}
+                      type='button'
+                      className='h-full'
+                    >
+                      add unit
+                    </Button>
+                  </div>
+                  <p className='text-xs text-gray-400 italic'>
+                    Note: New unit will be added only for this work order
+                  </p>
+                </div>
               )}
             </div>
           </div>
-        ))}
-        <div className=' px-4 flex flex-col gap-3 sm:flex-row md:justify-between py-4'>
-          <Button
-            className='w-40'
-            onClick={(e) => {
-              e.preventDefault();
-              append({
-                itemName: undefined,
-                itemPrice: undefined,
-                hsnNo: undefined,
-                itemNumber: undefined,
-              });
-            }}
-          >
-            Add Item
-          </Button>
+        </div>
+        <div className='px-4 flex flex-col gap-3 sm:flex-row md:justify-end pb-4'>
           <Button type='submit' className=' bg-green-500 w-40 '>
             Submit
           </Button>
@@ -445,4 +460,4 @@ const CreateWorkOrder = () => {
   );
 };
 
-export default CreateWorkOrder;
+export default EditWorkOrder;

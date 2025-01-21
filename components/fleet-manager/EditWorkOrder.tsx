@@ -90,6 +90,9 @@ const workOrderSchema = z.object({
 type FormFields = z.infer<typeof workOrderSchema>;
 
 const EditWorkOrder = () => {
+  const [unitOptions, setUnitOptions] = useState(options);
+  const [newUnitInput, setNewUnitInput] = useState<string>('');
+  const [addingNewUnitInput, setAddingNewUnitInput] = useState<boolean>(false);
   const [creating, setCreating] = useState<boolean>(false);
 
   const [workOrderNumber, setWorkOrderNumber] = useState('');
@@ -185,7 +188,8 @@ const EditWorkOrder = () => {
       if (res.success) {
         const workOrderDetails = await JSON.parse(JSON.stringify(res.data));
         setSelectedWorkOrder(workOrderDetails);
-        console.log(workOrderDetails);
+
+        // Set form values
         form.setValue(
           'workOrderBalance',
           workOrderDetails.workOrderBalance.toString()
@@ -195,30 +199,52 @@ const EditWorkOrder = () => {
           workOrderDetails.workOrderValue.toString()
         );
         form.setValue('workDescription', workOrderDetails.workDescription);
-
         form.setValue('workOrderValidity', workOrderDetails.workOrderValidity);
 
-        var unitsArray = workOrderDetails.units;
-        var len = unitsArray.length;
+        const unitsArray = workOrderDetails.units;
         let tmpArray = [];
-        for (var i = 0; i < len; i++) {
-          tmpArray.push({
-            label: unitsMap.get(unitsArray[i]),
-            value: unitsArray[i],
-          });
-        }
-        console.warn('The Units Array after mapping', tmpArray);
+        let newOptions = [...options]; // Start with default options
+
+        // Process all units at once
+        unitsArray.forEach((unit) => {
+          const isExtraUnit = unitsMap.get(unit);
+          if (!isExtraUnit) {
+            // This is a custom unit
+            tmpArray.push({
+              label: unit,
+              value: unit,
+            });
+            // Add to options if not already present
+            if (!newOptions.some((opt) => opt.value === unit)) {
+              newOptions.push({
+                label: unit,
+                value: unit,
+              });
+            }
+          } else {
+            // This is a default unit
+            tmpArray.push({
+              label: unitsMap.get(unit),
+              value: unit,
+            });
+          }
+        });
+
+        // Update states once
+        setUnitOptions(newOptions);
         setSelected(tmpArray);
-      }
-      if (!res.success) {
-        return toast.error(res.message || 'Unable to fetch chalan details!');
+      } else {
+        toast.error(res.message || 'Unable to fetch work order details!');
       }
     };
-    if (workOrderNumber != '') {
+
+    if (workOrderNumber) {
       fetchWorkOrderData();
     }
   }, [workOrderNumber]);
 
+  console.log('UNIT OPTIONS', unitOptions);
+  console.log('selected', selected);
   return (
     <Form {...form}>
       <form
@@ -352,14 +378,76 @@ const EditWorkOrder = () => {
               </FormItem>
             )}
           />
-          <div className='mt-2'>
-            <h1>Select Unit of Measurements </h1>
-            <MultiSelect
-              options={options}
-              value={selected}
-              onChange={setSelected}
-              labelledBy='Select'
-            />
+          <div className='flex flex-col gap-1'>
+            <div className='mt-2'>
+              <h1>Select Unit of Measurements </h1>
+              <MultiSelect
+                options={unitOptions}
+                value={selected}
+                onChange={setSelected}
+                labelledBy='Select'
+              />
+            </div>
+            <div className='flex flex-col gap-3'>
+              <div className='flex justify-end gap-1 items-center text-sm text-gray-500'>
+                {!addingNewUnitInput && <p>need more unit?</p>}{' '}
+                {addingNewUnitInput ? (
+                  <span
+                    // just to prevent another use state
+                    onClick={() => setAddingNewUnitInput(false)}
+                    className='bg-white text-blue-500 underline cursor-pointer'
+                  >
+                    cancel
+                  </span>
+                ) : (
+                  <span
+                    // just to prevent another use state
+                    onClick={() => setAddingNewUnitInput(true)}
+                    className='bg-white text-blue-500 underline cursor-pointer'
+                  >
+                    click to add
+                  </span>
+                )}
+              </div>
+              {addingNewUnitInput && (
+                <div className='flex flex-col gap-1'>
+                  <div className='flex justify-start items-center gap-1'>
+                    <input
+                      className='border-gray-300 border-[1px] p-2 rounded-md flex-grow'
+                      type='text'
+                      value={newUnitInput}
+                      placeholder='new unit'
+                      onChange={(e) => setNewUnitInput(e.currentTarget.value)}
+                    />
+                    <Button
+                      onClick={() => {
+                        const isUnitAlreadyExist = unitOptions.find(
+                          (units) =>
+                            units.label === newUnitInput ||
+                            units.value === newUnitInput
+                        );
+                        if (isUnitAlreadyExist) {
+                          return toast.error('Unit already in options');
+                        }
+                        setUnitOptions((prev) => [
+                          ...prev,
+                          { label: newUnitInput, value: newUnitInput },
+                        ]);
+                        setNewUnitInput('');
+                        toast.success('new unit added');
+                      }}
+                      type='button'
+                      className='h-full'
+                    >
+                      add unit
+                    </Button>
+                  </div>
+                  <p className='text-xs text-gray-400 italic'>
+                    Note: New unit will be added only for this work order
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className='px-4 flex flex-col gap-3 sm:flex-row md:justify-end pb-4'>
