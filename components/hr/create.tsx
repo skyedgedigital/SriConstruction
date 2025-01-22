@@ -197,10 +197,20 @@ const Create = () => {
         photosFormData.append(key, value);
       }
     }
-
+    const formattedData = {
+      ...formData,
+      dob: formatDate(formData.dob),
+      appointmentDate: formatDate(formData.appointmentDate),
+      resignDate: formatDate(formData.resignDate),
+      policeVerificationValidityDate: formatDate(
+        formData.policeVerificationValidityDate
+      ),
+      gatePassValidTill: formatDate(formData.gatePassValidTill),
+      SpValidity: formatDate(formData.SpValidity),
+    };
     try {
       const resp = await EmployeeDataAction.CREATE.createEmployeeData(
-        JSON.stringify(formData)
+        JSON.stringify(formattedData)
       );
       if (resp.status === 200) {
         toast.success('Employee Added');
@@ -261,6 +271,13 @@ const Create = () => {
     } else {
       toast.error('Error Generating EmpCode');
     }
+  };
+
+  // Function to format date from 'yyyy-mm-dd' to 'dd-mm-yyyy'
+  const formatDate = (dateString) => {
+    if (!dateString) return dateString; // Return if dateString is empty
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`; // Return in 'dd-mm-yyyy' format
   };
   return (
     <>
@@ -626,10 +643,10 @@ const Create = () => {
             htmlFor='input'
             className='block text-sm font-medium text-gray-700 mb-2'
           >
-            DOB(DD-MM-YYYY):
+            DOB:
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='dob'
             value={formData.dob}
@@ -748,10 +765,10 @@ const Create = () => {
             htmlFor='input'
             className='block text-sm font-medium text-gray-700 mb-2'
           >
-            Appointment Date(DD-MM-YYYY):
+            Appointment Date:
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='appointmentDate'
             value={formData.appointmentDate}
@@ -769,7 +786,7 @@ const Create = () => {
             Resign Date:
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='resignDate'
             value={formData.resignDate}
@@ -812,7 +829,7 @@ const Create = () => {
             Sp Validity:
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='SpValidity'
             value={formData.SpValidity}
@@ -828,10 +845,10 @@ const Create = () => {
             htmlFor='input'
             className='block text-sm font-medium text-gray-700 mb-2'
           >
-            Police Verification Validity Date(DD-MM-YYYY):
+            Police Verification Validity Date:
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='policeVerificationValidityDate'
             value={formData.policeVerificationValidityDate}
@@ -864,10 +881,10 @@ const Create = () => {
             htmlFor='input'
             className='block text-sm font-medium text-gray-700 mb-2'
           >
-            Gate Pass Valid Till(DD-MM-YYYY)
+            Gate Pass Valid Till
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='gatePassValidTill'
             value={formData.gatePassValidTill}

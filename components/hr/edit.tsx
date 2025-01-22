@@ -138,8 +138,21 @@ const Create = ({ name, docId }) => {
     console.log(formData);
   };
   const handleSubmit = async () => {
+    // Convert all date fields to 'dd-mm-yyyy' format
+    console.log('yyyy', formData);
+    const formattedData = {
+      ...formData,
+      dob: formatDate(formData.dob),
+      appointmentDate: formatDate(formData.appointmentDate),
+      resignDate: formatDate(formData.resignDate),
+      policeVerificationValidityDate: formatDate(
+        formData.policeVerificationValidityDate
+      ),
+      gatePassValidTill: formatDate(formData.gatePassValidTill),
+      SpValidity: formatDate(formData.SpValidity),
+    };
     const resp = await EmployeeDataAction.UPDATE.updateEmployeeData(
-      JSON.stringify(formData),
+      JSON.stringify(formattedData),
       employeeDetails._id
     );
     if (resp.status === 200) {
@@ -148,6 +161,14 @@ const Create = ({ name, docId }) => {
       toast.error(resp.message);
     }
   };
+
+  // Function to format date from 'yyyy-mm-dd' to 'dd-mm-yyyy'
+  const formatDate = (dateString) => {
+    if (!dateString) return dateString; // Return if dateString is empty
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`; // Return in 'dd-mm-yyyy' format
+  };
+
   return (
     <div className=''>
       <p className='flex items-center mt-2 justify-center p-2 border-gray-600 border-b font-semibold text-2xl '>
@@ -506,10 +527,10 @@ const Create = ({ name, docId }) => {
             htmlFor='input'
             className='block text-sm font-medium text-gray-700 mb-2'
           >
-            DOB(DD-MM-YYYY):
+            DOB:
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='dob'
             value={formData.dob}
@@ -631,7 +652,7 @@ const Create = ({ name, docId }) => {
             Appointment Date(DD-MM-YYYY):
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='appointmentDate'
             value={formData.appointmentDate}
@@ -649,7 +670,7 @@ const Create = ({ name, docId }) => {
             Resign Date:
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='resignDate'
             value={formData.resignDate}
@@ -692,7 +713,7 @@ const Create = ({ name, docId }) => {
             Sp Validity:
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='SpValidity'
             value={formData.SpValidity}
@@ -711,7 +732,7 @@ const Create = ({ name, docId }) => {
             Police Verification Validity Date(DD-MM-YYYY):
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='policeVerificationValidityDate'
             value={formData.policeVerificationValidityDate}
@@ -747,7 +768,7 @@ const Create = ({ name, docId }) => {
             Gate Pass Valid Till(DD-MM-YYYY)
           </label>
           <input
-            type='text'
+            type='date'
             id='input'
             name='gatePassValidTill'
             value={formData.gatePassValidTill}
