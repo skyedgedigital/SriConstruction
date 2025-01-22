@@ -693,7 +693,7 @@ const fetchWagesForCalendarYear = async (dataString) => {
   try {
     const data = JSON.parse(dataString);
     const { year, workOrder } = data;
-    console.log(workOrder);
+    // console.log(workOrder);
     const startDate = new Date(year, 0, 1); // January 1st of the given year
     const endDate = new Date(year, 11, 31); // December 31st of the given year
 
@@ -753,7 +753,7 @@ const fetchWagesForCalendarYear = async (dataString) => {
         },
       },
     ]);
-    console.log('yetirerererrere', employees);
+    // console.log('yetirerererrere', employees);
     if (employees.length === 0) {
       return {
         status: 404,
@@ -770,6 +770,7 @@ const fetchWagesForCalendarYear = async (dataString) => {
           (entry) => entry.workOrderHr.toString() === workOrder.toString()
         )
       ) {
+        console.log(`------------------------`, employee._id, year);
         const wages = await Wages.find({
           employee: employee._id,
           year: year,
@@ -779,6 +780,15 @@ const fetchWagesForCalendarYear = async (dataString) => {
           .populate('employee');
         console.log('okay yeh bh', wages);
         if (wages.length == 0) continue;
+
+        const attendances = await Attendance.find({
+          employee: employee._id,
+          year: year,
+          month: { $in: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+        }).sort({ month: 1 });
+        if (!attendances) {
+          throw new Error('attendances not found for employee');
+        }
         // const employeeDoc = await EmployeeData.findById(employee._id);
         const currentYear = new Date().getFullYear();
 
@@ -801,12 +811,34 @@ const fetchWagesForCalendarYear = async (dataString) => {
         //   await employeeDoc.save();
         // Check for missing months
         const monthsInYear = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        const monthsInAYear = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
         const fetchedMonths = new Set(wages.map((wage) => wage.month));
         // @ts-ignore
         const missingMonths = [...monthsInYear].filter(
           (month) => !fetchedMonths.has(month)
         );
-        console.log('okay yeh nh 2');
+        // console.log('okay yeh nh 2');
+        const employeeLeaves = monthsInAYear.map((month) => {
+          const current_month_att = attendances[month - 1];
+          if (current_month_att && current_month_att.month === month) {
+            return {
+              usedEL: current_month_att?.earnedLeaves || 0,
+              usedCL: current_month_att?.casualLeaves || 0,
+              usedFL: current_month_att?.festivalLeaves || 0,
+            };
+          } else {
+            return {
+              usedEL: 0,
+              usedCL: 0,
+              usedFL: 0,
+            };
+          }
+        });
+
+        // console.log(
+        //   employeeLeaves,
+        //   '-----------------------------------------EMPLOYEE LEAVES'
+        // );
 
         // Calculate totalAttendance
         const missingWages = missingMonths.map((month) => ({
@@ -856,10 +888,11 @@ const fetchWagesForCalendarYear = async (dataString) => {
           basicWages: employee.designation_details[0].basic * tot,
           totalDA: employee.designation_details[0].DA * tot,
           Net: Net,
+          employeeLeaves,
         });
       }
     }
-    console.log('okay yeh nh 3');
+    // console.log('okay yeh nh 3');
 
     return {
       success: true,

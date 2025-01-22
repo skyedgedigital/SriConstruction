@@ -43,7 +43,7 @@ const AddAttendance = ({ employeee }) => {
   const [employeeData, setEmployeeData] = useState(null);
   const [present, setPresent] = useState(0);
   const [absent, setAbsent] = useState(0);
-  const [leave, setLeave] = useState(0);
+  // const [leave, setLeave] = useState(0);
   const [halfDay, setHalfDay] = useState(0);
   const [nh, setNh] = useState(0);
   const [notPaid, setNotPaid] = useState(0);
@@ -132,7 +132,7 @@ const AddAttendance = ({ employeee }) => {
   const caclQuantityofStatus = (att: any) => {
     let present = 0;
     let absent = 0;
-    let leave = 0;
+    // let leave = 0;
     let halfDay = 0;
     let nh = 0;
     let np = 0;
@@ -144,8 +144,8 @@ const AddAttendance = ({ employeee }) => {
         present += 1;
       } else if (element.status === 'Absent') {
         absent += 1;
-      } else if (element.status === 'Leave') {
-        leave += 1;
+      // } else if (element.status === 'Leave') {
+      //   leave += 1;
       } else if (element.status === 'NH') {
         nh += 1;
       } else if (element.status === 'Not Paid') {
@@ -165,7 +165,7 @@ const AddAttendance = ({ employeee }) => {
     setCasualLeaves(cl);
     setPresent(present);
     setAbsent(absent);
-    setLeave(leave);
+    // setLeave(leave);
     setHalfDay(halfDay);
     setNh(nh);
     setNotPaid(np);
@@ -396,7 +396,7 @@ const AddAttendance = ({ employeee }) => {
                                 <SelectLabel></SelectLabel>
                                 <SelectItem value='Present'>Present</SelectItem>
                                 <SelectItem value='Absent'>Absent</SelectItem>
-                                <SelectItem value='Leave'>Leave</SelectItem>
+                                {/* <SelectItem value='Leave'>Leave</SelectItem> */}
                                 <SelectItem value='Casual Leave'>CL</SelectItem>
                                 <SelectItem value='Earned Leave'>EL</SelectItem>
                                 <SelectItem value='Festival Leave'>
@@ -580,7 +580,7 @@ const AddAttendance = ({ employeee }) => {
           Present {present}
         </span>
         <span className='text-red-500 font-semibold mx-2'>Absent {absent}</span>
-        <span className='text-blue-500 font-semibold mx-2'>Leave {leave}</span>
+        {/* <span className='text-blue-500 font-semibold mx-2'>Leave {leave}</span> */}
         <span className='text-blue-500 font-semibold mx-2'>
           Half Day (HD) {halfDay}
         </span>

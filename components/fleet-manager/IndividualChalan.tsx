@@ -257,7 +257,7 @@ const IndividualChalanContainer = ({ chalan }: { chalan: any }) => {
       };
       const queryString = new URLSearchParams(query).toString();
       console.log('query string', queryString);
-      window.open(`/create-invoice?${queryString}`);
+       window.open(`/create-invoice?${queryString}`);
       // window.open(`/fleetmanager/enter-invoice-number?${queryString}`);
       // if (res.success) {
       // } else {

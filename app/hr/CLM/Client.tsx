@@ -438,6 +438,12 @@ const Client = () => {
                       return acc + 1;
                     } else if (day.status === 'Half Day') {
                       return acc + 0.5;
+                    } else if (
+                      day.status === 'Earned Leave' ||
+                      day.status === 'Casual Leave' ||
+                      day.status === 'Festival Leave'
+                    ) {
+                      return acc + 1;
                     }
                     return acc;
                   }, 0)

@@ -25,7 +25,6 @@ const AttendanceSchema: mongoose.Schema<any> = new mongoose.Schema({
         enum: [
           'Present',
           'Absent',
-          'Leave',
           'Half Day',
           'NH',
           'Not Paid',

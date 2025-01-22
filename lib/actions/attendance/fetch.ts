@@ -239,9 +239,11 @@ const fetchStatus = async (filter: string): Promise<ApiResponse<any>> => {
         obj['Present'] = obj['Present'] + 1;
       } else if (ele.status == 'Absent') {
         obj['Absent'] = obj['Absent'] + 1;
-      } else if (ele.status == 'Leave') {
-        obj['Leave'] = obj['Leave'] + 1;
-      } else if (ele.status == 'Off') {
+      }
+      // else if (ele.status == 'Leave') {
+      //   obj['Leave'] = obj['Leave'] + 1;
+      // }
+      else if (ele.status == 'Off') {
         obj['Off'] = obj['Off'] + 1;
       } else if (ele.status == 'NH') {
         obj['Present'] = obj['Present'] + 1;

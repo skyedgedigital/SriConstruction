@@ -2,6 +2,7 @@
 
 import { ApiResponse } from '@/interfaces/APIresponses.interface';
 import handleDBConnection from '@/lib/database';
+import Attendance from '@/lib/models/HR/attendance.model';
 import EmployeeData from '@/lib/models/HR/EmployeeData.model';
 import Wages from '@/lib/models/HR/wages.model';
 
@@ -52,12 +53,6 @@ const deleteWorkorderFromEmployeeData = async (
   const period = `${month}-${year}`;
   try {
     const employeeExist = await EmployeeData.findOne({ _id: employee_Id });
-    const wagesExist = await Wages.findOne({
-      workOrderHr: workOrderHr_Id,
-      month,
-      year,
-    });
-    console.log(wagesExist);
     if (!employeeExist) {
       return {
         success: false,
@@ -67,6 +62,19 @@ const deleteWorkorderFromEmployeeData = async (
         data: null,
       };
     }
+    const attendanceResponse = await Attendance.findOneAndDelete({
+      year,
+      month,
+      workOrderHr: workOrderHr_Id,
+    });
+    // console.log('ATTENDANCE DELETE RESPONSE', attendanceResponse);
+
+    const wagesExist = await Wages.findOne({
+      workOrderHr: workOrderHr_Id,
+      month,
+      year,
+    });
+    console.log(wagesExist);
     // console.log(employeeExist.workOrderHr);
     // console.log(
     //   employeeExist.workOrderHr[0].workOrderHr.toString() === workOrderHr_Id

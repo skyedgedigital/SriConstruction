@@ -20,6 +20,11 @@ import wagesAction from '@/lib/actions/HR/wages/wagesAction';
 import React, { useEffect, useState } from 'react';
 import { IEnterprise } from '@/interfaces/enterprise.interface';
 import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
+import {
+  acutalLeave,
+  RemainingLeaves,
+  usedLeave,
+} from '@/interfaces/HR/leaves.interface';
 
 const Page = ({
   searchParams,
@@ -27,6 +32,10 @@ const Page = ({
   searchParams: { [key: string]: string | string[] | undefined };
 }) => {
   const [leaveData, setLeaveData] = useState(null);
+  const [leaveFieldsRender, setLeaveFieldsRender] = useState<{
+    showCL: boolean;
+    showFL: boolean;
+  }>({ showCL: true, showFL: true });
 
   const [totalEL, setTotalEL] = useState(0);
   const [totalCL, setTotalCL] = useState(0);
@@ -164,12 +173,133 @@ const Page = ({
   ];
   const months2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
+  function calculateRemainingLeaves(
+    leaves: usedLeave[],
+    acutalLeave: acutalLeave
+  ) {
+    const totalUsedLeaves = leaves.reduce(
+      (acc, curr) => {
+        acc.usedEL += curr.usedEL;
+        acc.usedCL += curr.usedCL;
+        acc.usedFL += curr.usedFL;
+        return acc;
+      },
+      { usedEL: 0, usedCL: 0, usedFL: 0 }
+    );
+    return {
+      remainingEL: acutalLeave.actualEL - totalUsedLeaves.usedEL,
+      remainingCL: acutalLeave.actualCL - totalUsedLeaves.usedCL,
+      remainingFL: acutalLeave.actualFL - totalUsedLeaves.usedFL,
+    };
+  }
+
+  function calculateSumOfLeavesLeft(leave: RemainingLeaves) {
+    return (
+      (leaveFieldsRender.showCL && leave.remainingCL) +
+      leave.remainingEL +
+      (leaveFieldsRender.showFL && leave.remainingFL)
+    );
+  }
+
+  function calculateTotal(leaveData) {
+    const employeeLeavesArr: RemainingLeaves[] = leaveData.map((data) =>
+      calculateRemainingLeaves(data.employeeLeaves, {
+        actualCL: data.CL,
+        actualEL: data.EL,
+        actualFL: data.FL,
+      })
+    );
+    console.log(employeeLeavesArr);
+    const totalEmployeeELLeft = employeeLeavesArr.reduce(
+      (acc, curr) => {
+        acc.EL += curr.remainingEL;
+        return acc;
+      },
+      { EL: 0 }
+    );
+    const totalEmployeeCLLeft = employeeLeavesArr.reduce(
+      (acc, curr) => {
+        acc.CL += curr.remainingCL;
+        return acc;
+      },
+      { CL: 0 }
+    );
+    const totalEmployeeFLLeft = employeeLeavesArr.reduce(
+      (acc, curr) => {
+        acc.FL += curr.remainingFL;
+        return acc;
+      },
+      { FL: 0 }
+    );
+    const employeeLeaveLeftArr = employeeLeavesArr.map((item) =>
+      calculateSumOfLeavesLeft(item)
+    );
+    const totalEmployeeLeaveLeft = employeeLeaveLeftArr.reduce(
+      (acc, curr) => acc + curr,
+      0
+    );
+    return {
+      totalEL: totalEmployeeELLeft.EL,
+      totalFL: totalEmployeeFLLeft.FL,
+      totalCL: totalEmployeeCLLeft.CL,
+      total: totalEmployeeLeaveLeft,
+    };
+  }
+
   return (
     <div className='ml-[80px]'>
       <div className='flex gap-2 mb-2'>
         <Button onClick={handleDownloadPDF}>Download PDF</Button>
         <Button onClick={handleOnClick}>Print</Button>
       </div>
+
+      {leaveData && (
+        <div className='mb-2'>
+          <fieldset>
+            <legend>Choose Fields:</legend>
+            <div className='flex gap-2'>
+              <div>
+                <input type='checkbox' id='EL' name='EL' checked disabled />
+                <label htmlFor='el'>EL</label>
+              </div>
+              <div>
+                <input
+                  type='checkbox'
+                  id='cl'
+                  name='cl'
+                  checked={leaveFieldsRender.showCL}
+                  onChange={() =>
+                    setLeaveFieldsRender((prevState) => {
+                      return {
+                        ...prevState,
+                        showCL: !prevState.showCL,
+                      };
+                    })
+                  }
+                />
+                <label htmlFor='cl'>CL</label>
+              </div>
+              <div>
+                <input
+                  type='checkbox'
+                  id='fl'
+                  name='fl'
+                  checked={leaveFieldsRender.showFL}
+                  onChange={() =>
+                    setLeaveFieldsRender((prevState) => {
+                      return {
+                        ...prevState,
+                        showFL: !prevState.showFL,
+                      };
+                    })
+                  }
+                />
+                <label htmlFor='fl'>FL</label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      )}
 
       <div
         id={`Leave-checklist/${searchParams.year}`}
@@ -300,12 +430,16 @@ const Page = ({
                 <TableHead className=' text-black border-[1px] border-black'>
                   EL
                 </TableHead>
-                <TableHead className=' text-black border-[1px] border-black'>
-                  CL
-                </TableHead>
-                <TableHead className=' text-black border-[1px] border-black'>
-                  FL
-                </TableHead>
+                {leaveFieldsRender.showCL && (
+                  <TableHead className=' text-black border-[1px] border-black'>
+                    CL
+                  </TableHead>
+                )}
+                {leaveFieldsRender.showFL && (
+                  <TableHead className=' text-black border-[1px] border-black'>
+                    FL
+                  </TableHead>
+                )}
                 <TableHead className=' text-black border-[1px] border-black'>
                   Total
                 </TableHead>
@@ -351,7 +485,31 @@ const Page = ({
                           key={monthIndex}
                           className='border-black border text-black'
                         >
-                          {aggregatedWage?.attendance || 0}
+                          <div className='flex flex-col'>
+                            <span>{aggregatedWage?.attendance || 0}</span>
+                            <span>
+                              <span>EL:</span>
+                              <span>
+                                {employee.employeeLeaves[monthIndex].usedEL}
+                              </span>
+                            </span>
+                            {leaveFieldsRender.showCL && (
+                              <span>
+                                <span>CL:</span>
+                                <span>
+                                  {employee.employeeLeaves[monthIndex].usedCL}
+                                </span>
+                              </span>
+                            )}
+                            {leaveFieldsRender.showFL && (
+                              <span>
+                                <span>FL:</span>
+                                <span>
+                                  {employee.employeeLeaves[monthIndex].usedFL}
+                                </span>
+                              </span>
+                            )}
+                          </div>
                         </TableCell>
                       );
                     })}
@@ -360,16 +518,48 @@ const Page = ({
                       {employee.totalAttendance}
                     </TableCell>
                     <TableCell className='border-black border-[1px] text-black'>
-                      {employee.EL}
+                      {/* {employee.EL} */}
+                      {
+                        calculateRemainingLeaves(employee.employeeLeaves, {
+                          actualCL: employee.CL,
+                          actualEL: employee.EL,
+                          actualFL: employee.FL,
+                        }).remainingEL
+                      }
                     </TableCell>
+                    {leaveFieldsRender.showCL && (
+                      <TableCell className='border-black border-[1px] text-black'>
+                        {/* {employee.CL} */}
+                        {
+                          calculateRemainingLeaves(employee.employeeLeaves, {
+                            actualCL: employee.CL,
+                            actualEL: employee.EL,
+                            actualFL: employee.FL,
+                          }).remainingCL
+                        }
+                      </TableCell>
+                    )}
+                    {leaveFieldsRender.showFL && (
+                      <TableCell className='border-black border-[1px] text-black'>
+                        {/* {employee.FL} */}
+                        {
+                          calculateRemainingLeaves(employee.employeeLeaves, {
+                            actualCL: employee.CL,
+                            actualEL: employee.EL,
+                            actualFL: employee.FL,
+                          }).remainingFL
+                        }
+                      </TableCell>
+                    )}
                     <TableCell className='border-black border-[1px] text-black'>
-                      {employee.CL}
-                    </TableCell>
-                    <TableCell className='border-black border-[1px] text-black'>
-                      {employee.FL}
-                    </TableCell>
-                    <TableCell className='border-black border-[1px] text-black'>
-                      {employee.tot}
+                      {/* {employee.tot} */}
+                      {calculateSumOfLeavesLeft(
+                        calculateRemainingLeaves(employee.employeeLeaves, {
+                          actualCL: employee.CL,
+                          actualEL: employee.EL,
+                          actualFL: employee.FL,
+                        })
+                      )}
                     </TableCell>
                     <TableCell className='border-black border-[1px] text-black'></TableCell>
                   </TableRow>
@@ -397,16 +587,20 @@ const Page = ({
 
                   <TableCell className='border-black border-[1px] text-black'></TableCell>
                   <TableCell className='border-black border-[1px] text-black'>
-                    {totalEL}
+                    {calculateTotal(leaveData).totalEL}
                   </TableCell>
+                  {leaveFieldsRender.showCL && (
+                    <TableCell className='border-black border-[1px] text-black'>
+                      {calculateTotal(leaveData).totalCL}
+                    </TableCell>
+                  )}
+                  {leaveFieldsRender.showFL && (
+                    <TableCell className='border-black border-[1px] text-black'>
+                      {calculateTotal(leaveData).totalFL}
+                    </TableCell>
+                  )}
                   <TableCell className='border-black border-[1px] text-black'>
-                    {totalCL}
-                  </TableCell>
-                  <TableCell className='border-black border-[1px] text-black'>
-                    {totalFL}
-                  </TableCell>
-                  <TableCell className='border-black border-[1px] text-black'>
-                    {total}
+                    {calculateTotal(leaveData).total}
                   </TableCell>
                   <TableCell className='border-black border-[1px] text-black'></TableCell>
                 </TableRow>

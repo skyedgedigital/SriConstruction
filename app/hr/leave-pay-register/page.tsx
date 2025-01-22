@@ -12,6 +12,11 @@ import { useReactToPrint } from 'react-to-print';
 import React, { useEffect, useState } from 'react';
 import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
 import { IEnterprise } from '@/interfaces/enterprise.interface';
+import {
+  acutalLeave,
+  RemainingLeaves,
+  usedLeave,
+} from '@/interfaces/HR/leaves.interface';
 
 const Page = ({
   searchParams,
@@ -19,6 +24,10 @@ const Page = ({
   searchParams: { [key: string]: string | string[] | undefined };
 }) => {
   // const [bonusData, setBonusData] = useState(null);
+  const [leaveFieldsRender, setLeaveFieldsRender] = useState<{
+    showCL: boolean;
+    showFL: boolean;
+  }>({ showCL: true, showFL: true });
   const [leaveData, setLeaveData] = useState(null);
   const [ent, setEnt] = useState<IEnterprise | null>(null);
 
@@ -141,12 +150,170 @@ const Page = ({
     'dec',
   ];
 
+  function calculateRemainingLeaves(
+    leaves: usedLeave[],
+    acutalLeave: acutalLeave
+  ) {
+    const totalUsedLeaves = leaves.reduce(
+      (acc, curr) => {
+        acc.usedEL += curr.usedEL;
+        acc.usedCL += curr.usedCL;
+        acc.usedFL += curr.usedFL;
+        return acc;
+      },
+      { usedEL: 0, usedCL: 0, usedFL: 0 }
+    );
+    return {
+      remainingEL: acutalLeave.actualEL - totalUsedLeaves.usedEL,
+      remainingCL: acutalLeave.actualCL - totalUsedLeaves.usedCL,
+      remainingFL: acutalLeave.actualFL - totalUsedLeaves.usedFL,
+    };
+  }
+
+  function calculateSumOfLeavesLeft(leave: RemainingLeaves) {
+    return (
+      (leaveFieldsRender.showCL && leave.remainingCL) +
+      leave.remainingEL +
+      (leaveFieldsRender.showFL && leave.remainingFL)
+    );
+  }
+
+  function calculateTotal(leaveData) {
+    const employeeLeavesArr: RemainingLeaves[] = leaveData.map((data) =>
+      calculateRemainingLeaves(data.employeeLeaves, {
+        actualCL: data.CL,
+        actualEL: data.EL,
+        actualFL: data.FL,
+      })
+    );
+    console.log(employeeLeavesArr);
+    const totalEmployeeELLeft = employeeLeavesArr.reduce(
+      (acc, curr) => {
+        acc.EL += curr.remainingEL;
+        return acc;
+      },
+      { EL: 0 }
+    );
+    const totalEmployeeCLLeft = employeeLeavesArr.reduce(
+      (acc, curr) => {
+        acc.CL += curr.remainingCL;
+        return acc;
+      },
+      { CL: 0 }
+    );
+    const totalEmployeeFLLeft = employeeLeavesArr.reduce(
+      (acc, curr) => {
+        acc.FL += curr.remainingFL;
+        return acc;
+      },
+      { FL: 0 }
+    );
+    const employeeLeaveLeftArr = employeeLeavesArr.map((item) =>
+      calculateSumOfLeavesLeft(item)
+    );
+    const totalEmployeeLeaveLeft = employeeLeaveLeftArr.reduce(
+      (acc, curr) => acc + curr,
+      0
+    );
+    return {
+      totalEL: totalEmployeeELLeft.EL,
+      totalFL: totalEmployeeFLLeft.FL,
+      totalCL: totalEmployeeCLLeft.CL,
+      total: totalEmployeeLeaveLeft,
+    };
+  }
+
+  function calculateBasic(basic: number, employee) {
+    return (
+      basic *
+      calculateSumOfLeavesLeft(
+        calculateRemainingLeaves(employee.employeeLeaves, {
+          actualCL: employee.CL,
+          actualEL: employee.EL,
+          actualFL: employee.FL,
+        })
+      )
+    );
+  }
+
+  function calculateDA(DA: number, employee) {
+    return (
+      DA *
+      calculateSumOfLeavesLeft(
+        calculateRemainingLeaves(employee.employeeLeaves, {
+          actualCL: employee.CL,
+          actualEL: employee.EL,
+          actualFL: employee.FL,
+        })
+      )
+    );
+  }
+
+  function calculateTotalEmployeeWages(leaveData) {
+    const lawda: number[] = leaveData.map((employee) => {
+      return (
+        calculateBasic(
+          employee.employee.designation_details[0].basic,
+          employee
+        ) + calculateDA(employee.employee.designation_details[0].DA, employee)
+      );
+    });
+    return lawda.reduce((acc, curr) => acc + curr, 0);
+  }
+
   return (
     <div className='ml-[80px] flex flex-col gap-4'>
       <div className='flex gap-2 mb-2'>
         <Button onClick={handleDownloadPDF}>Download PDF</Button>
         <Button onClick={handleOnClick}>Print</Button>
       </div>
+      {leaveData && (
+        <div className='mb-2'>
+          <fieldset>
+            <legend>Choose Fields:</legend>
+            <div className='flex gap-2'>
+              <div>
+                <input type='checkbox' id='EL' name='EL' checked disabled />
+                <label htmlFor='el'>EL</label>
+              </div>
+              <div>
+                <input
+                  type='checkbox'
+                  id='cl'
+                  name='cl'
+                  checked={leaveFieldsRender.showCL}
+                  onChange={() =>
+                    setLeaveFieldsRender((prevState) => {
+                      return {
+                        ...prevState,
+                        showCL: !prevState.showCL,
+                      };
+                    })
+                  }
+                />
+                <label htmlFor='cl'>CL</label>
+              </div>
+              <div>
+                <input
+                  type='checkbox'
+                  id='fl'
+                  name='fl'
+                  checked={leaveFieldsRender.showFL}
+                  onChange={() =>
+                    setLeaveFieldsRender((prevState) => {
+                      return {
+                        ...prevState,
+                        showFL: !prevState.showFL,
+                      };
+                    })
+                  }
+                />
+                <label htmlFor='fl'>FL</label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      )}
 
       <div
         id={`Leave-register/${searchParams.year}`}
@@ -315,10 +482,45 @@ const Page = ({
                   {/* Table data for each day (status) */}
 
                   <td className='border-black border-[1px] p-1 text-center  text-black'>
-                    <div>{`EL: ${employee.EL}`}</div>
-                    <div>{`CL: ${employee.CL}`}</div>
-                    <div>{`FL: ${employee.FL}`}</div>
-                    <div className='border-t-2 border-black mt-2 pb-1'>{`${employee.tot}`}</div>
+                    {/* <div>{`EL: ${employee.EL}`}</div> */}
+                    <div>{`EL: ${
+                      calculateRemainingLeaves(employee.employeeLeaves, {
+                        actualCL: employee.CL,
+                        actualEL: employee.EL,
+                        actualFL: employee.FL,
+                      }).remainingEL
+                    }`}</div>
+
+                    {/* <div>{`CL: ${employee.CL}`}</div> */}
+                    {leaveFieldsRender.showCL && (
+                      <div>{`CL: ${
+                        calculateRemainingLeaves(employee.employeeLeaves, {
+                          actualCL: employee.CL,
+                          actualEL: employee.EL,
+                          actualFL: employee.FL,
+                        }).remainingCL
+                      }`}</div>
+                    )}
+                    {/* <div>{`FL: ${employee.FL}`}</div> */}
+                    {leaveFieldsRender.showFL && (
+                      <div>{`FL: ${
+                        calculateRemainingLeaves(employee.employeeLeaves, {
+                          actualCL: employee.CL,
+                          actualEL: employee.EL,
+                          actualFL: employee.FL,
+                        }).remainingFL
+                      }`}</div>
+                    )}
+                    <div className='border-t-2 border-black mt-2 pb-1'>
+                      {/* {`${employee.tot}`} */}
+                      {`${calculateSumOfLeavesLeft(
+                        calculateRemainingLeaves(employee.employeeLeaves, {
+                          actualCL: employee.CL,
+                          actualEL: employee.EL,
+                          actualFL: employee.FL,
+                        })
+                      )}`}
+                    </div>
                   </td>
                   <td className='border-black border-[1px] p-1 text-center  text-black'></td>
                   <td className='border-black border-[1px] p-1 text-center  text-black'>
@@ -332,10 +534,18 @@ const Page = ({
                     <div className='flex  '>
                       <div className='flex-1 p-1 pr-2 border-r-2 border-black '>
                         {' '}
-                        {employee.basicWages.toFixed(2)}
+                        {/* {employee.basicWages.toFixed(2)} */}
+                        {calculateBasic(
+                          employee.employee.designation_details[0].basic,
+                          employee
+                        ).toFixed(2)}
                       </div>
                       <div className='flex-1 p-1 px-2 border-r-2 border-black '>
-                        {employee.totalDA.toFixed(2)}
+                        {/* {employee.totalDA.toFixed(2)} */}
+                        {calculateDA(
+                          employee.employee.designation_details[0].DA,
+                          employee
+                        ).toFixed(2)}
                       </div>
                       <div className='flex-1 p-1 '>-</div>
                     </div>
@@ -348,7 +558,17 @@ const Page = ({
                   </td> */}
                   <td className='border-black border-[1px] p-1 text-center  text-black'></td>
                   <td className='border-black border-[1px] p-1 text-center  text-black'>
-                    {employee?.Net?.toFixed(2)}
+                    {/* {employee?.Net?.toFixed(2)} */}
+                    {(
+                      calculateBasic(
+                        employee.employee.designation_details[0].basic,
+                        employee
+                      ) +
+                      calculateDA(
+                        employee.employee.designation_details[0].DA,
+                        employee
+                      )
+                    ).toFixed(2)}
                   </td>
                   {/* <td className='border-black border-[1px] p-1 text-center  text-black'></td>
                   <td className='border-black border-[1px] p-1 text-center  text-black'></td>
@@ -362,7 +582,17 @@ const Page = ({
                     </div>
                   </td>
                   <td className='border-black border-[1px] p-1 text-center  text-black'>
-                    {employee.Net.toFixed(2)}
+                    {/* {employee.Net.toFixed(2)} */}
+                    {(
+                      calculateBasic(
+                        employee.employee.designation_details[0].basic,
+                        employee
+                      ) +
+                      calculateDA(
+                        employee.employee.designation_details[0].DA,
+                        employee
+                      )
+                    ).toFixed(2)}
                   </td>
                   <td className='border-black border-[1px] p-1 text-center  text-black'></td>
                   <td className='border-black border-[1px] p-1 text-center  text-black'></td>
@@ -404,7 +634,8 @@ const Page = ({
 </td> */}
                   <td className='border-black border-[1px] p-1 text-center  text-black'></td>
                   <td className='border-black border-[1px] p-1 text-center  text-black'>
-                    {total}
+                    {/* {total} */}
+                    {calculateTotalEmployeeWages(leaveData).toFixed(2)}
                   </td>
                   {/* <td className='border-black border-[1px] p-1 text-center  text-black'></td>
 <td className='border-black border-[1px] p-1 text-center  text-black'></td>
@@ -418,7 +649,7 @@ const Page = ({
                     </div>
                   </td>
                   <td className='border-black border-[1px] p-1 text-center  text-black'>
-                    {total}
+                    {calculateTotalEmployeeWages(leaveData).toFixed(2)}
                   </td>
                   <td className='border-black border-[1px] p-1 text-center  text-black'></td>
                   <td className='border-black border-[1px] p-1 text-center  text-black'></td>

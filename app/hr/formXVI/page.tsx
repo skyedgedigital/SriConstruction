@@ -139,7 +139,9 @@ const Page = ({
   function calculateStatus(status: string) {
     if (status === 'Present') return 'P';
     else if (status === 'Absent') return 'A';
-    else if (status === 'Leave') return 'L';
+    else if (status === 'Casual Leave') return 'CL';
+    else if (status === 'Festival Leave') return 'FL';
+    else if (status === 'Earned Leave') return 'EL';
     else if (status === 'Half Day') return 'HD';
     else if (status === 'NH') return 'NH';
     else if (status === 'Not Paid') return 'O';
@@ -241,8 +243,9 @@ const Page = ({
         {attendanceData && (
           <div>
             <div className=' font-medium text-blue-600 mb-4 '>
-              P : Present, A : Absent, L : Leave, HD : Half Day, O: OFF, NH:
-              National Holiday
+              P : Present, A : Absent, HD : Half Day, O: OFF, NH:
+              National Holiday, EL: Earned Leave, CL: Casual Leave, FL: Festival
+              Leave
             </div>
 
             <PDFTable className='border-2 border-black  '>
@@ -345,9 +348,18 @@ const Page = ({
                         employee?.days.filter(
                           (day) => day.status === 'Not Paid'
                         ).length
-                      }, L: ${
-                        employee?.days.filter((day) => day.status === 'Leave')
-                          .length
+                      }, EL: ${
+                        employee?.days.filter(
+                          (day) => day.status === 'Earned Leave'
+                        ).length
+                      },CL: ${
+                        employee?.days.filter(
+                          (day) => day.status === 'Casual Leave'
+                        ).length
+                      },FL: ${
+                        employee?.days.filter(
+                          (day) => day.status === 'Festival Leave'
+                        ).length
                       }, HD: ${
                         employee?.days.filter(
                           (day) => day.status === 'Half Day'
