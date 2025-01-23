@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import wagesAction from '@/lib/actions/HR/wages/wagesAction';
-import { useReactToPrint } from "react-to-print"
+import { useReactToPrint } from 'react-to-print';
 import {
   Table,
   TableBody,
@@ -19,17 +19,15 @@ import {
 
 import { fetchAllAttendance } from '@/lib/actions/attendance/fetch';
 
-import React, { useEffect, useState,useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
-import { fetchWagesForFinancialYearStatement } from '@/lib/actions/HR/wages/fetch';
+import { fetchWagesForFinancialYearStatement2 } from '@/lib/actions/HR/wages/fetch';
 
 const Page = ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  
-
   const [bonusData, setBonusData] = useState(null);
 
   const [attendanceData, setAttendanceData] = useState(null);
@@ -37,13 +35,15 @@ const Page = ({
   const [totalAttendanceSum, setTotalAttendanceSum] = useState(0);
   const [totalNetAmountPaidSum, setTotalNetAmountPaidSum] = useState(0);
   const [totalBonusSum, setTotalBonusSum] = useState(0);
- 
+
   const contentRef = useRef(null);
- const reactToPrintFn = useReactToPrint({ contentRef,
-  documentTitle:`BonusStatement/${searchParams.year}`, })
- const handleOnClick = React.useCallback(() => {
-  reactToPrintFn();
-}, [reactToPrintFn]);
+  const reactToPrintFn = useReactToPrint({
+    contentRef,
+    documentTitle: `BonusStatement/${searchParams.year}`,
+  });
+  const handleOnClick = React.useCallback(() => {
+    reactToPrintFn();
+  }, [reactToPrintFn]);
   const handleDownloadPDF = async () => {
     // if (!attendanceData) {
     //   toast.error('Attendance data not available for PDF generation.');
@@ -117,15 +117,17 @@ const Page = ({
         console.log('shaiaiijsjs', data);
         const filter = await JSON.stringify(data);
 
-        const response = await fetchWagesForFinancialYearStatement(filter);
+        const response = await fetchWagesForFinancialYearStatement2(filter);
         //   console.log(JSON.parse(response.data))
         console.log('ooooo', response);
         const responseData = JSON.parse(response.data);
         const filteredData =
           searchParams.dep === 'All Departments'
-            ? responseData
+            ? responseData.filter((item) => item.bonus >= 1)
             : responseData.filter(
-                (item) => item.employee.department === searchParams.dep
+                (item) =>
+                  item.employee.department === searchParams.dep &&
+                  item.bonus >= 1
               );
 
         setBonusData(filteredData);
@@ -154,7 +156,7 @@ const Page = ({
     }
   }, [bonusData]);
 
-  console.log('yeich toh hain', searchParams,bonusData);
+  console.log('yeich toh hain', searchParams, bonusData);
 
   console.log('sahi h bhai');
 
