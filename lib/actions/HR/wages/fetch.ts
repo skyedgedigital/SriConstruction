@@ -476,6 +476,7 @@ const fetchWagesForFinancialYearStatement = async (dataString) => {
   if (!dbConnection.success) return dbConnection;
   try {
     const data = JSON.parse(dataString);
+    data.bonusPercentage = data.bonusPercentage || 8.33;
     const { year, workOrder, bonusPercentage } = data;
     console.log('yeich ', year);
     console.log('bonusPercentage', bonusPercentage);
@@ -551,7 +552,7 @@ const fetchWagesForFinancialYearStatement = async (dataString) => {
     const employees = resEmployees.sort((a, b) => {
       return Number(a.workManNo) - Number(b.workManNo);
     });
-    console.log('yere employees vaiii', employees);
+    // console.log('yere employees vaiii', employees);
     if (employees.length === 0) {
       return {
         status: 404,
@@ -578,7 +579,7 @@ const fetchWagesForFinancialYearStatement = async (dataString) => {
         query.workOrderHr = workOrder;
       }
 
-      console.log('kkkkkkkkkkkkkk', query);
+      // console.log('kkkkkkkkkkkkkk', query);
       // Perform the query
       const wages = await Wages.find(query)
         .populate('designation')
@@ -658,6 +659,8 @@ const fetchWagesForFinancialYearStatement = async (dataString) => {
         0
       );
 
+      console.log(`totalNetAM------------------`, totalNetAmountPaid);
+
       const bonus = totalNetAmountPaid * (bonusPercentage / 100);
       wagesData.push({
         employee: employee,
@@ -668,7 +671,7 @@ const fetchWagesForFinancialYearStatement = async (dataString) => {
         totalAttendance: totalAttendance,
       });
     }
-    console.log(wagesData, WorkOrderHr, 'yeiiii hai bhaiii');
+    // console.log(wagesData, WorkOrderHr, 'yeiiii hai bhaiii');
     return {
       success: true,
       status: 200,
@@ -682,6 +685,250 @@ const fetchWagesForFinancialYearStatement = async (dataString) => {
       status: 500,
       err: JSON.stringify(err),
       message: 'Internal Server Error',
+    };
+  }
+};
+
+const fetchWagesForFinancialYearStatement2 = async (dataString) => {
+  const startTime = Date.now();
+  const dbConnection = await handleDBConnection();
+  if (!dbConnection.success) return dbConnection;
+
+  try {
+    const data = JSON.parse(dataString);
+    data.bonusPercentage = data.bonusPercentage || 8.33;
+    const { year, workOrder, bonusPercentage } = data;
+    const workOrderId =
+      workOrder !== 'Default' ? new mongoose.Types.ObjectId(workOrder) : null;
+    const startDate = new Date(year, 3, 1); // April of the given year
+    const endDate = new Date(year + 1, 2, 31); // March of following year
+
+    // Main aggregation pipeline
+    const pipeline = [
+      {
+        $addFields: {
+          appointmentDateObj: {
+            $cond: {
+              if: { $eq: ['$appointmentDate', ''] },
+              then: null,
+              else: {
+                $dateFromString: {
+                  dateString: '$appointmentDate',
+                  format: '%d-%m-%Y',
+                },
+              },
+            },
+          },
+          resignDateObj: {
+            $cond: {
+              if: { $eq: ['$resignDate', ''] },
+              then: null,
+              else: {
+                $dateFromString: {
+                  dateString: '$resignDate',
+                  format: '%d-%m-%Y',
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          appointmentDateObj: { $lte: endDate },
+          $or: [
+            { resignDateObj: { $gte: startDate } },
+            { resignDateObj: null },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: 'designations',
+          localField: 'designation',
+          foreignField: '_id',
+          as: 'designation_details',
+        },
+      },
+      {
+        $unwind: {
+          path: '$designation_details',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'departmenthrs',
+          localField: 'department',
+          foreignField: '_id',
+          as: 'department_details',
+        },
+      },
+      {
+        $unwind: {
+          path: '$department_details',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'wages',
+          let: { empId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$employee', '$$empId'] },
+                    {
+                      $or: [
+                        {
+                          $and: [
+                            { $eq: ['$year', year] },
+                            { $in: ['$month', [4, 5, 6, 7, 8, 9, 10, 11, 12]] },
+                          ],
+                        },
+                        {
+                          $and: [
+                            { $eq: ['$year', year + 1] },
+                            { $in: ['$month', [1, 2, 3]] },
+                          ],
+                        },
+                      ],
+                    },
+                    ...(workOrderId
+                      ? [{ $eq: ['$workOrderHr', workOrderId] }]
+                      : []),
+                  ],
+                },
+              },
+            },
+          ],
+          as: 'wages',
+        },
+      },
+      { $sort: { workManNo: 1 } },
+    ];
+
+    const employees = await EmployeeData.aggregate(pipeline);
+    if (employees.length === 0) {
+      return { status: 404, message: 'No Employees Found', success: false };
+    }
+
+    // Prepare bulk operations and wages data
+    const currentYear = new Date().getFullYear();
+    const bulkOps = [];
+    const wagesData = [];
+
+    for (const employee of employees) {
+      // Process bonus data
+      const startYear = new Date(employee.appointmentDate).getFullYear();
+      let bonusData = employee.bonus || [];
+
+      // Update bonus array structure
+      if (bonusData.length === 0) {
+        bonusData = Array.from(
+          { length: currentYear - startYear + 1 },
+          (_, i) => ({
+            year: startYear + i,
+            status: false,
+          })
+        );
+      } else {
+        const lastYear = bonusData[bonusData.length - 1].year;
+        if (lastYear < currentYear) {
+          bonusData.push(
+            ...Array.from({ length: currentYear - lastYear }, (_, i) => ({
+              year: lastYear + i + 1,
+              status: false,
+            }))
+          );
+        }
+      }
+
+      // Update bonus status for current year
+      const updatedBonus = bonusData.map((entry) =>
+        entry.year === year ? { ...entry, status: true } : entry
+      );
+
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: employee._id },
+          update: { $set: { bonus: updatedBonus } },
+        },
+      });
+
+      // Process wages
+      const financialYearMonths = [
+        ...Array.from({ length: 9 }, (_, i) => ({ month: i + 4, year: year })),
+        ...Array.from({ length: 3 }, (_, i) => ({
+          month: i + 1,
+          year: year + 1,
+        })),
+      ];
+
+      const wageMap = new Map(
+        employee.wages.map((w: any) => [`${w.year}-${w.month}`, w])
+      );
+
+      const allWages = financialYearMonths
+        .map(
+          ({ month, year }) =>
+            wageMap.get(`${year}-${month}`) || {
+              employee: employee._id,
+              designation: null,
+              month,
+              year,
+              attendance: 0,
+              netAmountPaid: 0,
+            }
+        )
+        .sort((a: any, b: any) =>
+          a.year === b.year ? a.month - b.month : a.year - b.year
+        );
+
+      // Calculate totals
+      const totalNetAmountPaid: any = allWages.reduce(
+        (sum, w: any) => sum + w.netAmountPaid,
+        0
+      );
+      const totalAttendance = allWages.reduce(
+        (sum, w: any) => sum + w.attendance,
+        0
+      );
+      const bonus = totalNetAmountPaid * (bonusPercentage / 100);
+
+      wagesData.push({
+        employee,
+        wages: allWages,
+        missingMonths: allWages
+          .filter((w: any) => w.attendance === 0)
+          .map((w: any) => w.month),
+        bonus,
+        totalNetAmountPaid,
+        totalAttendance,
+      });
+    }
+
+    // Execute bulk update
+    if (bulkOps.length > 0) {
+      await EmployeeData.bulkWrite(bulkOps);
+    }
+
+    console.log(`Execution time: ${Date.now() - startTime}ms`);
+    return {
+      success: true,
+      status: 200,
+      message: 'Successfully Retrieved Wages for the Financial Year',
+      data: JSON.stringify(wagesData),
+    };
+  } catch (err) {
+    console.error('Error:', err);
+    return {
+      success: false,
+      status: 500,
+      message: 'Internal Server Error',
+      err: JSON.stringify(err),
     };
   }
 };
@@ -1148,10 +1395,12 @@ const fetchWagesForCalendarYear = async (dataString) => {
 // };
 
 const fetchWagesForCalendarYearStatement = async (dataString) => {
+  const startTime = Date.now();
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
   try {
     const data = JSON.parse(dataString);
+    console.log('DATATATATA', data);
     const { year, workOrder } = data;
     console.log(workOrder);
     const startDate = new Date(year, 0, 1); // January 1st of the given year
@@ -1213,8 +1462,8 @@ const fetchWagesForCalendarYearStatement = async (dataString) => {
         },
       },
     ]);
-    const names = employees.map((emp) => emp._id);
-    console.log('yetirerererrere', names);
+    // const names = employees.map((emp) => emp._id);
+    // console.log('yetirerererrere', names);
     if (employees.length === 0) {
       return {
         status: 404,
@@ -1242,13 +1491,13 @@ const fetchWagesForCalendarYearStatement = async (dataString) => {
         query.workOrderHr = new mongoose.Types.ObjectId(workOrder);
       }
 
-      console.log('kkkkkkkkkkkkkk', query);
+      // console.log('kkkkkkkkkkkkkk', query);
       // Perform the query
       const wages = await Wages.find(query)
         .populate('designation')
         .populate('employee');
 
-      console.log('okay yeh bh', wages);
+      // console.log('okay yeh bh', wages);
       if (wages.length == 0) continue;
       const employeeDoc = await EmployeeData.findById(employee._id);
       const currentYear = new Date().getFullYear();
@@ -1288,7 +1537,7 @@ const fetchWagesForCalendarYearStatement = async (dataString) => {
       const missingMonths = [...monthsInYear].filter(
         (month) => !fetchedMonths.has(month)
       );
-      console.log('okay yeh nh 2');
+      // console.log('okay yeh nh 2');
 
       // Calculate totalAttendance
       const missingWages = missingMonths.map((month) => ({
@@ -1322,7 +1571,7 @@ const fetchWagesForCalendarYearStatement = async (dataString) => {
       const CL = Math.round(totalAttendance / 35);
       const FL = Math.round(totalAttendance / 60);
       const tot = EL + CL + FL;
-      console.log(employee.designation_details[0].basic);
+      // console.log(employee.designation_details[0].basic);
       const Net =
         employee.designation_details[0].basic * tot +
         employee.designation_details[0].DA * tot;
@@ -1342,8 +1591,10 @@ const fetchWagesForCalendarYearStatement = async (dataString) => {
         leave: leave,
       });
     }
-    console.log('okay yeh nh 3');
+    // console.log('okay yeh nh 3');
 
+    const endTime = Date.now();
+    console.log(endTime - startTime);
     return {
       success: true,
       status: 200,
@@ -1357,6 +1608,220 @@ const fetchWagesForCalendarYearStatement = async (dataString) => {
       status: 500,
       err: JSON.stringify(err),
       message: 'Internal Server Error',
+    };
+  }
+};
+
+const fetchWagesForCalendarYearStatement2 = async (dataString) => {
+  const startTime = Date.now();
+  const dbConnection = await handleDBConnection();
+  if (!dbConnection.success) return dbConnection;
+
+  try {
+    const data = JSON.parse(dataString);
+    const { year, workOrder } = data;
+    const workOrderId =
+      workOrder !== 'Default' ? new mongoose.Types.ObjectId(workOrder) : null;
+
+    // Base aggregation pipeline
+    const pipeline = [
+      {
+        $addFields: {
+          appointmentDateObj: {
+            $cond: {
+              if: { $eq: ['$appointmentDate', ''] },
+              then: null,
+              else: {
+                $dateFromString: {
+                  dateString: '$appointmentDate',
+                  format: '%d-%m-%Y',
+                },
+              },
+            },
+          },
+          resignDateObj: {
+            $cond: {
+              if: { $eq: ['$resignDate', ''] },
+              then: null,
+              else: {
+                $dateFromString: {
+                  dateString: '$resignDate',
+                  format: '%d-%m-%Y',
+                },
+              },
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          appointmentDateObj: { $lte: new Date(year, 11, 31) },
+          $or: [
+            { resignDateObj: { $gte: new Date(year, 0, 1) } },
+            { resignDateObj: null },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: 'designations',
+          localField: 'designation',
+          foreignField: '_id',
+          as: 'designation_details',
+        },
+      },
+      {
+        $unwind: {
+          path: '$designation_details',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'departmenthrs',
+          localField: 'department',
+          foreignField: '_id',
+          as: 'department_details',
+        },
+      },
+      {
+        $unwind: {
+          path: '$department_details',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'wages',
+          let: { empId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$employee', '$$empId'] },
+                    { $eq: ['$year', year] },
+                    ...(workOrderId
+                      ? [{ $eq: ['$workOrderHr', workOrderId] }]
+                      : []),
+                  ],
+                },
+              },
+            },
+          ],
+          as: 'wages',
+        },
+      },
+    ];
+
+    const employees = await EmployeeData.aggregate(pipeline);
+    if (employees.length === 0) {
+      return { status: 404, message: 'No Employees Found', success: false };
+    }
+
+    // Prepare bulk update operations for leave arrays
+    const currentYear = new Date().getFullYear();
+    const bulkOps = [];
+    const wagesData = [];
+
+    for (const employee of employees) {
+      // Process leave array updates
+      const startYear = new Date(employee.appointmentDate).getFullYear();
+      let leave = employee.leave || [];
+
+      if (leave.length === 0) {
+        for (let y = startYear; y <= currentYear; y++) {
+          leave.push({ year: y, status: false });
+        }
+      } else {
+        const lastYearInLeave = leave[leave.length - 1].year;
+        if (lastYearInLeave < currentYear) {
+          for (let y = lastYearInLeave + 1; y <= currentYear; y++) {
+            leave.push({ year: y, status: false });
+          }
+        }
+      }
+
+      leave = leave.map((entry) => ({
+        ...entry,
+        status: entry.year === year ? true : entry.status,
+      }));
+
+      bulkOps.push({
+        updateOne: {
+          filter: { _id: employee._id },
+          update: { $set: { leave } },
+        },
+      });
+
+      // Process wages data
+      const monthsInYear = new Set(Array.from({ length: 12 }, (_, i) => i + 1));
+      const fetchedMonths = new Set(employee.wages.map((w) => w.month));
+      const missingMonths = Array.from(monthsInYear).filter(
+        (m) => !fetchedMonths.has(m)
+      );
+
+      const allWages = [
+        ...employee.wages,
+        ...missingMonths.map((month) => ({
+          employee: employee._id,
+          month,
+          year,
+          attendance: 0,
+          netAmountPaid: 0,
+        })),
+      ].sort((a, b) => a.month - b.month);
+
+      const totalAttendance = allWages.reduce(
+        (sum, w) => sum + w.attendance,
+        0
+      );
+      const totalNetPaid = allWages.reduce(
+        (sum, w) => sum + w.netAmountPaid,
+        0
+      );
+      const EL = Math.round(totalAttendance / 20);
+      const CL = Math.round(totalAttendance / 35);
+      const FL = Math.round(totalAttendance / 60);
+      const tot = EL + CL + FL;
+      const basic = employee.designation_details?.basic || 0;
+      const DA = employee.designation_details?.DA || 0;
+
+      wagesData.push({
+        employee,
+        wages: allWages,
+        missingMonths,
+        totalAttendance,
+        EL,
+        CL,
+        FL,
+        tot,
+        basicWages: basic * tot,
+        totalDA: DA * tot,
+        Net: (basic + DA) * tot,
+        leave: (employee.designation_details?.PayRate || 0) * tot,
+      });
+    }
+
+    // Execute bulk update
+    if (bulkOps.length > 0) {
+      await EmployeeData.bulkWrite(bulkOps);
+    }
+
+    console.log('Execution time:', Date.now() - startTime, 'ms');
+    return {
+      success: true,
+      status: 200,
+      message: 'Successfully Retrieved Wages for the Calendar Year',
+      data: JSON.stringify(wagesData),
+    };
+  } catch (err) {
+    console.error('Error:', err);
+    return {
+      success: false,
+      status: 500,
+      message: 'Internal Server Error',
+      err: JSON.stringify(err),
     };
   }
 };
@@ -1629,4 +2094,6 @@ export {
   fetchWagesForFinancialYearStatement,
   fetchWagesForCalendarYearStatement,
   fetchFilledWagesWithAttendanceDays,
+  fetchWagesForCalendarYearStatement2,
+  fetchWagesForFinancialYearStatement2,
 };
