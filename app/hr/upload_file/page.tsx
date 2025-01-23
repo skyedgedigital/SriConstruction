@@ -5,6 +5,21 @@ import React, { useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 
+const month_to_num = {
+  jan: 1,
+  feb: 2,
+  mar: 3,
+  apr: 4,
+  may: 5,
+  jun: 6,
+  jul: 7,
+  aug: 8,
+  sep: 9,
+  oct: 10,
+  nov: 11,
+  dec: 12,
+};
+
 const Page = () => {
   const [data, setData] = useState([]);
   const [start, setStart] = useState(1);
@@ -31,29 +46,35 @@ const Page = () => {
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
       let extractedData = jsonData.slice(start, end + 1).flatMap((row) => {
-        const year = row[1];
-        const empCode = row[6];
-        const month = row[0];
+        const year = row[0];
+        const empCode = row[2];
+        const month = month_to_num[row[1].toLowerCase()];
 
         const days = [];
-        for (let colIndex = 58; colIndex < 58 + 31; colIndex++) {
+        for (let colIndex = 3; colIndex < 3 + 31; colIndex++) {
           const status = row[colIndex]?.trim().toLowerCase();
-          const day = colIndex - 57;
+          const day = colIndex - 2;
 
-          if (status) {
+          if (status && status.trim().length > 0) {
             let normalizedStatus = '';
-            if (status === 'p') {
+            if (status === 'p' || status === 'P') {
               normalizedStatus = 'Present';
-            } else if (status === 'a') {
+            } else if (status === 'a' || status === 'A') {
               normalizedStatus = 'Absent';
-            } else if (status === 'np') {
+            } else if (status === 'np' || status === 'NP') {
               normalizedStatus = 'Not Paid';
-            } else if (status === 'hd') {
+            } else if (status === 'hd' || status === 'HD') {
               normalizedStatus = 'Half Day';
-            } else if (status === 'nh') {
+            } else if (status === 'nh' || status === 'NH') {
               normalizedStatus = 'National Holiday';
+            } else if (status === 'EL' || status === 'el') {
+              normalizedStatus = 'Earned Leave';
+            } else if (status === 'CL' || status === 'cl') {
+              normalizedStatus = 'Casual Leave';
+            } else if (status === 'FL' || status === 'fl') {
+              normalizedStatus = 'Festival Leave';
             } else {
-              normalizedStatus = 'Leave';
+              toast.error(`status: ${status} is not recognized`);
             }
 
             days.push({
@@ -61,10 +82,13 @@ const Page = () => {
               status: normalizedStatus,
             });
           } else {
-            days.push({
-              day,
-              status: 'No Data',
-            });
+            console.log(
+              `Attendance status not found for day ${day} for employee ${empCode}`
+            );
+            // days.push({
+            //   day,
+            //   status: 'No Data',
+            // });
           }
         }
 
@@ -76,7 +100,7 @@ const Page = () => {
         };
       });
 
-      // console.table(extractedData);
+      console.table(extractedData);
 
       setData(extractedData);
       setLoading(false);
