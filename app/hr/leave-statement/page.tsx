@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import wagesAction from '@/lib/actions/HR/wages/wagesAction';
-import { useReactToPrint } from "react-to-print"
+import { useReactToPrint } from 'react-to-print';
 import {
   Table,
   TableBody,
@@ -22,7 +22,7 @@ import { fetchAllAttendance } from '@/lib/actions/attendance/fetch';
 import React, { useEffect, useState } from 'react';
 import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
 import { fetchWagesForFinancialYearStatement } from '@/lib/actions/HR/wages/fetch';
-import { fetchWagesForCalendarYearStatement } from '@/lib/actions/HR/wages/fetch';
+import { fetchWagesForCalendarYearStatement2 } from '@/lib/actions/HR/wages/fetch';
 
 const Page = ({
   searchParams,
@@ -38,9 +38,11 @@ const Page = ({
   const [totalBonusSum, setTotalBonusSum] = useState(0);
 
   const contentRef = React.useRef(null);
-  const reactToPrintFn = useReactToPrint({ contentRef,
-    documentTitle:`BonusStatement/${searchParams.year}`, })
-   const handleOnClick = React.useCallback(() => {
+  const reactToPrintFn = useReactToPrint({
+    contentRef,
+    documentTitle: `BonusStatement/${searchParams.year}`,
+  });
+  const handleOnClick = React.useCallback(() => {
     reactToPrintFn();
   }, [reactToPrintFn]);
 
@@ -109,26 +111,28 @@ const Page = ({
           // @ts-ignore
           year: parseInt(searchParams.year),
           workOrder: searchParams.wo,
-          leavePercentage: parseFloat(searchParams.lp)
+          leavePercentage: parseFloat(searchParams.lp),
         };
         console.log('shaiaiijsjs', data);
         const filter = await JSON.stringify(data);
 
-        const response = await fetchWagesForCalendarYearStatement(filter);
+        const response = await fetchWagesForCalendarYearStatement2(filter);
         //   console.log(JSON.parse(response.data))
         console.log('ooooo', response);
         const responseData = JSON.parse(response.data);
         console.log('ooooooooo', responseData);
         const filteredData =
           searchParams.dep === 'All Departments'
-            ? responseData
+            ? responseData.filter((item) => item?.leave >= 1)
             : responseData.filter(
-                (item) => item.employee.department === searchParams.dep
+                (item) =>
+                  item.employee.department === searchParams.dep &&
+                  item?.leave >= 1
               );
 
         setBonusData(filteredData);
 
-        console.log('response aagya bawa', responseData,bonusData);
+        console.log('response aagya bawa', responseData, bonusData);
         console.log('aagya response');
       } catch (error) {
         toast.error('Internal Server Error');
