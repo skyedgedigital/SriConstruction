@@ -78,10 +78,12 @@ const FileFn = async (data: string): Promise<ApiResponse<any>> => {
 
     for (const ele of fileData) {
       let { empCode, year, month, days } = ele;
+      // if 0240 -> OK , else if 240 -> 0240
+      empCode = empCode.toString().padStart(0, 4);
 
       // Get employee ID
-      const empCodeParam = changeCode(empCode);
-      const empIdResp = getEmpIdByCode(empCodeParam);
+      // const empCodeParam = changeCode(empCode);
+      const empIdResp = getEmpIdByCode(empCode);
       if (!empIdResp.success || !empIdResp.data) {
         console.log(`Employee ID not found for code: ${empCode}`);
         continue;
