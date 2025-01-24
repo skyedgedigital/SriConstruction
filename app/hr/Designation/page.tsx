@@ -59,7 +59,8 @@ const Page = () => {
         return {
           ...prevData,
           [name]: value,
-          PayRate: Number(value) + Number(prevData.DA),
+          // PayRate: Number(value) + Number(prevData.DA),
+          PayRate: Number((Number(value) + Number(prevData.DA)).toFixed(2)),
         };
       });
     } else if (name === 'DA') {
@@ -67,7 +68,7 @@ const Page = () => {
         return {
           ...prevData,
           [name]: value,
-          PayRate: Number(value) + Number(prevData.basic),
+          PayRate: Number((Number(value) + Number(prevData.basic)).toFixed(2)),
         };
       });
     } else {
@@ -85,7 +86,8 @@ const Page = () => {
         return {
           ...prevData,
           [name]: value,
-          PayRate: Number(value) + Number(prevData.DA),
+          // PayRate: Number(value) + Number(prevData.DA),
+          PayRate: Number((Number(value) + Number(prevData.DA)).toFixed(2)),
         };
       });
     } else if (name === 'DA') {
@@ -93,7 +95,8 @@ const Page = () => {
         return {
           ...prevData,
           [name]: value,
-          PayRate: Number(value) + Number(prevData.basic),
+          // PayRate: Number(value) + Number(prevData.basic),
+          PayRate: Number((Number(value) + Number(prevData.basic)).toFixed(2)),
         };
       });
     } else {
