@@ -293,7 +293,8 @@ const CreateChalan = () => {
     const fetch = async () => {
       // const { success, error, data, message } =
       //   await workOrderAction.FETCH.fetchAllWorkOrder();
-      const workOrderResp = await workOrderAction.FETCH.fetchAllWorkOrder();
+      const workOrderResp =
+        await workOrderAction.FETCH.fetchAllValidWorkOrder();
       console.log('workorder resonse', workOrderResp);
       const success = workOrderResp.success;
       // const error = workOrderResp.error;

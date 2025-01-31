@@ -28,7 +28,7 @@ const Page = () => {
       }
     };
     const fn2 = async () => {
-      const resp = await workOrderAction.FETCH.fetchAllWorkOrder();
+      const resp = await workOrderAction.FETCH.fetchAllValidWorkOrder();
       if (resp.data) {
         var resArr = JSON.parse(resp.data);
         let res = [];

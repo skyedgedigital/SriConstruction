@@ -1,5 +1,7 @@
 'use server';
 
+import { ApiResponse } from '@/interfaces/APIresponses.interface';
+import { IWorkOrder } from '@/interfaces/workOrder.interface';
 import handleDBConnection, { connectToDB } from '@/lib/database';
 import WorkOrder from '@/lib/models/workOrder.model';
 
@@ -120,10 +122,56 @@ const fetchWorkOrderUnitsByWorkOrderNameOrId = async (filter: string) => {
     };
   }
 };
+const fetchAllValidWorkOrder = async (): Promise<ApiResponse<any>> => {
+  try {
+    const resp: IWorkOrder[] = await WorkOrder.find({});
 
+    if (!resp) {
+      return {
+        data: null,
+        error: null,
+        status: 500,
+        success: false,
+        message: 'Unexpected error occurred, Failed to fetch valid work orders',
+      };
+    }
+
+    console.log('ALL WO', resp);
+    const validWorkOrders: IWorkOrder[] = [];
+    const now = Date.now();
+
+    resp.forEach((wo) => {
+      const validityTime = new Date(wo?.workOrderValidity).getTime();
+      if (validityTime >= now) {
+        validWorkOrders.push(wo);
+      }
+    });
+    console.log('VALID WO', validWorkOrders);
+
+    return {
+      data: JSON.stringify(validWorkOrders),
+      error: null,
+      status: 200,
+      success: true,
+      message: '',
+    };
+  } catch (error) {
+    return {
+      data: null,
+      error: JSON.stringify(error),
+      status: 500,
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : 'Unexpected error occurred, Failed to fetch valid work orders',
+    };
+  }
+};
 export {
   fetchAllWorkOrdersData,
   fetchWorkOrderByWorkOrderNumber,
   fetchWorkOrderByWorkOrderId,
   fetchWorkOrderUnitsByWorkOrderNameOrId,
+  fetchAllValidWorkOrder,
 };

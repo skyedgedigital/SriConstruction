@@ -1,7 +1,12 @@
-import { createWorkOrder } from "./create";
-import { deleteWorkOrder } from "./delete";
-import { fetchAllWorkOrdersData, fetchWorkOrderByWorkOrderNumber, fetchWorkOrderUnitsByWorkOrderNameOrId } from "./fetch";
-import { updateWorkOrder, updateWorkOrderBalance } from "./update";
+import { createWorkOrder } from './create';
+import { deleteWorkOrder } from './delete';
+import {
+  fetchAllValidWorkOrder,
+  fetchAllWorkOrdersData,
+  fetchWorkOrderByWorkOrderNumber,
+  fetchWorkOrderUnitsByWorkOrderNameOrId,
+} from './fetch';
+import { updateWorkOrder, updateWorkOrderBalance } from './update';
 
 const workOrderAction = {
   CREATE: {
@@ -14,6 +19,7 @@ const workOrderAction = {
     fetchAllWorkOrder: fetchAllWorkOrdersData,
     fetchWorkOrderByNumber: fetchWorkOrderByWorkOrderNumber,
     fetchWorkOrderUnitByNumberOrId: fetchWorkOrderUnitsByWorkOrderNameOrId,
+    fetchAllValidWorkOrder,
   },
   UPDATE: {
     updateWorkOrder: updateWorkOrder,
@@ -21,4 +27,4 @@ const workOrderAction = {
   },
 };
 
-export default workOrderAction
+export default workOrderAction;
