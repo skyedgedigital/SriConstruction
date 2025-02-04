@@ -5,6 +5,7 @@ import handleDBConnection from '@/lib/database';
 import Attendance from '@/lib/models/HR/attendance.model';
 import EmployeeData from '@/lib/models/HR/EmployeeData.model';
 import Wages from '@/lib/models/HR/wages.model';
+import mongoose from 'mongoose';
 
 const deleteEmployeeData = async (docId: any): Promise<ApiResponse<any>> => {
   const dbConnection = await handleDBConnection();
@@ -49,10 +50,17 @@ const deleteWorkorderFromEmployeeData = async (
   }
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
   // console.log(workOrderHr_Id, employee_Id, month, year);
   const period = `${month}-${year}`;
   try {
-    const employeeExist = await EmployeeData.findOne({ _id: employee_Id });
+    const employeeExist = await EmployeeData.findOne(
+      { _id: employee_Id },
+      null,
+      { session }
+    );
     if (!employeeExist) {
       return {
         success: false,
@@ -66,14 +74,14 @@ const deleteWorkorderFromEmployeeData = async (
       year,
       month,
       workOrderHr: workOrderHr_Id,
-    });
+    }).session(session);
     // console.log('ATTENDANCE DELETE RESPONSE', attendanceResponse);
 
     const wagesExist = await Wages.findOne({
       workOrderHr: workOrderHr_Id,
       month,
       year,
-    });
+    }).session(session);
     console.log(wagesExist);
     // console.log(employeeExist.workOrderHr);
     // console.log(
@@ -103,12 +111,13 @@ const deleteWorkorderFromEmployeeData = async (
     //   'updated-workORDERHRRRRRRR---------',
     //   employeeExist.workOrderHr
     // );
-    const updated_employee = await employeeExist.save();
+    const updated_employee = await employeeExist.save({ session });
     if (wagesExist) {
-      await Wages.deleteOne({ _id: wagesExist._id });
+      await Wages.deleteOne({ _id: wagesExist._id }).session(session);
     }
     // console.log(updated_employee);
     if (updated_employee) {
+      await session.commitTransaction();
       return {
         success: true,
         status: 204,
@@ -118,6 +127,7 @@ const deleteWorkorderFromEmployeeData = async (
       };
     }
   } catch (err) {
+    await session.abortTransaction();
     return {
       success: false,
       status: 500,
@@ -125,6 +135,8 @@ const deleteWorkorderFromEmployeeData = async (
       error: JSON.stringify(err),
       data: null,
     };
+  } finally {
+    await session.endSession();
   }
 };
 

@@ -1,17 +1,21 @@
 'use server';
 
+import mongoose from 'mongoose';
+import { revalidatePath } from 'next/cache';
+
 import { ApiResponse } from '@/interfaces/APIresponses.interface';
 import { ILeavesCount } from '@/interfaces/HR/attendances.interface';
 import handleDBConnection from '@/lib/database';
 import Attendance from '@/lib/models/HR/attendance.model';
 import EmployeeData from '@/lib/models/HR/EmployeeData.model';
 import WorkOrderHr from '@/lib/models/HR/workOrderHr.model';
-import mongoose from 'mongoose';
-import { revalidatePath } from 'next/cache';
 import attendanceAction from './attendanceAction';
 
+/**
+ * Count monthly leaves and present days from the attendance array.
+ */
 const countLeavesMonthly = (
-  attendanceArrayFromFrontend: {
+  attendanceArray: {
     day: number;
     status:
       | 'Present'
@@ -23,56 +27,68 @@ const countLeavesMonthly = (
       | 'Earned Leave'
       | 'Casual Leave'
       | 'Festival Leave';
-  }[],
-  _id?: string
+  }[]
 ): ILeavesCount => {
-  const leavesCount: ILeavesCount = {
+  const counts: ILeavesCount = {
     presentDaysCount: 0,
     earnedLeaveDaysCount: 0,
     casualLeaveDaysCount: 0,
     festivalLeaveDaysCount: 0,
   };
-  attendanceArrayFromFrontend.forEach((day) => {
-    if (day.status === 'Present') {
-      leavesCount.presentDaysCount++;
-    } else if (day.status === 'NH') {
-      leavesCount.presentDaysCount++;
-    } else if (day.status === 'Half Day') {
-      leavesCount.presentDaysCount += 0.5;
-    } else if (day.status === 'Earned Leave') {
-      leavesCount.earnedLeaveDaysCount++;
-      leavesCount.presentDaysCount++;
-    } else if (day.status === 'Casual Leave') {
-      leavesCount.casualLeaveDaysCount++;
-      leavesCount.presentDaysCount++;
-    } else if (day.status === 'Festival Leave') {
-      leavesCount.festivalLeaveDaysCount++;
-      leavesCount.presentDaysCount++;
+
+  attendanceArray.forEach((day) => {
+    switch (day.status) {
+      case 'Present':
+      case 'NH':
+        counts.presentDaysCount++;
+        break;
+      case 'Half Day':
+        counts.presentDaysCount += 0.5;
+        break;
+      case 'Earned Leave':
+        counts.earnedLeaveDaysCount++;
+        counts.presentDaysCount++;
+        break;
+      case 'Casual Leave':
+        counts.casualLeaveDaysCount++;
+        counts.presentDaysCount++;
+        break;
+      case 'Festival Leave':
+        counts.festivalLeaveDaysCount++;
+        counts.presentDaysCount++;
+        break;
+      // Optionally handle other statuses here...
+      default:
+        break;
     }
   });
-  return leavesCount;
+
+  return counts;
 };
 
-const countLeavesYearlyExcludingRequestedMonth = async (
+/**
+ * Count yearly leaves (excluding the current month) by delegating to an external fetch action.
+ */
+const countYearlyLeavesExcludingMonth = async (
   filterData: any
 ): Promise<ILeavesCount> => {
-  const leavesCountFilter = {
-    year: filterData?.year,
-    employee: filterData?.employee,
-    month: { $ne: filterData?.month },
-    // excluding leaves count for the month save attendance is requested for because new
-    // updated leaves count for current month is already been sent from front end and added while comparing
+  const filter = {
+    year: filterData.year,
+    employee: filterData.employee,
+    month: { $ne: filterData.month },
   };
-  return attendanceAction.FETCH.fetchYearlyLeavesAndPresentCounts(
-    leavesCountFilter
-  );
+  return attendanceAction.FETCH.fetchYearlyLeavesAndPresentCounts(filter);
 };
 
-function getSundays(year: number, month: number) {
-  let sundays = [];
-  month = month - 1;
-  let date = new Date(year, month, 1);
-  while (date.getMonth() === month) {
+/**
+ * Return an array of Sunday dates for a given month.
+ */
+function getSundays(year: number, month: number): number[] {
+  const sundays: number[] = [];
+  // JavaScript months are 0-indexed so adjust accordingly.
+  const jsMonth = month - 1;
+  let date = new Date(year, jsMonth, 1);
+  while (date.getMonth() === jsMonth) {
     if (date.getDay() === 0) {
       sundays.push(date.getDate());
     }
@@ -81,302 +97,221 @@ function getSundays(year: number, month: number) {
   return sundays;
 }
 
+/**
+ * Update the employee's work order attendance record for a given period.
+ */
+const updateEmployeeWorkOrderRecord = async (
+  employeeId: string,
+  period: string,
+  workOrder: string,
+  presentDaysCount: number,
+  session: mongoose.ClientSession
+): Promise<void> => {
+  // Try to update an existing period record.
+  const updateResult = await EmployeeData.updateOne(
+    {
+      _id: employeeId,
+      'workOrderHr.period': period,
+      'workOrderHr.workOrderHr': workOrder,
+    },
+    {
+      $set: { 'workOrderHr.$[elem].workOrderAtten': presentDaysCount },
+    },
+    {
+      session,
+      arrayFilters: [{ 'elem.period': period, 'elem.workOrderHr': workOrder }],
+    }
+  );
+
+  // If no document was modified, add a new period record.
+  if (updateResult.modifiedCount === 0) {
+    await EmployeeData.updateOne(
+      { _id: employeeId },
+      {
+        $addToSet: {
+          workOrderHr: {
+            period,
+            workOrderHr: workOrder,
+            workOrderAtten: presentDaysCount,
+          },
+        },
+      },
+      { session }
+    );
+  }
+};
+
+/**
+ * Main function to update or create attendance.
+ */
 const putAttendance = async (
   dataString: string,
-  filter: string
+  filterString: string
 ): Promise<ApiResponse<any>> => {
-  const dbConnection = await handleDBConnection();
-  if (!dbConnection.success) return dbConnection;
-  try {
-    const data = JSON.parse(dataString);
-    // console.log('yere month', data);
-    const attendanceArrayFromFrontend = data.arr;
-    // this is workorder ID
-    const workOrder = data.workOrder;
-    const filterData = JSON.parse(filter);
-    filterData.workOrderHr = workOrder;
-    console.log('yere filterss', filterData);
-    // yere filterss {
-    //   employee: '66e2bf4a813d9a173cba195b',
-    //   year: 2025,
-    //   month: 1,
-    //   workOrderHr: '66abb55f9dc2f6215a1cd50f'
-    // }
-    // this is employeeID receiving
-    const emp = filterData.employee;
-    // console.log('emp to shi hai boss', emp);
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
+  try {
+    // Connect to DB.
+    const dbConnection = await handleDBConnection();
+    if (!dbConnection.success) return dbConnection;
+
+    // Parse input data.
+    const data = JSON.parse(dataString);
+    const filterData = JSON.parse(filterString);
+    const attendanceArray = data.arr;
+    const workOrder = data.workOrder;
+    filterData.workOrderHr = workOrder;
+
+    // Fetch employee document (instead of using .exists so that we can update later).
+    const employee = await EmployeeData.findById(filterData.employee).session(
+      session
+    );
+    if (!employee) {
+      throw new Error('Employee not found');
+    }
+
+    // Validate work order existence.
+    const workOrderExists = await WorkOrderHr.exists({
+      _id: workOrder,
+    }).session(session);
+    if (!workOrderExists) {
+      throw new Error('Work order not found for this employee');
+    }
+
+    // Compute leave counts.
     const {
       presentDaysCount,
       casualLeaveDaysCount,
       earnedLeaveDaysCount,
       festivalLeaveDaysCount,
-    } = countLeavesMonthly(attendanceArrayFromFrontend);
+    } = countLeavesMonthly(attendanceArray);
 
-    const {
-      presentDaysCount: yearlyPresentDaysCount,
-      casualLeaveDaysCount: yearlyCasualLeaveDaysCount,
-      earnedLeaveDaysCount: yearlyEarnedLeaveDaysCount,
-      festivalLeaveDaysCount: yearlyFestivalLeaveDaysCount,
-    } = await countLeavesYearlyExcludingRequestedMonth(filterData);
+    const yearlyCounts = await countYearlyLeavesExcludingMonth(filterData);
 
-    //CHECKING LEAVE CONSTRAINTS
-
-    if (casualLeaveDaysCount + yearlyCasualLeaveDaysCount > 7) {
-      return {
-        data: null,
-        error: null,
-        message: `Can not provide more than 7 yearly casual leaves per employee. Exceeding ${
-          yearlyCasualLeaveDaysCount + casualLeaveDaysCount - 7
-        } Casual leave(s)`,
-        status: 400,
-        success: false,
-      };
+    // Check leave constraints.
+    if (casualLeaveDaysCount + yearlyCounts.casualLeaveDaysCount > 7) {
+      throw new Error(
+        `Cannot provide more than 7 yearly casual leaves per employee. Exceeding ${
+          casualLeaveDaysCount + yearlyCounts.casualLeaveDaysCount - 7
+        } casual leave(s).`
+      );
     }
-    if (festivalLeaveDaysCount + yearlyFestivalLeaveDaysCount > 4) {
-      return {
-        data: null,
-        error: null,
-        message: `Can not provide more than 4 yearly Festival leaves per employee. Exceeding ${
-          festivalLeaveDaysCount + yearlyFestivalLeaveDaysCount - 4
-        } Festival leave(s)`,
-        status: 400,
-        success: false,
-      };
+    if (festivalLeaveDaysCount + yearlyCounts.festivalLeaveDaysCount > 4) {
+      throw new Error(
+        `Cannot provide more than 4 yearly festival leaves per employee. Exceeding ${
+          festivalLeaveDaysCount + yearlyCounts.festivalLeaveDaysCount - 4
+        } festival leave(s).`
+      );
     }
-    if (earnedLeaveDaysCount + yearlyEarnedLeaveDaysCount > 15) {
-      return {
-        data: null,
-        error: null,
-        message: `Can not provide more than 15 yearly earned leaves per employee. Exceeding ${
-          earnedLeaveDaysCount + yearlyEarnedLeaveDaysCount - 15
-        } Earned leave(s)`,
-        status: 400,
-        success: false,
-      };
+    if (earnedLeaveDaysCount + yearlyCounts.earnedLeaveDaysCount > 15) {
+      throw new Error(
+        `Cannot provide more than 15 yearly earned leaves per employee. Exceeding ${
+          earnedLeaveDaysCount + yearlyCounts.earnedLeaveDaysCount - 15
+        } earned leave(s).`
+      );
     }
 
-    const doc = await Attendance.findOne(filterData);
+    // Look for existing attendance document.
+    const attendanceFilter = {
+      employee: filterData.employee,
+      year: filterData.year,
+      month: filterData.month,
+      workOrderHr: workOrder,
+    };
+    let attendanceDoc = await Attendance.findOne(attendanceFilter).session(
+      session
+    );
 
-    if (doc) {
-      // counting leaves according to constraints
-      countLeavesYearlyExcludingRequestedMonth(filterData);
-      if (doc?.casualLeaves) console.log('Old');
-      const currentAttendanceArrayInDB = doc.days;
-      attendanceArrayFromFrontend.forEach((ele: any) => {
+    if (attendanceDoc) {
+      const currentAttendanceInDB = attendanceDoc.days;
+      console.log('H----------------------------H', attendanceDoc.docs);
+      attendanceArray.forEach((ele: any) => {
         const givenDay = ele.day;
         const newStatus = ele.status;
-        const existing = currentAttendanceArrayInDB.find(
+        const existing = currentAttendanceInDB.find(
           (ele) => ele.day === givenDay
         );
         if (existing) {
           existing.status = newStatus;
         } else {
-          currentAttendanceArrayInDB.push(ele);
+          currentAttendanceInDB.push(ele);
         }
       });
 
-      // console.log(currentAttendanceArrayInDB)
-      // console.log('This is the WorkOrder', workOrder);
-      const updatedData = {
-        $set: {
-          days: currentAttendanceArrayInDB,
-          workOrderHr: workOrder,
-          earnedLeaves: earnedLeaveDaysCount,
-          festivalLeaves: festivalLeaveDaysCount,
-          presentDays: presentDaysCount,
-          casualLeaves: casualLeaveDaysCount,
-        },
+      // Prepare update data.
+      const updateData = {
+        days: currentAttendanceInDB,
+        earnedLeaves: earnedLeaveDaysCount,
+        festivalLeaves: festivalLeaveDaysCount,
+        presentDays: presentDaysCount,
+        casualLeaves: casualLeaveDaysCount,
       };
-      const resp = await Attendance.findOneAndUpdate(filterData, updatedData, {
-        new: true,
-      });
-      console.log(resp);
 
-      if (resp) {
-        const period = `${filterData.month}-${filterData.year}`.trim(); // mm-yyyy  format
-        const employee = await EmployeeData.findById(emp);
-
-        if (employee) {
-          const existingPeriod = employee.workOrderHr.find(
-            (entry) =>
-              entry.period.trim() === period.trim() &&
-              entry.workOrderHr.toString() === workOrder.toString()
-          );
-
-          if (existingPeriod) {
-            // Update the existing period entry
-            const UpdatedData = await EmployeeData.updateOne(
-              {
-                _id: employee._id,
-                'workOrderHr.period': period,
-                'workOrderHr.workOrderHr': workOrder.toString(),
-              },
-              {
-                $set: {
-                  'workOrderHr.$[elem].workOrderAtten': presentDaysCount,
-                },
-              },
-              {
-                new: true,
-                arrayFilters: [
-                  {
-                    'elem.period': period,
-                    'elem.workOrderHr': workOrder.toString(),
-                  },
-                ],
-              }
-            ).then(() => console.log('Promise Resolved', employee.workOrderHr));
-
-            console.log('Updated Successfully:', presentDaysCount, UpdatedData);
-          } else {
-            // Add a new period entry
-            await EmployeeData.updateOne(
-              { _id: emp },
-              {
-                $addToSet: {
-                  workOrderHr: {
-                    period,
-                    workOrderHr: workOrder,
-                    workOrderAtten: presentDaysCount,
-                  },
-                },
-              }
-            );
-            // console.log('Added Successfully:', period);
-          }
-        } else {
-          // Handle case where the employee document is not found
-          console.error('Employee not found');
+      attendanceDoc = await Attendance.findOneAndUpdate(
+        attendanceFilter,
+        updateData,
+        {
+          new: true,
+          session,
         }
-
-        revalidatePath('/hr/CLM');
-        return {
-          success: true,
-          status: 200,
-          message: 'Attendance Saved',
-          data: JSON.stringify(resp),
-          error: null,
-        };
-      } else {
-        return {
-          success: false,
-          status: 500,
-          message: 'Error Saving  Attendance,Please try later',
-          error: '',
-          data: null,
-        };
-      }
+      );
     } else {
-      countLeavesYearlyExcludingRequestedMonth(filterData);
+      console.log('BHOOOOOOOOOOOOT');
+      // If creating a new attendance document, mark Sundays as 'Not Paid'.
+      const sundays = getSundays(filterData.year, filterData.month);
+      sundays.forEach((sunday) => {
+        // Replace the entry for the Sunday if it exists; otherwise, set it.
+        attendanceArray[sunday - 1] = { day: sunday, status: 'Not Paid' };
+      });
 
-      // console.log('PUTTING NEW ATTENDANCE');
-      let sundays = getSundays(filterData.month, filterData.year);
-      console.log('Sundays', sundays);
-      for (let i = 0; i < sundays.length; i++) {
-        attendanceArrayFromFrontend[sundays[i] - 1] = {
-          date: sundays[i],
-          status: 'Not Paid',
-        };
-      }
-      // console.log('The Attendance Array', attendanceArrayFromFrontend);
-      const doc = new Attendance({
-        employee: emp,
+      // Create new attendance document.
+      attendanceDoc = new Attendance({
+        employee: filterData.employee,
         year: filterData.year,
         month: filterData.month,
-        days: attendanceArrayFromFrontend,
+        days: attendanceArray,
         workOrderHr: workOrder,
         earnedLeaves: earnedLeaveDaysCount,
         festivalLeaves: festivalLeaveDaysCount,
         presentDays: presentDaysCount,
         casualLeaves: casualLeaveDaysCount,
       });
-
-      const resp = await doc.save();
-      if (resp) {
-        const period = `${filterData.month}-${filterData.year}`.trim(); // mm-yyyy  format
-        const employee = await EmployeeData.findById(emp);
-
-        if (employee) {
-          const existingPeriod = employee.workOrderHr.find(
-            (entry) =>
-              entry.period.trim() === period.trim() &&
-              entry.workOrderHr.toString() === workOrder.toString()
-          );
-
-          if (existingPeriod) {
-            // Update the existing period entry
-            const UpdatedData = await EmployeeData.updateOne(
-              {
-                _id: employee._id,
-                'workOrderHr.period': period,
-                'workOrderHr.workOrderHr': workOrder.toString(),
-              },
-              {
-                $set: {
-                  'workOrderHr.$[elem].workOrderAtten': presentDaysCount,
-                },
-              },
-              {
-                new: true,
-                arrayFilters: [
-                  {
-                    'elem.period': period,
-                    'elem.workOrderHr': workOrder.toString(),
-                  },
-                ],
-              }
-            ).then(() => console.log('Promise Resolved', employee.workOrderHr));
-
-            console.log('Updated Successfully:', presentDaysCount, UpdatedData);
-          } else {
-            // Add a new period entry
-            await EmployeeData.updateOne(
-              { _id: emp },
-              {
-                $addToSet: {
-                  workOrderHr: {
-                    period,
-                    workOrderHr: workOrder,
-                    workOrderAtten: presentDaysCount,
-                  },
-                },
-              }
-            );
-            console.log('Added Successfully:', period);
-          }
-        } else {
-          // Handle case where the employee document is not found
-          console.error('Employee not found');
-        }
-
-        revalidatePath('/hr/CLM');
-        return {
-          success: true,
-          status: 200,
-          message: 'Attendance Saved',
-          data: JSON.stringify(resp),
-          error: null,
-        };
-      } else {
-        return {
-          success: false,
-          status: 500,
-          message: 'Error Saving  Attendance,Please try later',
-          error: '',
-          data: null,
-        };
-      }
+      await attendanceDoc.save({ session });
     }
+
+    // Update the employee's work order attendance record.
+    const period = `${filterData.month}-${filterData.year}`.trim();
+    await updateEmployeeWorkOrderRecord(
+      filterData.employee,
+      period,
+      workOrder,
+      presentDaysCount,
+      session
+    );
+
+    await session.commitTransaction();
+    revalidatePath('/hr/CLM');
+
+    return {
+      success: true,
+      status: 200,
+      message: 'Attendance Saved',
+      data: JSON.stringify(attendanceDoc),
+      error: null,
+    };
   } catch (err) {
-    console.log(err);
+    await session.abortTransaction();
+    console.error(err);
     return {
       success: false,
       status: 500,
+      message: 'Unexpected error occurred, failed to save attendance',
       error: JSON.stringify(err),
-      message: 'Unexpected Error Occurred, Failed to save attendance',
       data: null,
     };
+  } finally {
+    session.endSession();
   }
 };
 
