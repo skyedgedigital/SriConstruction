@@ -108,6 +108,41 @@ const updateEmployeeWorkOrderRecord = async (
   session: mongoose.ClientSession
 ): Promise<void> => {
   // Try to update an existing period record.
+  // const updateResult = await EmployeeData.updateOne(
+  //   {
+  //     _id: employeeId,
+  //     'workOrderHr.period': period,
+  //     'workOrderHr.workOrderHr': workOrder,
+  //   },
+  //   {
+  //     $set: { 'workOrderHr.$[elem].workOrderAtten': presentDaysCount },
+  //   },
+  //   {
+  //     session,
+  //     arrayFilters: [{ 'elem.period': period, 'elem.workOrderHr': workOrder }],
+  //   }
+  // );
+
+  // console.log(updateResult.modifiedCount, 'DANKU_______________');
+
+  // // If no document was modified, add a new period record.
+  // if (updateResult.modifiedCount === 0) {
+  //   const TEST = await EmployeeData.updateOne(
+  //     { _id: employeeId },
+  //     {
+  //       $addToSet: {
+  //         workOrderHr: {
+  //           period,
+  //           workOrderHr: workOrder,
+  //           workOrderAtten: presentDaysCount,
+  //         },
+  //       },
+  //     },
+  //     { session }
+  //   );
+  //   console.log('TEST__________', TEST.modifiedCount);
+  // }
+
   const updateResult = await EmployeeData.updateOne(
     {
       _id: employeeId,
@@ -123,21 +158,37 @@ const updateEmployeeWorkOrderRecord = async (
     }
   );
 
-  // If no document was modified, add a new period record.
+  console.log(updateResult.modifiedCount, 'DANKU_______________');
+
+  // If no document was modified, check if the entry already exists
   if (updateResult.modifiedCount === 0) {
-    await EmployeeData.updateOne(
-      { _id: employeeId },
+    const existingRecord = await EmployeeData.findOne(
       {
-        $addToSet: {
-          workOrderHr: {
-            period,
-            workOrderHr: workOrder,
-            workOrderAtten: presentDaysCount,
-          },
-        },
+        _id: employeeId,
+        'workOrderHr.period': period,
+        'workOrderHr.workOrderHr': workOrder,
       },
+      null,
       { session }
     );
+
+    // If no matching entry exists, add it
+    if (!existingRecord) {
+      const TEST = await EmployeeData.updateOne(
+        { _id: employeeId },
+        {
+          $push: {
+            workOrderHr: {
+              period,
+              workOrderHr: workOrder,
+              workOrderAtten: presentDaysCount,
+            },
+          },
+        },
+        { session }
+      );
+      console.log('TEST__________', TEST.modifiedCount);
+    }
   }
 };
 
