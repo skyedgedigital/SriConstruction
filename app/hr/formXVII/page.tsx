@@ -491,15 +491,14 @@ const Page = ({
                     <TableCell className='border-black border-2 text-black'>
                       {Math.round(
                         employee?.employee?.pfApplicable
-                          ? (employee?.attendance * employee?.payRate +
-                              employee?.otherCash) *
-                              0.12
+                          ? employee?.attendance * employee?.payRate * 0.12
                           : 0
                       ).toFixed(2)}
                     </TableCell>
                     <TableCell className='border-black border-2 text-black'>
                       {Math.round(
-                        employee?.employee?.ESICApplicable
+                        employee?.employee?.ESICApplicable &&
+                          employee?.total < 21000
                           ? Number(0.0075 * employee?.total)
                           : 0
                       ).toFixed(2)}
@@ -569,8 +568,8 @@ const Page = ({
                     attendanceData.map((item) => {
                       return item?.employee?.pfApplicable
                         ? Math.round(
-                            (Number(item?.attendance) * Number(item?.payRate) +
-                              Number(item?.otherCash)) *
+                            Number(item?.attendance) *
+                              Number(item?.payRate) *
                               0.12
                           )
                         : 0;
@@ -583,7 +582,8 @@ const Page = ({
                 <span>
                   {calculateTotal(
                     attendanceData.map((item) => {
-                      return item?.employee?.ESICApplicable
+                      return item?.employee?.ESICApplicable &&
+                        item?.total < 21000
                         ? Math.round(0.0075 * Number(item?.total))
                         : 0;
                     })
