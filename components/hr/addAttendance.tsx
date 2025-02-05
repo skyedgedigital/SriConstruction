@@ -37,6 +37,7 @@ import WorkOrderHrAction from '@/lib/actions/HR/workOrderHr/workOrderAction';
 import { deleteWorkorderFromEmployeeData } from '@/lib/actions/HR/EmployeeData/delete';
 
 const AddAttendance = ({ employeee }) => {
+  const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState([]);
   const [attendanceData, setAttendanceData] = useState(null);
   const [attendanceCopy, setAttendanceCopy] = useState(null);
@@ -144,8 +145,8 @@ const AddAttendance = ({ employeee }) => {
         present += 1;
       } else if (element.status === 'Absent') {
         absent += 1;
-      // } else if (element.status === 'Leave') {
-      //   leave += 1;
+        // } else if (element.status === 'Leave') {
+        //   leave += 1;
       } else if (element.status === 'NH') {
         nh += 1;
       } else if (element.status === 'Not Paid') {
@@ -263,6 +264,7 @@ const AddAttendance = ({ employeee }) => {
     };
 
     const handlePutAttendance = async () => {
+      setLoading(true);
       if (!attendance) return;
       if (!employeeData) return;
       console.log('zzunc', selectedWorkOrder);
@@ -291,6 +293,8 @@ const AddAttendance = ({ employeee }) => {
       } catch (error) {
         console.error(error);
         // Handle errors (e.g., display error message)
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -301,6 +305,7 @@ const AddAttendance = ({ employeee }) => {
       month: number,
       year: number
     ) => {
+      setLoading(true);
       if (!workOrderHr_Id || !employee_Id || !month || !year) {
         toast.error('Insufficient Data');
         return;
@@ -319,6 +324,8 @@ const AddAttendance = ({ employeee }) => {
         }
       } catch (error) {
         toast.error(error?.message || 'Something went wrong');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -424,6 +431,7 @@ const AddAttendance = ({ employeee }) => {
           <div className='flex'>
             <Button
               onClick={handlePutAttendance}
+              disabled={loading}
               className='left-0 mt-2 w-40 bg-green-500'
             >
               Save Attendance
@@ -470,6 +478,7 @@ const AddAttendance = ({ employeee }) => {
             )}
             <Button
               className='mt-2 ml-2'
+              disabled={loading}
               onClick={() => {
                 setDialogOpen(true);
                 // setSelectedWorkOrder(ele);
