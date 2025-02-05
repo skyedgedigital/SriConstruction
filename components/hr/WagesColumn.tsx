@@ -298,12 +298,12 @@ export const wagesColumns: ColumnDef<EmployeeData>[] = [
                           {Math.round(
                             0.12 *
                               (Number(payment?.existingWage.attendance) *
-                                Number(payment?.existingWage.payRate) +
-                                Number(payment?.existingWage.otherCash))
+                                Number(payment?.existingWage.payRate))
                           ).toFixed(2)}
                         </TableCell>
                         <TableCell className='border-black border-2 text-black'>
-                          {payment?.employee?.ESICApplicable
+                          {payment?.employee?.ESICApplicable &&
+                          payment.existingWage.total < 21000
                             ? Math.round(
                                 0.0075 * payment.existingWage.total
                               ).toFixed(2)
