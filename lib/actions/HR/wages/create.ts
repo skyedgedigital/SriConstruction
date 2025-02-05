@@ -171,7 +171,10 @@ const createWageForAnEmployee = async (dataString: string) => {
     totalPay = totalPay + otherCashTotal;
     let allowances = 0;
     // gross_2 is only (basic + da) * presentDays + otherCashTotal(eoc)
-    let gross_2 = totalPay;
+    // ---------------------> I have to remove eoc from gross_2
+
+    //RULE CHANGE: GROSS_2 calculation won't include EOC, so gross_2 = totalPay - otherCashTotal(EOC)
+    let gross_2 = totalPay - otherCashTotal;
 
     let otherDeductionTotal = 0;
     //totalPay = totalPay + allowances;
@@ -205,7 +208,8 @@ const createWageForAnEmployee = async (dataString: string) => {
       // console.log('Subtracting PF');
       netAmountPaid = netAmountPaid - pf;
     }
-    if (empData.ESICApplicable) {
+    // esic will only be calculated when totalPay(gross) is less than 21K, otherwise it will be zero
+    if (empData.ESICApplicable && totalPay < 21000) {
       // console.log('Subtracting ESI');
       netAmountPaid = netAmountPaid - esi;
     }
