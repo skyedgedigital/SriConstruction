@@ -2,104 +2,104 @@ import mongoose, { Schema } from 'mongoose';
 
 // Damage Register Schema
 const DamageRegisterSchema = new Schema({
-    particularsOfDamageOrLoss: {
-        type: String,
-        required: true,
-    },
-    dateOfDamageOrLoss: {
-        type: Date,
-        required: true,
-    },
-    didWorkmanShowCause: {
-        type: Boolean,
-        required: true,
-    },
-    personWhoHeardExplanation: {
-        type: String,
-        required: true,
-    },
-    amountOfDeductionImposed: {
-        type: Number,
-        required: true,
-    },
-    numberOfInstallments: {
-        type: Number,
-        default: 1,
-    },
-    installmentsLeft: {
-        type: Number,
-        default: 1,
-    },
-    remarks: {
-        type: String,
-    },
+  particularsOfDamageOrLoss: {
+    type: String,
+    required: true,
+  },
+  dateOfDamageOrLoss: {
+    type: Date,
+    required: true,
+  },
+  didWorkmanShowCause: {
+    type: Boolean,
+    required: true,
+  },
+  personWhoHeardExplanation: {
+    type: String,
+    required: true,
+  },
+  amountOfDeductionImposed: {
+    type: Number,
+    required: true,
+  },
+  numberOfInstallments: {
+    type: Number,
+    default: 1,
+  },
+  installmentsLeft: {
+    type: Number,
+    default: 1,
+  },
+  remarks: {
+    type: String,
+  },
 });
 
 // Advance Register Schema
 const AdvanceRegisterSchema = new Schema({
-    amountOfAdvanceGiven: {
-        type: Number,
-        required: true,
-    },
-    dateOfAdvanceGiven: {
-        type: Date,
-        required: true,
-    },
-    purposeOfAdvanceGiven: {
-        type: String,
-        required: true,
-    },
-    numberOfInstallments: {
-        type: Number,
-        default: 1,
-    },
-    installmentsLeft: {
-        type: Number,
-        default: 1,
-    },
-    remarks: {
-        type: String,
-    },
+  amountOfAdvanceGiven: {
+    type: Number,
+    required: true,
+  },
+  dateOfAdvanceGiven: {
+    type: Date,
+    required: true,
+  },
+  purposeOfAdvanceGiven: {
+    type: String,
+    required: true,
+  },
+  numberOfInstallments: {
+    type: Number,
+    default: 1,
+  },
+  installmentsLeft: {
+    type: Number,
+    default: 1,
+  },
+  remarks: {
+    type: String,
+  },
 });
 
 // Existing Schemas: Bonus, Leave, WorkOrderHr (as in your provided code)
 const BonusSchema = new Schema({
-    year: {
-        type: Number,
-        required: true,
-    },
-    status: {
-        type: Boolean,
-        required: true,
-    },
+  year: {
+    type: Number,
+    required: true,
+  },
+  status: {
+    type: Boolean,
+    required: true,
+  },
 });
 
 const LeaveSchema = new Schema({
-    year: {
-        type: Number,
-        required: true,
-    },
-    status: {
-        type: Boolean,
-        required: true,
-    },
+  year: {
+    type: Number,
+    required: true,
+  },
+  status: {
+    type: Boolean,
+    required: true,
+  },
 });
 
 const WorkOrderHrSchema = new Schema({
-    period: {
-        type: String, // Format: 'mm-yyyy'
-        required: true,
-    },
-    workOrderHr: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "WorkOrderHr",
-        required: true,
-    },
-    workOrderAtten: {
-        type: Number,
-        required: true,
-        default: 0,
-    },
+  period: {
+    type: String, // Format: 'mm-yyyy'
+    required: true,
+  },
+  workOrderHr: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'WorkOrderHr',
+    required: true,
+  },
+  workOrderAtten: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
 });
 
 // Main EmployeeData Schema
@@ -263,13 +263,18 @@ const EmployeeDataSchema = new Schema({
   },
 });
 
+EmployeeDataSchema.index(
+  { _id: 1, 'workOrderHr.period': 1, 'workOrderHr.workOrderHr': 1 },
+  { unique: true }
+);
+
 // Model initialization
 let EmployeeData;
 
 if (mongoose.models.EmployeeData) {
-    EmployeeData = mongoose.model("EmployeeData");
+  EmployeeData = mongoose.model('EmployeeData');
 } else {
-    EmployeeData = mongoose.model("EmployeeData", EmployeeDataSchema);
+  EmployeeData = mongoose.model('EmployeeData', EmployeeDataSchema);
 }
 
 export { EmployeeDataSchema, DamageRegisterSchema, AdvanceRegisterSchema };
