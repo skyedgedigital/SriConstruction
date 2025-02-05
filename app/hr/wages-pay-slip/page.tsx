@@ -321,13 +321,13 @@ const Page = ({
                 {(
                   0.12 *
                   (wagesData?.existingWage?.attendance *
-                    wagesData?.existingWage?.payRate +
-                    wagesData?.existingWage?.otherCash)
+                    wagesData?.existingWage?.payRate)
                 ).toFixed(2)}
               </span>
               <span className='ml-6'>ESI:</span>
               <span className='font-bold ml-6'>
-                {wagesData?.employee?.ESICApplicable
+                {wagesData?.employee?.ESICApplicable &&
+                wagesData?.existingWage?.total < 21000
                   ? (0.0075 * wagesData?.existingWage?.total).toFixed(2)
                   : 0}
               </span>
