@@ -11,7 +11,18 @@ const EmpDataViewComponent = (props) => {
       console.log(docId);
       const resp = await EmployeeDataAction.FETCH.fetchEmployeeById(docId);
       if (resp.success) {
-        setData(JSON.parse(resp.data));
+        const details = await JSON.parse(resp.data);
+        setData((prev) => ({
+          ...details,
+          dob: formatDate(details.dob),
+          appointmentDate: formatDate(details.appointmentDate),
+          resignDate: formatDate(details.resignDate),
+          policeVerificationValidityDate: formatDate(
+            details.policeVerificationValidityDate
+          ),
+          gatePassValidTill: formatDate(details.gatePassValidTill),
+          SpValidity: formatDate(details.SpValidity),
+        }));
         console.warn(resp.data);
       }
     };
@@ -21,6 +32,13 @@ const EmpDataViewComponent = (props) => {
     window.open(
       `/hr/empCard?name=${data?.name}&designation=${data?.designation?.designation}&slNo=${data?.workManNo}`
     );
+  };
+
+  // Function to format date from 'yyyy-mm-dd' to 'dd-mm-yyyy'
+  const formatDate = (dateString) => {
+    if (!dateString) return dateString; // Return if dateString is empty
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`; // Return in 'dd-mm-yyyy' format
   };
   return (
     <>

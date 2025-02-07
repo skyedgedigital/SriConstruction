@@ -105,7 +105,18 @@ const Create = ({ name, docId }) => {
         const details = await JSON.parse(resp.data);
 
         console.log(details._id);
-        setEmployeeDetails(details);
+        // setEmployeeDetails(details);
+        setEmployeeDetails(() => ({
+          ...details,
+          dob: formatDate(details.dob),
+          appointmentDate: formatDate(details.appointmentDate),
+          resignDate: formatDate(details.resignDate),
+          policeVerificationValidityDate: formatDate(
+            details.policeVerificationValidityDate
+          ),
+          gatePassValidTill: formatDate(details.gatePassValidTill),
+          SpValidity: formatDate(details.SpValidity),
+        }));
         setFormData((prevData) => ({
           ...prevData,
           ...details,
@@ -142,14 +153,12 @@ const Create = ({ name, docId }) => {
     console.log('yyyy', formData);
     const formattedData = {
       ...formData,
-      dob: formatDate(formData.dob),
-      appointmentDate: formatDate(formData.appointmentDate),
-      resignDate: formatDate(formData.resignDate),
-      policeVerificationValidityDate: formatDate(
-        formData.policeVerificationValidityDate
-      ),
-      gatePassValidTill: formatDate(formData.gatePassValidTill),
-      SpValidity: formatDate(formData.SpValidity),
+      dob: formData.dob,
+      appointmentDate: formData.appointmentDate,
+      resignDate: formData.resignDate,
+      policeVerificationValidityDate: formData.policeVerificationValidityDate,
+      gatePassValidTill: formData.gatePassValidTill,
+      SpValidity: formData.SpValidity,
     };
     const resp = await EmployeeDataAction.UPDATE.updateEmployeeData(
       JSON.stringify(formattedData),
