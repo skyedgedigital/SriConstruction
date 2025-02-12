@@ -128,8 +128,13 @@ const Page = ({
               item.otherDeductionDescription
             ),
           }));
-          const filteredData = parsedData.filter((item) =>
-            stateDetails.some((state) => state.workOrderId === item.workOrderHr)
+          const filteredData = parsedData.filter(
+            (item) =>
+              stateDetails.some(
+                (state) => state.workOrderId === item.workOrderHr
+              ) &&
+              item.employee?.ESICApplicable &&
+              item.total < 21000
           );
           setAttendanceData(filteredData);
           setLoading(false);
@@ -195,7 +200,7 @@ const Page = ({
         // 'P.F. No.': employee?.employee?.pfNo || '',
         'IP Name': employee?.employee?.name || '',
         'No. of days for which wages paid/payable': employee?.attendance || 0,
-        'Total Monthly Wage': (employee?.total).toFixed(2),
+        'Total Monthly Wage': Math.round(employee?.total).toFixed(2),
       };
     });
     const combinedExcelRows = rowsForTitle.concat(
