@@ -200,7 +200,7 @@ const Page = ({
         // 'P.F. No.': employee?.employee?.pfNo || '',
         'IP Name': employee?.employee?.name || '',
         'No. of days for which wages paid/payable': employee?.attendance || 0,
-        'Total Monthly Wage': Math.round(employee?.total).toFixed(2),
+        'Total Monthly Wage': Math.round((employee?.total).toFixed(2)),
       };
     });
     const combinedExcelRows = rowsForTitle.concat(
