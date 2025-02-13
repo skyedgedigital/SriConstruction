@@ -67,7 +67,7 @@ const Page = ({
       //   await workOrderAction.FETCH.fetchAllWorkOrder();
 
       const workOrderResp =
-        await workOrderAction.FETCH.fetchAllValidWorkOrder();
+        await workOrderAction.FETCH.fetchAllWorkOrder();
       const success = workOrderResp.success;
       const error = workOrderResp.error;
       const data = JSON.parse(workOrderResp.data);
