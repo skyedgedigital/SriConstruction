@@ -9,6 +9,7 @@ import stream from 'stream';
 import handleDBConnection from '@/lib/database';
 import { ApiResponse } from '@/interfaces/APIresponses.interface';
 import { revalidatePath } from 'next/cache';
+import { getYearForInvoiceNaming } from '@/utils/getYearForInvoiceNaming';
 
 const checkIfInvoiceExists = async (
   chalanNumbers: string[],
@@ -260,7 +261,7 @@ const updateInvoiceNumber = async (invoiceData): Promise<ApiResponse<any>> => {
     const currentYear = new Date().getFullYear();
 
     // Construct the new invoiceNumber in the format SE/currentYear/currentYear+1/invoiceNumber
-    const formattedInvoiceNumber = `SE/24-25/${invoiceNumber}`;
+    const formattedInvoiceNumber = `SE/${getYearForInvoiceNaming()}/${invoiceNumber}`;
 
     if (invoice) {
       // If the invoice exists, update SESNo and DONo
@@ -444,12 +445,17 @@ const generateContinuousInvoiceNumber = async (): Promise<ApiResponse<any>> => {
       };
     }
     console.log('ALL SORTED INVOICE NUMBER', allInvoiceNumbers);
-    const latestInvoiceNumber =
-      Number(
-        allInvoiceNumbers?.[allInvoiceNumbers.length - 1].invoiceNumber.split(
-          '/'
-        )[2]
-      ) + 1;
+    let latestInvoiceNumber: number;
+    if (allInvoiceNumbers.length === 0) {
+      latestInvoiceNumber = 1;
+    } else {
+      latestInvoiceNumber =
+        Number(
+          allInvoiceNumbers?.[allInvoiceNumbers.length - 1].invoiceNumber.split(
+            '/'
+          )[2]
+        ) + 1;
+    }
     console.log('latest invoice number', latestInvoiceNumber);
     if (!latestInvoiceNumber) {
       return {
@@ -485,7 +491,9 @@ const generateContinuousTaxInvoiceNumber = async (): Promise<
     if (!dbConnection.success) return dbConnection;
 
     const allTaxInvoiceNumbers = (
-      await Invoice.find().select('TaxNumber')
+      await Invoice.find({
+        $and: [{ TaxNumber: { $ne: null } }, { TaxNumber: { $ne: '' } }],
+      })
     ).toSorted((a, b) => {
       if (a.TaxNumber && b.TaxNumber)
         return (

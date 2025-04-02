@@ -29,6 +29,7 @@ import { fetchEnterpriseInfo } from '@/lib/actions/enterprise';
 import { IEnterprise } from '@/interfaces/enterprise.interface';
 import { Loader } from 'lucide-react';
 import workOrderAction from '@/lib/actions/workOrder/workOrderAction';
+import { getYearForInvoiceNaming } from '@/utils/getYearForInvoiceNaming';
 
 const todayDate = () => {
   let date = new Date().toLocaleDateString();
@@ -255,7 +256,7 @@ const PublicHealthServiceInvoice = ({
         const invoiceAlreadyExists =
           await chalanAction.CHECK.checkExistingInvoice(
             selectedChalanNumbers,
-            `SE/24-25/${invoiceNumber}`
+            `SE/${getYearForInvoiceNaming()}/${invoiceNumber}`
           );
         //invoiceAlreadyExists.success will be true if no invoice exists
         if (!invoiceAlreadyExists.success) {

@@ -12,6 +12,7 @@ import Item from '@/lib/models/item.model';
 import { generateContinuousInvoiceNumber } from './invoice';
 import { checkIfInvoiceExists } from './invoice';
 import { ApiResponse } from '@/interfaces/APIresponses.interface';
+import { getYearForInvoiceNaming } from '@/utils/getYearForInvoiceNaming';
 
 const prepareMergedItems = async (
   selectedChalanNumbers: string[]
@@ -91,7 +92,7 @@ const prepareMergedItems = async (
 
 const mergeChalans = async (
   chalanNumbers: string[],
-  invoiceNumber:string
+  invoiceNumber: string
 ): Promise<ApiResponse<any>> => {
   try {
     // checking any existing invoices with array of chalan number. returning TRUE if NO INVOICE already exists
@@ -152,7 +153,7 @@ const mergeChalans = async (
 
     const invoiceObj = new Invoice({
       invoiceId: sortedChalanNumbers,
-      invoiceNumber: `SE/24-25/${invoiceNumber}`,
+      invoiceNumber: `SE/${getYearForInvoiceNaming()}/${invoiceNumber}`,
       mergedItems: JSON.stringify(mergedItems),
       chalans: chalanNumbers,
     });
@@ -315,7 +316,7 @@ const mergeChalans = async (
 
 //       const invoiceObj = new Invoice({
 //         invoiceId: sortedChalanNumbers,
-//         invoiceNumber: `SE/24-25/${finalInvoiceNumber}`,
+// invoiceNumber: `SE/${getYearForInvoiceNaming()}/${finalInvoiceNumber}`,
 //         mergedItems: JSON.stringify(mergedItems),
 //         chalans: chalanNumbers,
 //       });

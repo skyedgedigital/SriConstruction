@@ -21,6 +21,7 @@ import { SubmitHandler } from 'react-hook-form';
 import { updateInvoice } from '@/lib/actions/chalan/invoice';
 import { Loader } from 'lucide-react';
 import chalanAction from '@/lib/actions/chalan/chalanAction';
+import { getYearForInvoiceNaming } from '@/utils/getYearForInvoiceNaming';
 
 // Define your Zod schema for the invoice management form
 const invoiceManagementFormSchema = z.object({
@@ -73,7 +74,10 @@ const InvoiceManagement: React.FC<{}> = () => {
       const resp = await chalanAction.FETCH.getLatestTaxInvoiceNumber();
       if (resp.success) {
         // setTaxInvoiceNumber(await JSON.parse(resp.data));
-        form.setValue('TaxNumber', `SE/24-25/${await JSON.parse(resp.data)}`);
+        form.setValue(
+          'TaxNumber',
+          `SE/${getYearForInvoiceNaming()}/${await JSON.parse(resp.data)}`
+        );
       }
       if (!resp.success) {
         console.error('An Error Occurred');
