@@ -73,6 +73,7 @@ const deleteWorkorderFromEmployeeData = async (
 
     // 1. If attendance does not exist, which means there is no benefit of going further, wages should not exist, workorderHr array should not have the element in the employeedatas field, this is the default behavior
     const attendanceExist = await Attendance.findOne({
+      employee: employeeExist._id,
       year,
       month,
       workOrderHr: workOrderHr_Id,
@@ -89,6 +90,7 @@ const deleteWorkorderFromEmployeeData = async (
     }
 
     const attendanceResponse = await Attendance.deleteOne({
+      employee: employeeExist._id,
       year,
       month,
       workOrderHr: workOrderHr_Id,
@@ -96,6 +98,7 @@ const deleteWorkorderFromEmployeeData = async (
     // console.log('ATTENDANCE DELETE RESPONSE', attendanceResponse);
 
     const wagesExist = await Wages.findOne({
+      employee: employeeExist._id,
       workOrderHr: workOrderHr_Id,
       month,
       year,
