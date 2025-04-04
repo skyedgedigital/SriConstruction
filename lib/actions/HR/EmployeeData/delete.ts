@@ -145,6 +145,13 @@ const deleteWorkorderFromEmployeeData = async (
       await Wages.deleteOne({ _id: wagesExist._id }).session(session);
     }
     await session.commitTransaction();
+    return {
+      success: true,
+      status: 204,
+      message: `${workOrderHr_Id} deleted successfully`,
+      data: null,
+      error: null,
+    };
   } catch (err) {
     await session.abortTransaction();
     return {
