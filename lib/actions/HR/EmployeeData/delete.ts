@@ -70,7 +70,25 @@ const deleteWorkorderFromEmployeeData = async (
         data: null,
       };
     }
-    const attendanceResponse = await Attendance.findOneAndDelete({
+
+    // 1. If attendance does not exist, which means there is no benefit of going further, wages should not exist, workorderHr array should not have the element in the employeedatas field, this is the default behavior
+    const attendanceExist = await Attendance.findOne({
+      year,
+      month,
+      workOrderHr: workOrderHr_Id,
+    }).session(session);
+
+    if (!attendanceExist) {
+      return {
+        success: false,
+        status: 404,
+        message: 'Attendance not found',
+        error: null,
+        data: null,
+      };
+    }
+
+    const attendanceResponse = await Attendance.deleteOne({
       year,
       month,
       workOrderHr: workOrderHr_Id,
@@ -94,38 +112,39 @@ const deleteWorkorderFromEmployeeData = async (
         item.workOrderHr.toString() === workOrderHr_Id && item.period === period
     );
     // console.log('workOrderHrExist-------------------', workOrderHrExist);
-    if (!workOrderHrExist) {
-      return {
-        success: false,
-        status: 404,
-        message: `${workOrderHr_Id} does not exist`,
-        error: null,
-        data: null,
-      };
+
+    //2. this should not happen, we should not return it.
+    // REASON - if this step comes, we know for sure that attendance is not there, so if attendance is not there then it should not matter whether workOrderHrExist is undefined / defined, if it is defined(which means it exist) it will get deleted in the next step, if it is undefined, it mean it is already deleted, so in both the cases the workOrderHrExist is getting deleted, so we should not 'return'
+    //PREVIOUS CODE
+    // if (!workOrderHrExist) {
+    //   return {
+    //     success: false,
+    //     status: 404,
+    //     message: `${workOrderHr_Id} does not exist`,
+    //     error: null,
+    //     data: null,
+    //   };
+    // }
+    //NEW CODE
+    if (workOrderHrExist) {
+      employeeExist.workOrderHr = employeeExist.workOrderHr.filter(
+        (item) =>
+          item.workOrderHr.toString() !== workOrderHr_Id ||
+          item.period !== period
+      );
+      const updated_employee = await employeeExist.save({ session });
+      if (!updated_employee) {
+        throw new Error("Couldn't save employee");
+      }
     }
-    employeeExist.workOrderHr = employeeExist.workOrderHr.filter(
-      (item) =>
-        item.workOrderHr.toString() !== workOrderHr_Id || item.period !== period
-    );
     // console.log(
     //   'updated-workORDERHRRRRRRR---------',
     //   employeeExist.workOrderHr
     // );
-    const updated_employee = await employeeExist.save({ session });
     if (wagesExist) {
       await Wages.deleteOne({ _id: wagesExist._id }).session(session);
     }
-    // console.log(updated_employee);
-    if (updated_employee) {
-      await session.commitTransaction();
-      return {
-        success: true,
-        status: 204,
-        message: `${workOrderHr_Id} deleted successfully`,
-        data: null,
-        error: null,
-      };
-    }
+    await session.commitTransaction();
   } catch (err) {
     await session.abortTransaction();
     return {
