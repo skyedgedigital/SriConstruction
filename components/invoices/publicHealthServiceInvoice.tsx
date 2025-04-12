@@ -14,7 +14,7 @@ import {
 } from '@/lib/actions/chalan/invoice';
 import { useParams, useRouter } from 'next/navigation';
 import jsPDF from 'jspdf';
-import { parseISO, format } from 'date-fns';
+import { formatDate } from 'date-fns';
 import {
   getDownloadURL,
   getStorage,
@@ -32,10 +32,9 @@ import workOrderAction from '@/lib/actions/workOrder/workOrderAction';
 import { getYearForInvoiceNaming } from '@/utils/getYearForInvoiceNaming';
 
 const todayDate = () => {
-  let date = new Date().toLocaleDateString();
+  let date = formatDate(new Date(), 'dd/MM/yyyy');
   return date;
 };
-
 const PublicHealthServiceInvoice = ({
   // invoice,
   items,
@@ -408,12 +407,6 @@ const PublicHealthServiceInvoice = ({
       y: 10,
       html2canvas: { scale: 0.6 },
     });
-  };
-
-  const formatDate = (date: Date | string | null): string => {
-    if (!date) return 'N/A';
-    if (typeof date === 'string') date = parseISO(date);
-    return format(date, 'PPP');
   };
 
   const total = items.reduce((sum, item) => sum + item.itemCost.itemCost, 0);
