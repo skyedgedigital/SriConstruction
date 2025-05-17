@@ -153,9 +153,28 @@ const Invoice = ({
         selectedChalanNumbers
       );
       if (resp.success) {
-        // toast.success("Recieved Summary Data")
-        console.log('RESP', resp.data);
-        setDateMapping(resp.data);
+        const dateWiseUnsortedItems = resp.data;
+        // console.log('dateWiseUnsortedItems', resp.data);
+
+        const sortedDateWiseItems = Object.keys(dateWiseUnsortedItems).reduce(
+          (acc, key) => {
+            const item = { ...dateWiseUnsortedItems[key] };
+            // Sort the 'details' array by 'chalanDate' in increasing order
+            if (Array.isArray(item.details)) {
+              item.details.sort(
+                (a, b) =>
+                  new Date(a.chalanDate).getTime() -
+                  new Date(b.chalanDate).getTime()
+              );
+            }
+            acc[key] = item;
+            return acc;
+          },
+          {}
+        );
+        // console.log('sortedDateWiseItems', sortedDateWiseItems);
+
+        setDateMapping(sortedDateWiseItems);
       }
     };
 
