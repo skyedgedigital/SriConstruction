@@ -9,7 +9,7 @@ import handleDBConnection from '@/lib/database';
 import Attendance from '@/lib/models/HR/attendance.model';
 import EmployeeData from '@/lib/models/HR/EmployeeData.model';
 import WorkOrderHr from '@/lib/models/HR/workOrderHr.model';
-import attendanceAction from './attendanceAction';
+import { fetchYearlyLeavesAndPresentCounts } from './fetch';
 
 /**
  * Count monthly leaves and present days from the attendance array.
@@ -77,7 +77,7 @@ const countYearlyLeavesExcludingMonth = async (
     employee: filterData.employee,
     month: { $ne: filterData.month },
   };
-  return attendanceAction.FETCH.fetchYearlyLeavesAndPresentCounts(filter);
+  return fetchYearlyLeavesAndPresentCounts(filter);
 };
 
 /**
