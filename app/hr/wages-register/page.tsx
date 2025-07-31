@@ -300,7 +300,9 @@ const Page = ({
                 </span>{' '}
                 <span className='ml-6'>PF:</span>{' '}
                 <span className='font-bold ml-6'>
-                  {(0.12 * wage?.total).toFixed(2)}
+                  {Math.round(
+                    (wage.total - wage.incentiveAmount - wage.allowances) * 0.12
+                  )}{' '}
                 </span>
                 <span className='ml-6'>ESI:</span>
                 <span className='font-bold ml-6'>
