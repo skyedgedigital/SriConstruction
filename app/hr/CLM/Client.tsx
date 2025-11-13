@@ -413,9 +413,13 @@ const Client = () => {
             }
 
             // console.log("dekhte han & ham bumhra", employees, employee[12]);
-            const existingAttendance = responseData.find(
-              (attendance) => attendance.employee.code === employee.code
-            );
+            const existingAttendance = responseData.find((attendance) => {
+              if (!attendance.employee?.code) {
+                console.log('attendance employee code missing', attendance);
+                return false;
+              }
+              return attendance.employee.code === employee.code;
+            });
 
             // console.log("urrey vaiiii", existingAttendance);
             //yaha default vali condition dekhni hogi
