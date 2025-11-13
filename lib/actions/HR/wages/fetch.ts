@@ -167,10 +167,12 @@ const fetchFilledWagesWithAttendanceDays = async (
       );
       // console.log('wemployee', wemployee);
       // console.log('xxxxx', x);
-      wagesResponseWithAttendanceDays.push({
-        ...wemployee._doc,
-        days: x.days,
-      });
+      if (x) {
+        wagesResponseWithAttendanceDays.push({
+          ...wemployee._doc,
+          days: x.days,
+        });
+      }
       // console.log('final array pushed', wagesResponseWithAttendanceDays);
     });
 
