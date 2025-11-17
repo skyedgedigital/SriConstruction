@@ -23,12 +23,10 @@ const deleteDepartment = async (
         error: null,
       };
     }
-    const res = await Department.findOneAndDelete(
-      {
-        departmentName: departmentName,
-      },
-      { new: true }
-    );
+
+    const res = await ifExists.deleteOne();
+    // console.log('DEPERTMENT DELETED', res);
+
     revalidatePath('/admin/drivers');
 
     return {

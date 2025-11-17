@@ -14,7 +14,7 @@ const Engineers: React.FC<{}> = async () => {
   const engineers = tempEngineers.map((engineer) => {
     return {
       ...engineer, // Include all existing properties
-      department: engineer.department.departmentName, // Replace department object with departmentName
+      department: engineer?.department?.departmentName,
     };
   });
 
