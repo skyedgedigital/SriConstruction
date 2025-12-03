@@ -153,12 +153,14 @@ const Create = ({ name, docId }) => {
     console.log('yyyy', formData);
     const formattedData = {
       ...formData,
-      dob: formData.dob,
-      appointmentDate: formData.appointmentDate,
-      resignDate: formData.resignDate,
-      policeVerificationValidityDate: formData.policeVerificationValidityDate,
-      gatePassValidTill: formData.gatePassValidTill,
-      SpValidity: formData.SpValidity,
+      dob: formatDate(formData.dob),
+      appointmentDate: formatDate(formData.appointmentDate),
+      resignDate: formatDate(formData.resignDate),
+      policeVerificationValidityDate: formatDate(
+        formData.policeVerificationValidityDate
+      ),
+      gatePassValidTill: formatDate(formData.gatePassValidTill),
+      SpValidity: formatDate(formData.SpValidity),
     };
     const resp = await EmployeeDataAction.UPDATE.updateEmployeeData(
       JSON.stringify(formattedData),
@@ -176,6 +178,34 @@ const Create = ({ name, docId }) => {
     if (!dateString) return dateString; // Return if dateString is empty
     const [year, month, day] = dateString.split('-');
     return `${day}-${month}-${year}`; // Return in 'dd-mm-yyyy' format
+  };
+
+  // Function to format date from 'dd-mm-yyyy' to 'yyyy-mm-dd' for input field
+  // Function to format date from 'dd-mm-yyyy' to 'yyyy-mm-dd' for input field
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return dateString; // Return if dateString is empty
+
+    // Check if already in yyyy-mm-dd format
+    if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return dateString; // Already in correct format
+    }
+
+    // Try to parse as dd-mm-yyyy
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+      // Check which part is likely the year (4 digits)
+      const yearIndex = parts.findIndex((part) => part.length === 4);
+      if (yearIndex === 2) {
+        // Format: dd-mm-yyyy
+        const [day, month, year] = parts;
+        return `${year}-${month}-${day}`;
+      } else if (yearIndex === 0) {
+        // Format: yyyy-mm-dd
+        return dateString;
+      }
+    }
+
+    return dateString; // Return as-is if format is unexpected
   };
 
   return (
@@ -542,7 +572,7 @@ const Create = ({ name, docId }) => {
             type='date'
             id='input'
             name='dob'
-            value={formData.dob}
+            value={formatDateForInput(formData.dob)}
             onChange={handleInputChange}
             className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
             placeholder='Enter DOB Here'
@@ -664,7 +694,7 @@ const Create = ({ name, docId }) => {
             type='date'
             id='input'
             name='appointmentDate'
-            value={formData.appointmentDate}
+            value={formatDateForInput(formData.appointmentDate)}
             onChange={handleInputChange}
             className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
             placeholder='Enter Appointment Date Here'
@@ -682,7 +712,7 @@ const Create = ({ name, docId }) => {
             type='date'
             id='input'
             name='resignDate'
-            value={formData.resignDate}
+            value={formatDateForInput(formData.resignDate)}
             onChange={handleInputChange}
             className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
             placeholder='Enter Resign Date Here'
@@ -725,7 +755,7 @@ const Create = ({ name, docId }) => {
             type='date'
             id='input'
             name='SpValidity'
-            value={formData.SpValidity}
+            value={formatDateForInput(formData.SpValidity)}
             onChange={handleInputChange}
             className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
             placeholder='Enter Sp Validity Here'
@@ -744,7 +774,7 @@ const Create = ({ name, docId }) => {
             type='date'
             id='input'
             name='policeVerificationValidityDate'
-            value={formData.policeVerificationValidityDate}
+            value={formatDateForInput(formData.policeVerificationValidityDate)}
             onChange={handleInputChange}
             className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
             placeholder='Enter Date Here'
@@ -780,7 +810,7 @@ const Create = ({ name, docId }) => {
             type='date'
             id='input'
             name='gatePassValidTill'
-            value={formData.gatePassValidTill}
+            value={formatDateForInput(formData.gatePassValidTill)}
             onChange={handleInputChange}
             className='mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm'
             placeholder='Enter Gate Pass Validity Here'
