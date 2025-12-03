@@ -6,7 +6,7 @@ import Wages from '@/lib/models/HR/wages.model';
 import EmployeeData from '@/lib/models/HR/EmployeeData.model';
 import WorkOrderHr from '@/lib/models/HR/workOrderHr.model';
 import attendanceAction from '../../attendance/attendanceAction';
-import mongoose from 'mongoose';
+import mongoose, { PipelineStage } from 'mongoose';
 import { DepartmentHrSchema } from '@/lib/models/HR/department_hr';
 import { BankSchema } from '@/lib/models/HR/bank.model';
 import { endOfYear } from 'date-fns';
@@ -15,6 +15,7 @@ import handleDBConnection from '@/lib/database';
 import { ApiResponse } from '@/interfaces/APIresponses.interface';
 import Attendance from '@/lib/models/HR/attendance.model';
 import { employee } from '../../../../types/employee.type';
+import { YearlyWageInfo } from './types';
 const designationModel =
   mongoose.models.Designation ||
   mongoose.model('Designation', DesignationSchema);
@@ -39,22 +40,7 @@ const fetchFilledWages = async (
     if (workOrderHr !== 'Default') {
       filter.workOrderHr = workOrderHr;
     }
-    console.log(filter, 'I am Filter');
 
-    // Fetch employees with matching workOrder and period in their workOrderHr
-
-    // Populate employee IDs
-
-    // const resp = await Wages.find(filter)
-    //   .populate('designation')
-    //   .populate('employee')
-    //   .populate({
-    //     path: 'employee',
-    //     populate: {
-    //       path: 'designation',
-    //       model: 'Designation',
-    //     },
-    //   });
     const resp = await Wages.find(filter)
       .populate('designation')
       .populate({
@@ -70,16 +56,26 @@ const fetchFilledWages = async (
           },
         ],
       });
-    console.log('bbbbbbbbbbbbbb', resp);
+    // console.log('bbbbbbbbbbbbbb', resp);
     const sortedResp = resp?.sort((a, b) =>
       a.employee?.name.localeCompare(b.employee?.name)
     );
+
+    // TEMPORARY ALLOWING EMPLOYEE TO PASS WITHOUT ATTENDANCE DAYS
+    // DID BECAUSE OF A BUG THAT DID NOT FOUND RECORD FOR AN EMPLOYEE, YET ALLOWED TO PASS
+
+    const tempArrayToPass = [];
+    for (let i = 0; i < sortedResp.length; i++) {
+      if (sortedResp[i].employee) {
+        tempArrayToPass.push(sortedResp[i]);
+      }
+    }
 
     return {
       success: true,
       status: 200,
       message: 'Successfully Retrieved Wages',
-      data: JSON.stringify(sortedResp),
+      data: JSON.stringify(tempArrayToPass),
       error: null,
     };
   } catch (err) {
@@ -107,22 +103,7 @@ const fetchFilledWagesWithAttendanceDays = async (
     if (workOrderHr !== 'Default') {
       filter.workOrderHr = workOrderHr;
     }
-    console.log(filter, 'I am Filter');
 
-    // Fetch employees with matching workOrder and period in their workOrderHr
-
-    // Populate employee IDs
-
-    // const resp = await Wages.find(filter)
-    //   .populate('designation')
-    //   .populate('employee')
-    //   .populate({
-    //     path: 'employee',
-    //     populate: {
-    //       path: 'designation',
-    //       model: 'Designation',
-    //     },
-    //   });
     const wages = await Wages.find(filter)
       .populate('designation')
       .populate({
@@ -165,8 +146,9 @@ const fetchFilledWagesWithAttendanceDays = async (
         (emp) =>
           emp?.employee.toString() === wemployee?.employee?._id.toString()
       );
-      // console.log('wemployee', wemployee);
-      // console.log('xxxxx', x);
+
+      // TEMPORARY ALLOWING EMPLOYEE TO PASS WITHOUT ATTENDANCE DAYS
+      // DID BECAUSE OF A BUG THAT DID NOT FOUND RECORD FOR AN EMPLOYEE, YET ALLOWED TO PASS
       if (x) {
         wagesResponseWithAttendanceDays.push({
           ...wemployee._doc,
@@ -237,7 +219,7 @@ const fetchWageForAnEmployee = async (dataString: string) => {
     })
       .populate('designation')
       .populate('employee');
-    console.log(resp);
+    // console.log(resp);
     return {
       success: true,
       status: 200,
@@ -261,21 +243,9 @@ const fetchWagesForFinancialYear = async (dataString) => {
   try {
     const data = JSON.parse(dataString);
     const { year, workOrder, bonusPercentage } = data;
-    console.log('yeich ', year);
     const startDate = new Date(year, 3, 1); // April of the given year
-    console.log(startDate);
     const endDate = new Date(year + 1, 2, 31); // March of the following year
 
-    // Fetch all employees whose appointment and resignation dates meet the criteria
-    // const employees = await EmployeeData.find({
-    //     appointmentDate: { $lte: endDate },
-    //     $or: [
-    //         { resignDate: { $gte: startDate } },
-    //         { resignDate: "" },
-    //     ]
-    // }).populate("department")
-    //   .populate("designation")
-    //   .populate("ESILocation");
     const resEmployees = await EmployeeData.aggregate([
       {
         $addFields: {
@@ -334,7 +304,7 @@ const fetchWagesForFinancialYear = async (dataString) => {
     const employees = resEmployees.sort((a, b) => {
       return Number(a.workManNo) - Number(b.workManNo);
     });
-    console.log('yere employees vaiii', employees);
+    // console.log('yere employees vaiii', employees);
 
     if (employees.length === 0) {
       return {
@@ -352,7 +322,7 @@ const fetchWagesForFinancialYear = async (dataString) => {
           (entry) => entry.workOrderHr.toString() === workOrder.toString()
         )
       ) {
-        console.log(employee.appointmentDate);
+        // console.log(employee.appointmentDate);
         const wages = await Wages.find({
           employee: employee._id,
           //removed
@@ -364,29 +334,12 @@ const fetchWagesForFinancialYear = async (dataString) => {
         })
           .populate('designation')
           .populate('employee');
-        console.log('Wages data', wages);
+        // console.log('Wages data', wages);
         if (wages.length == 0) continue;
 
         const employeeDoc = await EmployeeData.findById(employee._id);
 
         const currentYear = new Date().getFullYear();
-
-        // Fetch the employee's bonus data
-        // const lastBonusYear = employeeDoc.bonus[employeeDoc.bonus.length - 1].year;
-
-        // if (lastBonusYear < currentYear) {
-        //   for (let year = lastBonusYear + 1; year <= currentYear; year++) {
-        //     employeeDoc.bonus.push({ year, status: false });
-        //   }
-        // }
-
-        // employeeDoc.bonus = employeeDoc.bonus.map(bonusEntry => {
-        //     if (bonusEntry.year === year) {
-        //       bonusEntry.status = true;
-        //     }
-        //     return bonusEntry;
-        //   });
-        //   await employeeDoc.save();
 
         // Check for missing months
         const monthsInYear = new Set([4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]);
@@ -426,9 +379,6 @@ const fetchWagesForFinancialYear = async (dataString) => {
           { new: true } // Return the updated document
         );
 
-        // console.log(WorkOrderHr,"bonusRate")
-        // console.log(wages,"workorder data!!")
-
         if (!Store_Update_bp) {
           console.log('Not Found!!!');
         } else {
@@ -454,7 +404,6 @@ const fetchWagesForFinancialYear = async (dataString) => {
         });
       }
     }
-    console.log(wagesData, bonusPercentage, 'yeiiii hai bhaiii');
 
     return {
       success: true,
@@ -480,22 +429,10 @@ const fetchWagesForFinancialYearStatement = async (dataString) => {
     const data = JSON.parse(dataString);
     data.bonusPercentage = data.bonusPercentage || 8.33;
     const { year, workOrder, bonusPercentage } = data;
-    console.log('yeich ', year);
-    console.log('bonusPercentage', bonusPercentage);
+    // console.log('bonusPercentage', bonusPercentage);
     const startDate = new Date(year, 3, 1); // April of the given year
-    console.log(startDate);
     const endDate = new Date(year + 1, 2, 31); // March of the following year
 
-    // Fetch all employees whose appointment and resignation dates meet the criteria
-    // const employees = await EmployeeData.find({
-    //     appointmentDate: { $lte: endDate },
-    //     $or: [
-    //         { resignDate: { $gte: startDate } },
-    //         { resignDate: "" },
-    //     ]
-    // }).populate("department")
-    //   .populate("designation")
-    //   .populate("ESILocation");
     const resEmployees = await EmployeeData.aggregate([
       {
         $addFields: {
@@ -566,7 +503,6 @@ const fetchWagesForFinancialYearStatement = async (dataString) => {
     // Fetch wages for each employee
     const wagesData = [];
     for (const employee of employees) {
-      console.log(employee.appointmentDate);
       const query = {
         employee: employee._id,
         $or: [
@@ -661,8 +597,6 @@ const fetchWagesForFinancialYearStatement = async (dataString) => {
         0
       );
 
-      console.log(`totalNetAM------------------`, totalNetAmountPaid);
-
       const bonus = totalNetAmountPaid * (bonusPercentage / 100);
       wagesData.push({
         employee: employee,
@@ -706,7 +640,7 @@ const fetchWagesForFinancialYearStatement2 = async (dataString) => {
     const endDate = new Date(year + 1, 2, 31); // March of following year
 
     // Main aggregation pipeline
-    const pipeline = [
+    const pipeline: PipelineStage[] = [
       {
         $addFields: {
           appointmentDateObj: {
@@ -917,7 +851,6 @@ const fetchWagesForFinancialYearStatement2 = async (dataString) => {
       await EmployeeData.bulkWrite(bulkOps);
     }
 
-    console.log(`Execution time: ${Date.now() - startTime}ms`);
     return {
       success: true,
       status: 200,
@@ -1019,7 +952,6 @@ const fetchWagesForCalendarYear = async (dataString) => {
           (entry) => entry.workOrderHr.toString() === workOrder.toString()
         )
       ) {
-        console.log(`------------------------`, employee._id, year);
         const wages = await Wages.find({
           employee: employee._id,
           year: year,
@@ -1027,7 +959,6 @@ const fetchWagesForCalendarYear = async (dataString) => {
         })
           .populate('designation')
           .populate('employee');
-        console.log('okay yeh bh', wages);
         if (wages.length == 0) continue;
 
         const attendances = await Attendance.find({
@@ -1041,24 +972,6 @@ const fetchWagesForCalendarYear = async (dataString) => {
         // const employeeDoc = await EmployeeData.findById(employee._id);
         const currentYear = new Date().getFullYear();
 
-        // Fetch the employee's bonus data
-
-        // const lastBonusYear = employeeDoc.leave[employeeDoc.leave.length - 1].year;
-
-        // if (lastBonusYear < currentYear) {
-        //   for (let year = lastBonusYear + 1; year <= currentYear; year++) {
-        //     employeeDoc.leave.push({ year, status: false });
-        //   }
-        // }
-
-        // employeeDoc.leave = employeeDoc.leave.map(bonusEntry => {
-        //     if (bonusEntry.year === year) {
-        //       bonusEntry.status = true;
-        //     }
-        //     return bonusEntry;
-        //   });
-        //   await employeeDoc.save();
-        // Check for missing months
         const monthsInYear = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
         const monthsInAYear = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
         const fetchedMonths = new Set(wages.map((wage) => wage.month));
@@ -1121,7 +1034,6 @@ const fetchWagesForCalendarYear = async (dataString) => {
         const CL = Math.round(totalAttendance / 35);
         const FL = Math.round(totalAttendance / 60);
         const tot = EL + CL + FL;
-        console.log(employee.designation_details[0].basic);
         const Net =
           employee.designation_details[0].basic * tot +
           employee.designation_details[0].DA * tot;
@@ -1141,7 +1053,6 @@ const fetchWagesForCalendarYear = async (dataString) => {
         });
       }
     }
-    // console.log('okay yeh nh 3');
 
     return {
       success: true,
@@ -1160,251 +1071,13 @@ const fetchWagesForCalendarYear = async (dataString) => {
   }
 };
 
-// const fetchFinalSettlement = async (dataString) => {
-//     try {
-//         const data = JSON.parse(dataString);
-//         const { employee } = data;
-
-//         // Fetch employee data
-//         const empData = await EmployeeData.findOne({ _id: employee })
-//             .populate("department")
-//             .populate("designation")
-//             .populate("ESILocation");
-
-//         if (!empData) {
-//             return {
-//                 status: 404,
-//                 message: 'Employee Not Found',
-//                 success: false,
-//             };
-//         }
-
-//         const appointmentDate = new Date(empData.appointmentDate);
-//         const currentDate = new Date();
-
-//         // Fetch all wages for the employee from the appointment date to the current month
-//         const wages = await Wages.find({
-//             employee: employee,
-//             year: { $gte: appointmentDate.getFullYear(), $lte: currentDate.getFullYear() },
-//             $or: [
-//                 { month: { $gte: appointmentDate.getMonth() + 1 } },
-//                 { month: { $lte: currentDate.getMonth() + 1 } }
-//             ]
-//         }).populate("designation").populate("employee");
-
-//         if (wages.length === 0) {
-//             return {
-//                 status: 404,
-//                 message: 'No Wages Found for the Employee',
-//                 success: false,
-//             };
-//         }
-
-//         // Organize wages by year and calculate missing months and total attendance for each year
-//         const wagesByYear = {};
-
-//         for (const wage of wages) {
-//             const { year, month, attendance } = wage;
-//             if (!wagesByYear[year]) {
-//                 wagesByYear[year] = {
-//                     wages: [],
-//                     missingMonths: new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]),
-//                     totalAttendance: 0
-//                 };
-//             }
-//             wagesByYear[year].wages.push(wage);
-//             wagesByYear[year].missingMonths.delete(month);
-//             wagesByYear[year].totalAttendance += attendance;
-//         }
-
-//         // Convert missing months sets to arrays
-//         for (const year in wagesByYear) {
-//             wagesByYear[year].missingMonths = Array.from(wagesByYear[year].missingMonths);
-//         }
-
-//         return {
-//             success: true,
-//             status: 200,
-//             message: 'Successfully Retrieved Final Settlement Wages for the Employee',
-//             data: wagesByYear
-//         };
-//     } catch (err) {
-//         console.log(err);
-//         return {
-//             success: false,
-//             status: 500,
-//             err: JSON.stringify(err),
-//             message: 'Internal Server Error'
-//         };
-//     }
-// };
-
-// const fetchFinalSettlement = async (dataString) => {
-//     try {
-//         await connectToDB()
-//         const data = JSON.parse(dataString);
-//         const { employee } = data;
-
-//         // Fetch employee data
-//         const empData = await EmployeeData.findOne({ _id: employee })
-//             .populate("designation")
-
-//         if (!empData) {
-//             return {
-//                 status: 404,
-//                 message: 'Employee Not Found',
-//                 success: false,
-//             };
-//         }
-
-//         const appointmentDate = new Date(empData.appointmentDate);
-//         const currentDate = new Date();
-
-//         // Fetch all wages for the employee from the appointment date to the current month
-//         const wages = await Wages.find({
-//             employee: employee,
-//             year: { $gte: appointmentDate.getFullYear(), $lte: currentDate.getFullYear() },
-//             $or: [
-//                 { month: { $gte: appointmentDate.getMonth() + 1 } },
-//                 { month: { $lte: currentDate.getMonth() + 1 } }
-//             ]
-//         }).populate("designation").populate("employee");
-
-//         if (wages.length === 0) {
-//             return {
-//                 status: 404,
-//                 message: 'No Wages Found for the Employee',
-//                 success: false,
-//             };
-//         }
-
-//         // Organize wages by month-year and calculate total attendance and total net amount paid per year
-//         const wagesByMonthYear = {};
-//         const totalAttendancePerYear = [];
-// let totAtt=0;
-//         for (const wage of wages) {
-//             const { year, month, attendance, netAmountPaid } = wage;
-//             const key = `${year}-${month}`;
-
-//             if (!wagesByMonthYear[key]) {
-//                 wagesByMonthYear[key] = wage;
-//             }
-//             let attendanceYear = totalAttendancePerYear.find(item => item.year === year);
-//             if (!attendanceYear) {
-//                 attendanceYear = { year, totalAttendance: 0,totalNetAmountPaid:0 };
-//                 totalAttendancePerYear.push(attendanceYear);
-//             }
-
-//             attendanceYear.totalAttendance += attendance;
-//             totAtt+=attendance;
-//             attendanceYear.totalNetAmountPaid += netAmountPaid;
-//             // Update totalNetAmountPaidPerYear
-
-//         }
-// for(let i=0;i<totalAttendancePerYear.length;i++)
-// {
-//     totalAttendancePerYear[i].EL = Math.round(totalAttendancePerYear[i].totalAttendance / 20);
-//     totalAttendancePerYear[i].CL = Math.round(totalAttendancePerYear[i].totalAttendance/ 35);
-//     totalAttendancePerYear[i].FL = Math.round(totalAttendancePerYear[i].totalAttendance/ 60);
-
-//     totalAttendancePerYear[i].leave=(totalAttendancePerYear[i].EL+totalAttendancePerYear[i].CL+totalAttendancePerYear[i].FL)*empData.designation.PayRate;
-
-// }
-
-//         // Add missing months with zero values
-//         let totWages=0;
-//         const allYears = totalAttendancePerYear.map(item => item.year);
-//         for (const year of allYears) {
-//             for (let month = 1; month <= 12; month++) {
-//                 const key = `${year}-${month}`;
-//                 if (!wagesByMonthYear[key]) {
-//                     wagesByMonthYear[key] = {
-//                         employee: employee,
-//                         designation: null, // or handle as needed
-//                         month: month,
-//                         year: parseInt(year),
-//                         attendance: 0,
-//                         netAmountPaid: 0,
-//                         totalWorkingDays: 0,
-//                         total: 0,
-//                         payRate: 0,
-//                         otherCash: 0,
-//                         allowances: 0,
-//                         otherCashDescription: "{}",
-//                         otherDeduction: 0,
-//                         otherDeductionDescription: "{}",
-//                     };
-//                 }
-//             }
-//         }
-
-//         // Convert the wagesByMonthYear object to a sorted array
-//         const sortedWages = Object.values(wagesByMonthYear).sort((a, b) => {
-//             // @ts-ignore
-//             if (a.month === b.month) {
-//                 // @ts-ignore
-//                 return a.year - b.year;
-//             } else {
-//                 // @ts-ignore
-//                 return a.month - b.month;
-//             }
-//         });
-//         console.log("yei toh hn sorted", sortedWages)
-//         const dataByMonth = {};
-
-//         sortedWages.forEach(wage => {
-//             // @ts-ignore
-//           const { month, year, attendance, netAmountPaid } = wage;
-
-//           // Create a new array for the month if it doesn't exist
-//           if (!dataByMonth[month]) {
-//             dataByMonth[month] = [];
-//           }
-
-//           // Add the data for the current month and year
-//           totWages+=netAmountPaid;
-//           dataByMonth[month].push({
-//             year,
-//             attendance,
-//             netAmountPaid
-//           });
-//         });
-//         totalAttendancePerYear.sort((a, b) => a.year - b.year);
-//       const finalData={
-//         wages: dataByMonth,
-//         totalAttendancePerYear: totalAttendancePerYear,
-//         designation:empData.designation,
-//         employee:empData,
-//         totalAttendance:totAtt,
-//         totalWages:totWages
-
-//     }
-//         return {
-//             success: true,
-//             status: 200,
-//             message: 'Successfully Retrieved Final Settlement Wages for the Employee',
-//             data: JSON.stringify(finalData)
-//         };
-//     } catch (err) {
-//         console.log(err);
-//         return {
-//             success: false,
-//             status: 500,
-//             err: JSON.stringify(err),
-//             message: 'Internal Server Error'
-//         };
-//     }
-// };
-
 const fetchWagesForCalendarYearStatement = async (dataString) => {
   const startTime = Date.now();
   const dbConnection = await handleDBConnection();
   if (!dbConnection.success) return dbConnection;
   try {
     const data = JSON.parse(dataString);
-    console.log('DATATATATA', data);
     const { year, workOrder } = data;
-    console.log(workOrder);
     const startDate = new Date(year, 0, 1); // January 1st of the given year
     const endDate = new Date(year, 11, 31); // December 31st of the given year
 
@@ -1596,7 +1269,6 @@ const fetchWagesForCalendarYearStatement = async (dataString) => {
     // console.log('okay yeh nh 3');
 
     const endTime = Date.now();
-    console.log(endTime - startTime);
     return {
       success: true,
       status: 200,
@@ -1810,7 +1482,6 @@ const fetchWagesForCalendarYearStatement2 = async (dataString) => {
       await EmployeeData.bulkWrite(bulkOps);
     }
 
-    console.log('Execution time:', Date.now() - startTime, 'ms');
     return {
       success: true,
       status: 200,
@@ -1836,7 +1507,6 @@ const fetchFinalSettlement = async (dataString) => {
     const { employee } = data;
 
     // Fetch employee data
-    console.log('ok1 ');
     const empData = await EmployeeData.findOne({ _id: employee }).populate(
       'designation'
     );
@@ -1849,9 +1519,10 @@ const fetchFinalSettlement = async (dataString) => {
       };
     }
 
+    const payRate = (empData.designation as any)?.PayRate || 0;
+
     const appointmentDate = new Date(empData.appointmentDate);
     const currentDate = new Date();
-    console.log('yeri date', empData.appointmentDate);
     // Fetch all wages for the employee from the appointment date to the current month
     const wages = await Wages.find({
       employee: employee,
@@ -1866,7 +1537,7 @@ const fetchFinalSettlement = async (dataString) => {
     })
       .populate('designation')
       .populate('employee');
-    //  console.log("yeri wages",wages)
+
     if (wages.length === 0) {
       return {
         status: 404,
@@ -1877,16 +1548,23 @@ const fetchFinalSettlement = async (dataString) => {
 
     // Organize wages by month-year and calculate total attendance and total net amount paid per year
     const wagesByMonthYear = {};
-    const totalAttendancePerYear = [];
+    const totalAttendancePerYear: YearlyWageInfo[] = [];
     let totAtt = 0;
-    console.log('ok2 & wages ', wages);
     for (const wage of wages) {
-      const { year, month, attendance, netAmountPaid } = wage;
+      const {
+        year,
+        month,
+        attendance,
+        netAmountPaid,
+        total,
+        incentiveAmount,
+        allowances,
+        otherCash,
+      } = wage;
       const key = `${year}-${month}`;
-      const key2 = `${year}-${month}+${Math.random()}`;
 
-      if (!wagesByMonthYear[key2]) {
-        wagesByMonthYear[key2] = wage;
+      if (!wagesByMonthYear[key]) {
+        wagesByMonthYear[key] = wage;
       }
       let attendanceYear = totalAttendancePerYear.find(
         (item) => item.year === year
@@ -1900,6 +1578,11 @@ const fetchFinalSettlement = async (dataString) => {
           totalAttendance: 0,
           totalNetAmountPaid: 0,
           status: paidStatus,
+          grossAmountYearly: 0,
+          CL: 0,
+          EL: 0,
+          FL: 0,
+          leave: 0,
         };
         totalAttendancePerYear.push(attendanceYear);
       }
@@ -1907,6 +1590,8 @@ const fetchFinalSettlement = async (dataString) => {
       attendanceYear.totalAttendance += attendance;
       totAtt += attendance;
       attendanceYear.totalNetAmountPaid += netAmountPaid;
+      attendanceYear.grossAmountYearly +=
+        total - incentiveAmount - allowances - otherCash;
     }
 
     const startYear = appointmentDate.getFullYear();
@@ -1919,6 +1604,11 @@ const fetchFinalSettlement = async (dataString) => {
           totalAttendance: 0,
           totalNetAmountPaid: 0,
           status: false, // assuming default paid status as false for years with no data
+          grossAmountYearly: 0,
+          EL: 0,
+          CL: 0,
+          FL: 0,
+          leave: 0,
         });
       }
     }
@@ -1937,33 +1627,35 @@ const fetchFinalSettlement = async (dataString) => {
         (totalAttendancePerYear[i].EL +
           totalAttendancePerYear[i].CL +
           totalAttendancePerYear[i].FL) *
-        empData.designation.PayRate;
+        payRate;
     }
 
     // Add missing months with zero values
     let totWages = 0;
-    console.log('ok412', wagesByMonthYear);
+    let totalGrossWages = 0;
     const allYears = totalAttendancePerYear.map((item) => item.year);
     const allWgaes = [];
     for (const year of allYears) {
       for (let month = 1; month <= 12; month++) {
         const key = `${year}-${month}`;
-        wagesByMonthYear[key] = {
-          employee: employee,
-          designation: null, // or handle as needed
-          month: month,
-          year: parseInt(year),
-          attendance: 0,
-          netAmountPaid: 0,
-          totalWorkingDays: 0,
-          total: 0,
-          payRate: 0,
-          otherCash: 0,
-          allowances: 0,
-          otherCashDescription: '{}',
-          otherDeduction: 0,
-          otherDeductionDescription: '{}',
-        };
+        if (!wagesByMonthYear[key]) {
+          wagesByMonthYear[key] = {
+            employee: employee,
+            designation: null, // or handle as needed
+            month: month,
+            year,
+            attendance: 0,
+            netAmountPaid: 0,
+            totalWorkingDays: 0,
+            total: 0,
+            payRate: 0,
+            otherCash: 0,
+            allowances: 0,
+            otherCashDescription: '{}',
+            otherDeduction: 0,
+            otherDeductionDescription: '{}',
+          };
+        }
       }
     }
 
@@ -1978,24 +1670,35 @@ const fetchFinalSettlement = async (dataString) => {
         return a.year - b.year;
       }
     });
-    console.log('yeri sortedwages real vali 21', wagesByMonthYear);
     const dataByMonth = {};
-    sortedWages.forEach((wage) => {
+    sortedWages.forEach((wage: any) => {
       // @ts-ignore
-      const { month, year, attendance, netAmountPaid } = wage;
+      const {
+        month,
+        year,
+        attendance,
+        netAmountPaid,
+        total,
+        allowances,
+        otherCash,
+      } = wage;
 
       if (!dataByMonth[month]) {
         dataByMonth[month] = [];
       }
 
       totWages += netAmountPaid;
+      const monthlyGrossWage =
+        total - (wage?.incentiveAmount || 0) - allowances - otherCash;
+      totalGrossWages += monthlyGrossWage;
+
       dataByMonth[month].push({
         year,
         attendance,
         netAmountPaid,
+        monthlyGrossWage: monthlyGrossWage,
       });
     });
-    console.log('dataByMonth3', dataByMonth);
 
     const aggregateDataByMonth = (data) => {
       Object.keys(data).forEach((month) => {
@@ -2003,12 +1706,18 @@ const fetchFinalSettlement = async (dataString) => {
 
         // Reduce the array by grouping by year and summing attendance and netAmountPaid
         const aggregated = yearData.reduce(
-          (acc, { year, attendance, netAmountPaid }) => {
+          (acc, { year, attendance, netAmountPaid, monthlyGrossWage }) => {
             if (!acc[year]) {
-              acc[year] = { year, attendance: 0, netAmountPaid: 0 };
+              acc[year] = {
+                year,
+                attendance: 0,
+                netAmountPaid: 0,
+                monthlyGrossWage: 0,
+              };
             }
             acc[year].attendance += attendance;
             acc[year].netAmountPaid += netAmountPaid;
+            acc[year].monthlyGrossWage += monthlyGrossWage;
             return acc;
           },
           {}
@@ -2022,7 +1731,7 @@ const fetchFinalSettlement = async (dataString) => {
     };
 
     const aggregatedData = aggregateDataByMonth(dataByMonth);
-    console.log('data!!!', aggregatedData);
+    // console.log("data!!!", aggregatedData);
     // Calculate gross wages and bonus details
     const bonusDetails = [];
     let currentYear = appointmentDate.getFullYear();
@@ -2036,14 +1745,20 @@ const fetchFinalSettlement = async (dataString) => {
       for (let month = startMonth; month <= 12; month++) {
         const key = `${currentYear}-${month}`;
         if (wagesByMonthYear[key]) {
-          grossWages += wagesByMonthYear[key].netAmountPaid;
+          const { total, allowances, otherCash, incentiveAmount } =
+            wagesByMonthYear[key];
+          // grossWages += wagesByMonthYear[key].netAmountPaid;
+          grossWages += total - incentiveAmount - allowances - otherCash;
         }
       }
       let nex = currentYear + 1;
       for (let month = 1; month <= endMonth; month++) {
         const key = `${nex}-${month}`;
         if (wagesByMonthYear[key]) {
-          grossWages += wagesByMonthYear[key].netAmountPaid;
+          // grossWages += wagesByMonthYear[key].netAmountPaid;
+          const { total, allowances, otherCash, incentiveAmount } =
+            wagesByMonthYear[key];
+          grossWages += total - incentiveAmount - allowances - otherCash;
         }
       }
       const bonusStatus =
@@ -2068,6 +1783,7 @@ const fetchFinalSettlement = async (dataString) => {
       totalAttendance: totAtt,
       totalWages: totWages,
       bonusDetails: bonusDetails,
+      totalGrossWages,
     };
 
     return {
