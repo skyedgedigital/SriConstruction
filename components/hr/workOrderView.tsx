@@ -30,7 +30,6 @@ const WorkOrderView = () => {
   const [editedValidFrom, setEditedValidFrom] = useState('');
   const [editedValidTo, setEditedValidTo] = useState('');
 
-
   useEffect(() => {
     const fn = async () => {
       const result = await WorkOrderHrAction.FETCH.fetchAllWorkOrderHr();
@@ -195,7 +194,17 @@ const WorkOrderView = () => {
                   ></button>
                 </div>
                 <div className='relative p-6 flex flex-col'>
-                  <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
+                  <div className='my-2 text-blueGray-500 text-md leading-relaxed flex items-center gap-2 '>
+                    <label className='block text-sm font-medium text-gray-700 '>
+                      WorkOrder Id:
+                    </label>
+                    {selectedWorkOrder?._id && (
+                      <span className='text-md font-semibold'>
+                        {selectedWorkOrder?._id}
+                      </span>
+                    )}
+                  </div>
+                  <div className='my-2 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Work Order Number:
                     </label>{' '}
@@ -227,7 +236,7 @@ const WorkOrderView = () => {
                       )}
                     </div>
                   </div>
-                  <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2 '>
+                  <div className='my-2 text-blueGray-500 text-md leading-relaxed flex items-center gap-2 '>
                     <label className='block text-sm font-medium text-gray-700 '>
                       Department:
                     </label>
@@ -242,7 +251,7 @@ const WorkOrderView = () => {
                       </span>
                     )}
                   </div>
-                  <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
+                  <div className='my-2 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Job Description:
                     </label>
@@ -257,7 +266,7 @@ const WorkOrderView = () => {
                       </span>
                     )}
                   </div>
-                  <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
+                  <div className='my-2 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Other Description:
                     </label>
@@ -272,7 +281,7 @@ const WorkOrderView = () => {
                       </span>
                     )}
                   </div>
-                  <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
+                  <div className='my-2 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Section:
                     </label>
@@ -287,7 +296,7 @@ const WorkOrderView = () => {
                       </span>
                     )}
                   </div>
-                  <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
+                  <div className='my-2 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Valid From:
                     </label>
@@ -302,7 +311,7 @@ const WorkOrderView = () => {
                       </span>
                     )}
                   </div>
-                  <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
+                  <div className='my-2 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Valid Till:
                     </label>
@@ -317,7 +326,7 @@ const WorkOrderView = () => {
                       </span>
                     )}
                   </div>
-                  <div className='my-4 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
+                  <div className='my-2 text-blueGray-500 text-md leading-relaxed flex items-center gap-2'>
                     <label className='block text-sm font-medium text-gray-700'>
                       Lapse Till:
                     </label>
