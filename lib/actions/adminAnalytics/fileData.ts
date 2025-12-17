@@ -4,6 +4,7 @@ import { ApiResponse } from '@/interfaces/APIresponses.interface';
 import handleDBConnection from '@/lib/database';
 import Attendance from '@/lib/models/HR/attendance.model';
 import EmployeeData from '@/lib/models/HR/EmployeeData.model';
+import { countLeavesMonthly } from '../attendance/put';
 
 let empCodeMap = new Map();
 // array consist of employeeCode which does not exist in DB yet
@@ -75,10 +76,13 @@ const FileFn = async (data: string): Promise<ApiResponse<any>> => {
     employeeNotFoundInDB = [];
     const fileData = JSON.parse(data);
     console.log(fileData.length);
+    console.log('xxx', fileData);
+    // return;
 
     for (const ele of fileData) {
-      let { empCode, year, month, days } = ele;
+      let { empCode, year, month, days, workorderId } = ele;
       // if 0240 -> OK , else if 240 -> 0240
+      console.log(empCode, year, month, days, workorderId);
       empCode = empCode.toString().padStart(0, 4);
 
       // Get employee ID
@@ -107,6 +111,11 @@ const FileFn = async (data: string): Promise<ApiResponse<any>> => {
           year: year,
           month: month,
           days: [], // Initialize empty days array
+          workOrderHr: workorderId,
+          presentDays: 0,
+          earnedLeaves: 0,
+          casualLeaves: 0,
+          festivalLeaves: 0,
         });
       }
 
@@ -134,6 +143,25 @@ const FileFn = async (data: string): Promise<ApiResponse<any>> => {
         }
       }
 
+      // calculate Present
+      const {
+        casualLeaveDaysCount,
+        earnedLeaveDaysCount,
+        festivalLeaveDaysCount,
+        presentDaysCount,
+      } = countLeavesMonthly(attendanceRecord.days);
+      console.log(
+        'casualLeaveDaysCount earnedLeaveDaysCount festivalLeaveDaysCount presentDaysCount',
+        casualLeaveDaysCount,
+        earnedLeaveDaysCount,
+        festivalLeaveDaysCount,
+        presentDaysCount
+      );
+
+      attendanceRecord.presentDays = presentDaysCount;
+      attendanceRecord.casualLeaves = casualLeaveDaysCount;
+      attendanceRecord.earnedLeaves = earnedLeaveDaysCount;
+      attendanceRecord.festivalLeaves = festivalLeaveDaysCount;
       // Step 3: Save the updated or new attendance record
       await attendanceRecord.save();
     }

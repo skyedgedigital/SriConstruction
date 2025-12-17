@@ -14,7 +14,7 @@ import { fetchYearlyLeavesAndPresentCounts } from './fetch';
 /**
  * Count monthly leaves and present days from the attendance array.
  */
-const countLeavesMonthly = (
+export const countLeavesMonthly = (
   attendanceArray: {
     day: number;
     status:

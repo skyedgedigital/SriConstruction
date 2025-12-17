@@ -393,7 +393,7 @@ const Sidebar = forwardRef<HTMLDivElement, Props>(
                 variant: 'ghost',
               },
               {
-                title: 'Upload_File',
+                title: 'Upload Attendance Ex. Sheet',
                 href: '/hr/upload_file',
                 icon: Upload,
                 variant: 'ghost',
