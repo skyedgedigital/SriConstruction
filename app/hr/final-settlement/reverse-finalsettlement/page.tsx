@@ -433,7 +433,7 @@ const Page = ({
                   })`}</span>
                   <span>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    {e.totalNetAmountPaid.toFixed(2)}
+                    {e.totalNetAmountPaid?.toFixed(2)}
                   </span>
                 </div>
               ))}
@@ -445,7 +445,7 @@ const Page = ({
                   <span className='uppercase'>Bonus(8.33%)</span>
                   <span>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    {e.status ? '(Already Paid)' : e.bonus.toFixed(2)}
+                    {e.status ? '(Already Paid)' : e.bonus?.toFixed(2)}
                   </span>
                 </div>
               ))}
@@ -457,7 +457,7 @@ const Page = ({
             {finalSettlementData?.totalAttendancePerYear.map((e) => (
               <div key={e.year}>
                 <span className='uppercase'>{`Leave Amount (${e.year}):`}</span>
-                <span>{e.status ? '(Already Paid)' : e.leave.toFixed(2)}</span>
+                <span>{e.status ? '(Already Paid)' : e.leave?.toFixed(2)}</span>
               </div>
             ))}
           </div>
