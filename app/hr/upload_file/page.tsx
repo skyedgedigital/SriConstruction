@@ -6,6 +6,9 @@ import toast from 'react-hot-toast';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import * as XLSX from 'xlsx';
 
+const formatEmpCode = (code: string | number): string => {
+  return code.toString().padStart(4, '0');
+};
 const month_to_num = {
   jan: 1,
   feb: 2,
@@ -166,7 +169,7 @@ const Page = () => {
             const originalRowIndex = rowIndices[autoStart - 1 + index]; // Get original row index
             const workorderId = row[34]?.toString().trim() || '';
             const year = row[0];
-            const empCode = row[2];
+            const empCode = formatEmpCode(row[2]);
             const month = month_to_num[row[1]?.toLowerCase() || ''];
 
             const days = [];
@@ -185,7 +188,7 @@ const Page = () => {
                 } else if (status === 'hd') {
                   normalizedStatus = 'Half Day';
                 } else if (status === 'nh') {
-                  normalizedStatus = 'National Holiday';
+                  normalizedStatus = 'NH';
                 } else if (status === 'el') {
                   normalizedStatus = 'Earned Leave';
                 } else if (status === 'cl') {
@@ -294,7 +297,7 @@ const Page = () => {
             const originalRowIndex = rowIndices[start - 1 + index];
             const workorderId = row[34]?.toString().trim() || '';
             const year = row[0];
-            const empCode = row[2];
+            const empCode = formatEmpCode(row[2]);
             const month = month_to_num[row[1]?.toLowerCase() || ''];
 
             const days = [];
@@ -313,7 +316,7 @@ const Page = () => {
                 } else if (status === 'hd') {
                   normalizedStatus = 'Half Day';
                 } else if (status === 'nh') {
-                  normalizedStatus = 'National Holiday';
+                  normalizedStatus = 'NH';
                 } else if (status === 'el') {
                   normalizedStatus = 'Earned Leave';
                 } else if (status === 'cl') {
@@ -626,14 +629,15 @@ const Page = () => {
               </div>
               <div className='ml-3'>
                 <h3 className='text-sm font-medium text-red-800'>
-                  Employees not found in database:
+                  ({employeeCodeNotInDB.length}) Employees not found in
+                  database, hence attendance not save for these:
                 </h3>
-                <div className='mt-2 text-sm text-red-700'>
-                  <ul className='list-disc pl-5 space-y-1'>
-                    {employeeCodeNotInDB.map((emp, idx) => (
-                      <li key={emp + '' + idx}>EmpCode: {emp}</li>
+                <div className='mt-2 text-sm text-red-700 grid grid-cols-2 md:grid-cols-5 lg:grid-cols-8 gap-2'>
+                  {employeeCodeNotInDB
+                    .sort((a, b) => Number(a) - Number(b))
+                    .map((emp, idx) => (
+                      <span key={emp + '' + idx}>{emp}</span>
                     ))}
-                  </ul>
                 </div>
               </div>
             </div>
