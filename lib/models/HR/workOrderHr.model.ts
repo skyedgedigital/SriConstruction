@@ -29,42 +29,45 @@ const StateSchema: mongoose.Schema<IState> = new Schema({
   },
 });
 
-const WorkOrderHrSchema: mongoose.Schema<IWorkOrderHr> = new Schema({
-  workOrderNumber: {
-    type: String,
-    required: true,
+const WorkOrderHrSchema: mongoose.Schema<IWorkOrderHr> = new Schema(
+  {
+    workOrderNumber: {
+      type: String,
+      required: true,
+    },
+    date: {
+      type: String,
+    },
+    jobDesc: {
+      type: String,
+    },
+    orderDesc: {
+      type: String,
+    },
+    dept: {
+      type: String,
+    },
+    section: {
+      type: String,
+    },
+    validFrom: {
+      type: String,
+    },
+    validTo: {
+      type: String,
+    },
+    lapseTill: {
+      type: String,
+      default: '',
+    },
+    bonusRate: {
+      type: Number,
+      default: 0,
+    },
+    StateDetails: StateSchema,
   },
-  date: {
-    type: String,
-  },
-  jobDesc: {
-    type: String,
-  },
-  orderDesc: {
-    type: String,
-  },
-  dept: {
-    type: String,
-  },
-  section: {
-    type: String,
-  },
-  validFrom: {
-    type: String,
-  },
-  validTo: {
-    type: String,
-  },
-  lapseTill: {
-    type: String,
-    default: '',
-  },
-  bonusRate: {
-    type: Number,
-    default: 0,
-  },
-  StateDetails: StateSchema,
-});
+  { timestamps: true },
+);
 
 const WorkOrderHr: mongoose.Model<IWorkOrderHr> =
   mongoose.models.WorkOrderHr ||
