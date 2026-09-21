@@ -22,16 +22,17 @@ const LeaveSchema = new Schema({
     },
 });
 
-const FinalSettlementSchema:mongoose.Schema<any> = new Schema({
-    employee:{
-        type: Schema.Types.ObjectId,
-        ref: 'EmployeeData',
+const FinalSettlementSchema: mongoose.Schema<any> = new Schema(
+  {
+    employee: {
+      type: Schema.Types.ObjectId,
+      ref: 'EmployeeData',
     },
     bonus: [BonusSchema],
     leave: [LeaveSchema],
-
-    
-})
+  },
+  { timestamps: true },
+);
 
 const FinalSettlement : mongoose.Model<any> = mongoose.models.FinalSettlement || mongoose.model("FinalSettlement",FinalSettlementSchema)
 

@@ -7,24 +7,27 @@ interface IEsiLocation {
     branch:string;
 }
 
-const EsiLocationSchema:mongoose.Schema<IEsiLocation> = new Schema({
-    name:{
-        type:String,
-        required:true,
+const EsiLocationSchema: mongoose.Schema<IEsiLocation> = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
-    address:{
-        type:String,
-        required:true,
+    address: {
+      type: String,
+      required: true,
     },
-    EsiNo:{
-        type:String,
-        required:true,
+    EsiNo: {
+      type: String,
+      required: true,
     },
-    branch:{
-        type:String,
-        required:true,
-    }
-})
+    branch: {
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
 
 const EsiLocation : mongoose.Model<IEsiLocation> = mongoose.models.EsiLocation || mongoose.model("EsiLocation",EsiLocationSchema)
 

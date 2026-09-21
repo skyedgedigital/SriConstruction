@@ -1,20 +1,24 @@
-
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema } from 'mongoose';
 
 export interface IDepartmentHr {
-    name:string
+  name: string;
 }
 
-const DepartmentHrSchema:mongoose.Schema<IDepartmentHr> = new Schema({
-    name:{
-        type:String,
-        required:true,
-        unique:true
-    }
-})
+const DepartmentHrSchema: mongoose.Schema<IDepartmentHr> = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+  },
+  { timestamps: true },
+);
 
-const DepartmentHr:  mongoose.Model<IDepartmentHr> = mongoose.models.DepartmentHr|| mongoose.model("DepartmentHr",DepartmentHrSchema)
+const DepartmentHr: mongoose.Model<IDepartmentHr> =
+  mongoose.models.DepartmentHr ||
+  mongoose.model('DepartmentHr', DepartmentHrSchema);
 
-export default DepartmentHr
+export default DepartmentHr;
 
-export {DepartmentHrSchema}
+export { DepartmentHrSchema };
