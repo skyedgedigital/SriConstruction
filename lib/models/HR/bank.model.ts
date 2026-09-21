@@ -1,31 +1,32 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema } from 'mongoose';
 
 interface IBank {
-    name:string;
-    branch:string;
-    ifsc:string;
-    
+  name: string;
+  branch: string;
+  ifsc: string;
 }
 
-const BankSchema:mongoose.Schema<IBank> = new Schema({
-    name:{
-        type:String,
-        required:true
+const BankSchema: mongoose.Schema<IBank> = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
-    branch:{
-        type:String,
-        required:true,
+    branch: {
+      type: String,
+      required: true,
     },
-    ifsc:{
-        type:String,
-        required:true,
+    ifsc: {
+      type: String,
+      required: true,
     },
+  },
+  { timestamps: true },
+);
 
-    
-})
+const Bank: mongoose.Model<IBank> =
+  mongoose.models.Bank || mongoose.model('Bank', BankSchema);
 
-const Bank : mongoose.Model<IBank> = mongoose.models.Bank || mongoose.model("Bank",BankSchema)
+export default Bank;
 
-export default Bank
-
-export {BankSchema}
+export { BankSchema };
